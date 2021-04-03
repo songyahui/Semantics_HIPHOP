@@ -25,7 +25,9 @@ type expression =
     | Abort of  expression * expression 
     | Loop of  expression 
     | Yield
+    | Halt
     | Signal of string
+    | Present of expression * expression 
 
 
 
@@ -37,7 +39,9 @@ type statement =
     | ImportStatement of string
     | ExportStatement of expression * expression
     | VarDeclear of string * expression 
+    | ConsDeclear of string * expression 
     | ModelDeclear of string * param list * expression
+    | Let of expression * expression
    
 
 

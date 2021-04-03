@@ -56,6 +56,10 @@ rule token = parse
 | "abort" {ABORT}
 | "yield" {YIELD}
 | "signal" {SIGNAL}
+| "if" {IF}
+| "halt" {HALT}
+| "const" {CONST}
+| "let" {LET}
 | '(' { LPAR }
 | ')' { RPAR }
 | '{' { LBRACK  }

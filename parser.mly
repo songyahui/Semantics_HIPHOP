@@ -9,6 +9,7 @@
 %token EOF GT LT EQ  GTEQ LTEQ   CONCAT 
 %token VARKEY KLEENE NEW EXPORTS HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
+%token IF HALT CONST LET
 
 
 
@@ -60,10 +61,12 @@ expression:
 | ABORT LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
 | YIELD {Yield}
 | SIGNAL ex = VAR {Signal ex}
+| IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Present (ex, ex1)}
+| HALT {Halt}
 
 maybeExpr:
 | {None}
-| PAR ex = expression {Some ex}
+|  ex = expression {Some ex}
 
 maybePar:
 | {[]}
@@ -121,6 +124,8 @@ statement:
 | VARKEY str = VAR EQ ex = expression SIMI {VarDeclear (str, ex) }
 | EXPORTS CONCAT ex = VAR EQ ex2 = expression  SIMI{ExportStatement(Variable ex,ex2)}
 | HIPHOP MODULE  mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK {ModelDeclear (mn, parm, ex)}
+| CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
+| LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
 
 param:
 | IN str = VAR {IN str}

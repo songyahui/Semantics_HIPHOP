@@ -38,13 +38,18 @@ let rec string_of_expression (expr: expression): string =
   | Abort (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
   | Loop ex -> "loop " ^ string_of_expression ex
   | Yield -> "yield"
+  | Halt -> "Halt"
   | Signal str -> "signal "^ str
+  | Present (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
+  
 
   ;;
 let string_of_statement (state) : string = 
   match state with
   | ImportStatement str -> str 
   | VarDeclear (str, ex) -> "var " ^ str ^" = "^ string_of_expression ex 
+  | ConsDeclear (str, ex) -> "const " ^ str ^" = "^ string_of_expression ex 
+  | Let (ex1, ex2) ->"exports." ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
   | ExportStatement (ex1, ex2) ->"exports." ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
   | ModelDeclear (mn, p_li, ex) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
   ;;
