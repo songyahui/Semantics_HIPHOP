@@ -35,6 +35,10 @@ let rec string_of_expression (expr: expression): string =
   | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_expression ex2
   | ForkPar (e_li) -> "PAR:\n " ^ List.fold_left (fun acc a -> acc ^"\n||\n"^string_of_expression a) "" e_li
   | Seq (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
+  | Abort (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
+  | Loop ex -> "loop " ^ string_of_expression ex
+  | Yield -> "yield"
+  | Signal str -> "signal "^ str
 
   ;;
 let string_of_statement (state) : string = 

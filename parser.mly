@@ -4,12 +4,13 @@
 %token <string> STRING
 %token <string> VAR 
 %token <int> INTE
-%token <float> FLOAT
-%token  LPAR RPAR SIMI LBrackets  RBrackets  COMMA LBRACK RBRACK      
-%token  MINUS PLUS POWER TRUEToken COLON FALSEToken NEGATION
-%token EOF GT LT EQ CONJ GTEQ LTEQ ENTIL EMPTY DISJ  CONCAT 
+%token  LPAR RPAR SIMI  COMMA LBRACK RBRACK      
+%token  MINUS PLUS   
+%token EOF GT LT EQ  GTEQ LTEQ   CONCAT 
 %token VARKEY KLEENE NEW EXPORTS HIPHOP MODULE IN OUT 
-%token EMIT AWAIT DO EVERY FORK PAR
+%token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
+
+
 
 
 %start program
@@ -55,6 +56,10 @@ expression:
 | AWAIT LPAR ex = expression RPAR {Await ex}
 | DO LBRACK ex1 = expression_shell RBRACK EVERY LPAR ex2 = expression RPAR{DoEvery (ex1, ex2)}
 | FORK LBRACK ex1 = expression_shell RBRACK PAR LBRACK ex2 = expression_shell RBRACK obj = maybePar {ForkPar (ex1::ex2::obj)}
+| LOOP LBRACK ex1 = expression_shell RBRACK {Loop ex1}
+| ABORT LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
+| YIELD {Yield}
+| SIGNAL ex = VAR {Signal ex}
 
 maybeExpr:
 | {None}

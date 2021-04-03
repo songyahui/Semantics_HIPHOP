@@ -22,6 +22,10 @@ type expression =
     | DoEvery of expression * expression 
     | ForkPar of expression list 
     | Seq of expression * expression 
+    | Abort of  expression * expression 
+    | Loop of  expression 
+    | Yield
+    | Signal of string
 
 
 

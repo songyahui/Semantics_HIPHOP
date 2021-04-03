@@ -32,13 +32,11 @@ rule token = parse
 | white    { token lexbuf }
 | newline  {(next_line lexbuf; token lexbuf) }
 | int      { INTE (int_of_string (Lexing.lexeme lexbuf)) }
-| float { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
 | ">=" {GTEQ}
 | "<=" {LTEQ}
 | '>' {GT}
 | '<' {LT}
 | '=' {EQ}
-| "/\\" {CONJ}
 | ">=" {GTEQ}
 | "<=" {LTEQ}
 | "var" {VARKEY}
@@ -54,22 +52,21 @@ rule token = parse
 | "every" {EVERY}
 | "fork" {FORK}
 | "par" {PAR}
+| "loop" {LOOP}
+| "abort" {ABORT}
+| "yield" {YIELD}
+| "signal" {SIGNAL}
 | '(' { LPAR }
 | ')' { RPAR }
 | '{' { LBRACK  }
 | '}' { RBRACK }
-| '[' { LBrackets }
-| ']' { RBrackets }
 | '.' { CONCAT }
 | id as str { VAR str }
-| "|-" {ENTIL}
-| "\\/" {DISJ}
 | '+' { PLUS }
 | '-' { MINUS }
-| '~' {NEGATION}
 | ',' { COMMA }
 | '*' {KLEENE}
-| ':' { COLON }
+
 | ';' { SIMI }
 | '"'      { read_string (Buffer.create 17) lexbuf }
 
@@ -112,9 +109,16 @@ and read_string buf = parse
 
 
 (*
-
+| ':' { COLON }
+| '~' {NEGATION}
+| float { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
+| '[' { LBrackets }
+| ']' { RBrackets }
+| "|-" {ENTIL}
+| "\\/" {DISJ}
 | "/*@" {LSPEC}
 | "@*/" {RSPEC}
+| "/\\" {CONJ}
 
 | '?' {QUESTION}
 | '#' { SHARP }
