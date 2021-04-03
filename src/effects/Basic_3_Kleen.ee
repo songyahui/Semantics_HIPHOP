@@ -1,0 +1,21 @@
+
+
+TRUE /\ {A, B} |- TRUE /\ ({A}.{B})^* : false;
+
+TRUE /\ {A}.{B} |- TRUE /\ ({A, B})^* : false;
+
+TRUE /\ {A, B} |- TRUE /\ ({A})^*: true;
+
+TRUE /\ {A}.{B} |- TRUE /\ ({A}. {B})^*: true;
+
+TRUE /\ {A, B} |- TRUE /\ ({A}.{B} \/ {A})^*: true;
+
+TRUE /\ {A}.{B} \/ ({A, B}. {B, C}) |- TRUE /\ ({A}. {B})^*: true;
+
+TRUE /\ ({A})^* |- TRUE /\ ({A})^*: true;
+
+TRUE /\ ({A, B})^* |- TRUE /\ ({A}.{B})^*: false;
+
+TRUE /\ ({A}.{B})^* |- TRUE /\ ({A, B})^*: false;
+
+TRUE /\ ({A}.{A})^* |- TRUE /\ ({A})^*: true;

@@ -1,0 +1,13 @@
+
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\({} . {Ready}) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\({} . {Extending}) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\(({Ready})\/(({Extending} # t1) . {IDLE})) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\(({Ready})\/(({Print})\/(({Extending} # t1) . {IDLE}))) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\(({Extending})^*) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\(({} # t1) . {Extending}) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\(({Print})\/(({} # t1) . {IDLE})) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\(({Print})\/(({IDLE})^*)) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\({} . ((({} . {IDLE}) # t1) . {Extending})) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\((({} . {IDLE}) # t1) . {Extending}) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\(({} # t1) . (({IDLE})^*)) : true;
+TRUE /\ {Ready} . (({Print} . ({Extending} \/ {Retracting} \/ {Emp}) . ({Extending} \/ {Retracting} \/ {Emp}) . ({IDLE} \/ {Emp})  ) # w)  |-  TRUE/\((({} # t1) . {IDLE})^*) : true;

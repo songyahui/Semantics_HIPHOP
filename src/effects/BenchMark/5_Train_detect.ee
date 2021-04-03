@@ -1,0 +1,13 @@
+
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({High})^*) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({} # t1) . {High}) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({Low})^*) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({} # t1) . {Low}) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({Latch1_1})\/(({} # t1) . {High})) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({High})\/(({} # t1) . {Low})) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({Low})\/(({} # t1) . {High})) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({S1_1})\/({} . {Latch1_1})) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({S1_1})\/({} . {Latch2_1})) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({Ready} # t1) . {Latch1_0}) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\({} . {Latch1_1}) : true;
+TRUE /\  {Ready} . (( ({S1_0} \/ ({S1_1} . {Latch1_1})) . ({S2_0} \/ ({S2_1} . {Latch2_1})) . (({Latch1_0} . {Latch2_0}) \/ {Emp}) . ({High} \/ {Low})   ) # w) |-TRUE/\(({High})\/(({} # t1) . {Latch2_1})) : true;

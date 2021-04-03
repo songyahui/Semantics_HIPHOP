@@ -1,0 +1,12 @@
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({} # t1) . {Ready} : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({Ready})^* : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({} # t1) . {Reset} : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({Reset})^* : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({} # t1) . {Delay} : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({Delay})^* : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ {Delay} \/ ({} # t1) . {Reset} : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ (({Pudate} # t1) . {Delay})^* : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({Reset} \/ ({Pudate} # t1) . {Delay})^* : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({Delay} \/ {} . ({Pudate} # t1) . {Delay})^* : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({Pudate} \/ {} . ({Reset} # t1) . {} . ({Pudate} # t2) . {Delay})^* : true;
+TRUE /\ {Ready} . ({Read} . {Reset} . ({Pudate})^* .  {Return} . ({Delay}\/{Emp})) # w |-  TRUE /\ ({Ready} \/ ({Reset} # t1) . {} . ({Pudate} # t2) . {Delay})^* : true;

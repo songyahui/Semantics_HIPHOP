@@ -1,0 +1,12 @@
+
+
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(({} # t1) . {Ready}) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(({} # t1) . (({SendUptime} # t2) . {SendUpdestance})) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(({SendUpdestance} # t1) . {SendUptime}) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(((({SendUptime} # t2) . {SendUpdestance}) # t1) . {Ready}) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(({Ready})\/{SendUpdestance}) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(({} # t1) . {Write}) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(({} # t1) . (({Write})^*)) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\((({} # t1) . {Delay})^*) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\(({Delay})\/{Write}) : true;
+TRUE /\  {SendUptime} . {SendUpdestance} . {Ready} . (({Write} . {Delay} . {Write} . {Delay} . {Write} . {Delay}) # w) |- TRUE/\((({Delay} # t1) . {Write})^*) : true;

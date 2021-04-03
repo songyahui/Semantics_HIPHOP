@@ -1,0 +1,51 @@
+
+
+TRUE /\ {A, B} |- TRUE /\ {A}.{B} \/ {A, B} : true;
+
+TRUE /\ {A}.{B} |- TRUE /\ {A}.{B} \/ {A, B} : true;
+
+TRUE /\ {A}.{B} \/ {A, B}  |- TRUE /\ {A}.{B} \/ {A, B} : true;
+
+TRUE /\ {A}.{B}.{C, B} |- TRUE /\ {A}.{B} \/ {A, B} : false;
+
+TRUE /\ {A, D}.{B, D} \/ ({A, D}.{B, D}) |- TRUE /\ {D, A}.{D, B}: true;
+
+TRUE /\ {A, C}.{A} |- TRUE /\ {A}.{A}.{C} \/ {A, C}.{A}: true;
+
+TRUE /\ ({A}.{A}.{A}) \/ ({A, D}.{B, D}) |- TRUE /\ {A}.{A}.{A}: false;
+
+TRUE /\ {B, D}.{A, D} \/ ({A, D}.{B, D}) |- TRUE /\ {A}.{B} \/ ({A, D}.{B, D}) \/  ({B}.{D}): true;
+
+TRUE /\ {C} \/ {A, B, C}.{B, C, D}.{C, D, E} |- TRUE /\ {C} \/ {A, B, C}.{B, C, D}.{C, D, E}: true;
+
+TRUE /\ ({A, B}.{C, D}) \/({D, C}.{B, A}) \/ ({A, B}.{C, D}) \/({D, C}.{B, A})   |- TRUE /\ ({A, B}.{C, D}) \/({D, C}.{B, A}) \/ ({A, B}.{C, D}) \/({D, C}.{B, A}): true;
+
+TRUE /\ {A, B} \/ {C} \/ {B, D} |- TRUE /\ {A, D} \/ {B}: false;
+
+TRUE /\ {A, B} \/ {C} \/ {B, D} |- TRUE /\ {A, D} \/ {B} \/ {C}: true;
+
+TRUE /\ {A, C} \/ ({B, D})^* |- TRUE /\ ({})^* \/ {A}: true;
+
+TRUE /\ {D, B} \/ ({A, B}.{C, D}) |- TRUE /\ {A}.{C} \/ {B}: true;
+
+TRUE /\ {A, B} \/ {C, D} \/ {E} |- TRUE /\ {B} \/ ({})^*: true;
+
+TRUE /\ {A} |- TRUE /\ {A, B} \/ {B, C}: false;
+
+TRUE /\ {A, B} |- TRUE /\ {A} \/ {B, C}: true;
+
+TRUE /\ ({A, B})^* |- TRUE /\ {A, B} \/ {B, C}: false;
+
+TRUE /\ ({B, C})^* |- TRUE /\ {B} \/ {C}: false;
+
+TRUE /\ {A, B}.{C, D} |- TRUE /\ {A, B} \/ {C, D}: false;
+
+TRUE /\ {A} \/ {B} |- TRUE /\ {A, B}: false;
+
+TRUE /\ {A, B} \/ {C, D} |- TRUE /\ {B, C}: false;
+
+TRUE /\ {A, B} \/ {B, C} |- TRUE /\ {B}: true;
+
+TRUE /\ {A, B} \/ {B, C} \/ {C, A} |- TRUE /\ ({B})^* : false;
+
+TRUE /\ {B, C} \/ {C, D} |- TRUE /\ {B}.({C})^*: false;

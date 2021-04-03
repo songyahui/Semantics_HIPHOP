@@ -1,0 +1,12 @@
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ (({} # t1) . {Ready}) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ (({Ready})^*) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ (({} # t1) . {Delay}) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ (({Delay})^*) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ (({} # t1) . {Aminus}) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ ((({Aminus})^*)) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ ((({Delay})\/(({} # t1) . {Aminus}))^*) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ ((({BPlus} # t1) . {Delay})^*) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ ((({Delay})\/(({} # t1) . {Aminus}))^*) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ ((({Delay})\/(({} # t1) . {Delay}))^*) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ ((({Delay})\/{Ready})^*) : true;
+ TRUE /\  {Ready} . ((((({Aminus} . {Delay}) \/ ({APlus} . {Delay})) . (({Bminus} . {Delay}) \/ ({BPlus} . {Delay})) )) # w) |- TRUE /\ ((({Delay})\/((({Aminus})^*)))^*) : true;

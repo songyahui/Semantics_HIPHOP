@@ -1,0 +1,16 @@
+
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({} # t1) . {Red}) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Red})^*) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({} # t1) . {Green}) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Green})^*) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Ready})\/({} . {Red})) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Red})\/(({} # t1) . {Green})) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Ready} # t1) . {Red}) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Green})\/({} . (({CCW} # t1) . {Yellow}))) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({STP} # t1) . {Red}) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Yellow})\/(({} . {Red}))) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({CW})\/(({} # t1) . {STP})) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({Green})\/(({} # t1) . {Red})) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({CW})\/({} . (({Green})\/(({} # t1) . {Red})))) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({CCW})\/({} . (({Yellow} # t1) . {Red}))) : true;
+TRUE /\ {Ready} . ((({Red} . {CW} . {Green} . {CCW} . {Yellow} . {STP} . {Red}) \/ {Emp} )^*) |-TRUE/\(({} # t1) . ({} . {Green})) : true;

@@ -1,0 +1,18 @@
+(ocamllex
+ (modules lexer))
+
+(menhir
+ (modules parser)
+ (flags --explain --dump))
+
+
+(executables
+ (names hip)
+ (modules parser Askz3 lexer Pretty hip Ast))
+
+
+
+
+(env
+ (dev
+  (flags (:standard))))

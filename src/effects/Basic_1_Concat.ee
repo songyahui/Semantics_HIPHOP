@@ -1,0 +1,21 @@
+
+
+TRUE /\ {A, B} |- TRUE /\ {A}.{B} : false;
+
+TRUE /\ {A}.{B} |- TRUE /\ {A, B} : false;
+
+TRUE /\ {A, B}.{B, C} |- TRUE /\ {A}.{B} : true;
+
+TRUE /\ {A}.{B}.{C, B} |- TRUE /\ {A, B, C}.{A, B}: false;
+
+TRUE /\ {A, D}.{B, D} |- TRUE /\ {D, A}.{D, B}: true;
+
+TRUE /\ {A, C}.{A}.{C} |- TRUE /\ {A}.{A}.{C}: true;
+
+TRUE /\ {A}.{A}.{A} |- TRUE /\ {A}.{A}: false;
+
+TRUE /\ {B, D}.{A, D} |- TRUE /\ {A}.{B}: false;
+
+TRUE /\ {A, B, C}.{B, C, D}.{C, D, E} |- TRUE /\ {C}: false;
+
+TRUE /\ {A, B}.{C, D} |- TRUE /\ {D, C}.{B, A}: false;

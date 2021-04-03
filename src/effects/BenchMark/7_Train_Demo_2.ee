@@ -1,0 +1,16 @@
+
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\(({} # t1) . {Complete0}) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\({}) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\(({} # t1) . {}) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({} # t1) . {Complete0})^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\(({Complete0})\/({} . {High})) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\(({} # t1) . (({Complete0})\/{High})) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Complete0})\/(({} # t1) . {Forward}))^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Complete0})\/(({} # t1) . {Write140_225}))^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Complete0})\/{Ready})^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Complete0})\/({}))^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Ready} # t1) . {Backward})^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Ready})\/(({Backward} # t1) . {Complete0}))^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Ready})\/({} . ((({Backward} # t1) . {Complete0}))))^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Ready})\/({} . (({Complete0} # t1) . ({} . (({Write140_225} # t2) . {Forward})))))^*) : true;
+TRUE /\  {Ready} . ({Emp} \/ ((({Write0_120} \/ {Write140_225} \/ {Emp}) . ({Forward} \/{Backward} \/ {STOP} ) . {Complete0} .  ({High} \/ {Low} \/ {Emp})) ) # w) |- TRUE/\((({Ready})\/(({Complete0} # t1) . ({} . (({Write0_120} # t2) . {Backward}))))^*) : true;

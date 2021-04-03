@@ -1,0 +1,16 @@
+
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({} # t1) . {Delay}) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({Delay})^*) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({} # t1) . {SendString}) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({SendString})^*) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({SendString})\/({} . {Delay})) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({Delay} # t1) . {Declare}) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({Ready})\/({} . (({Delay} # t1) . {Declare}))) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({High})\/(({} # t1) . {Delay})) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({High})\/(({} # t1) . {MM})) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({High})\/(({} # t1) . {Declare})) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({} # t1) . (({SendString})\/({} . {SendString}))) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({MM})\/(({} # t1) . (({Delay} # t2) . {Declare}))) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({MM})\/((({Delay} # t1) . {Declare}))) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\(({} # t1) . (({Declare})\/(({} # t2) . {Delay}))) : true;
+TRUE /\   {Ready} . (({Declare} . ({High} \/ {Low} \/ {Emp}) . ({FF} \/ {MM} \/ {Emp}) . {SendString} . {SendString} . {SendString} . {Delay}) # w) |- TRUE/\((({Delay})\/({} . {Declare}))) : true;

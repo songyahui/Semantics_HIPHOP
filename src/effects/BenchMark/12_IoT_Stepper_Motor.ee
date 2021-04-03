@@ -1,0 +1,19 @@
+
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({} # t1) . {Ready}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({} # t1) . {CC3000OK}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({} # t1) . {Recrive}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({} # t1) . {ErrorInfor}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({Delay})\/{ErrorInfor}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({CC3000Fail} # t1) . {WifiConnect}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({WifiConnect} # t1) . {Ready}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({WifiConnect})\/({} . {Ready})) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({WifiConnect})\/{Delay}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({ErrorInfor})\/{CC3000OK}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({Ready})\/(({} # t1) . {Recrive})) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({NoMsg} # t1) . {Recrive}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\((({} # t1) . {NoMsg})) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({} # t1) . {Recrive}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({} # t1) . {FORWARD}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({NoMsg} # t1) . ({} . {Recrive})) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({Recrive} # t1) . {BACKWARD}) : true;
+TRUE /\  (({CC3000OK}\/ {CC3000Fail}) . (({Delay} . {ErrorInfor} )^* ) ) . {WifiConnect} . {Ready} . (((({NoMsg})^*) . {Recrive} . ({FORWARD} \/ {BACKWARD})) # w) |- TRUE/\(({NoMsg} # t1) . {Recrive}) : true;
