@@ -68,7 +68,7 @@ expression:
 | b = binary {b}
 | EMIT  ex = VAR LPAR obj = maybeExpr RPAR {Emit (ex,obj) }
 | AWAIT ex = expression {Await ex}
-| DO LBRACK ex1 = expression_shell RBRACK EVERY LPAR ex2 = expression RPAR{DoEvery (ex1, ex2)}
+| DO LBRACK ex1 = expression_shell RBRACK EVERY ex2 = expression {DoEvery (ex1, ex2)}
 | FORK LBRACK ex1 = expression_shell RBRACK PAR LBRACK ex2 = expression_shell RBRACK obj = maybePar {ForkPar (ex1::ex2::obj)}
 | LOOP LBRACK ex1 = expression_shell RBRACK {Loop ex1}
 | HOP LBRACK ex1 = expression_shell RBRACK {Hop ex1}
