@@ -60,6 +60,10 @@ rule token = parse
 | "halt" {HALT}
 | "const" {CONST}
 | "let" {LET}
+| "hop" {HOP}
+| "async" {ASYNC}
+| "function" {FUNCTION}
+| "=>" {IMPLY}
 | '(' { LPAR }
 | ')' { RPAR }
 | '{' { LBRACK  }
@@ -70,7 +74,6 @@ rule token = parse
 | '-' { MINUS }
 | ',' { COMMA }
 | '*' {KLEENE}
-
 | ';' { SIMI }
 | '"'      { read_string (Buffer.create 17) lexbuf }
 

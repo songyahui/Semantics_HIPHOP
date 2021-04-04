@@ -31,12 +31,17 @@ let rec string_of_expression (expr: expression): string =
     | None -> ")"
     | Some ex -> string_of_expression ex ^")"
     )
-  | Await ex -> "emit " ^ string_of_expression ex
+  | Await ex -> "await " ^ string_of_expression ex
   | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_expression ex2
   | ForkPar (e_li) -> "PAR:\n " ^ List.fold_left (fun acc a -> acc ^"\n||\n"^string_of_expression a) "" e_li
   | Seq (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
   | Abort (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
   | Loop ex -> "loop " ^ string_of_expression ex
+  | Hop ex -> "Hop " ^ string_of_expression ex
+  | Async (str, ex) -> "async " ^ str ^" = "^ string_of_expression ex 
+  | Lambda (ex1, ex) -> "lamdba " ^ string_of_expression ex1 ^" => "^ string_of_expression ex 
+  | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
+
   | Yield -> "yield"
   | Halt -> "Halt"
   | Signal str -> "signal "^ str
@@ -51,7 +56,9 @@ let string_of_statement (state) : string =
   | ConsDeclear (str, ex) -> "const " ^ str ^" = "^ string_of_expression ex 
   | Let (ex1, ex2) ->"exports." ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
   | ExportStatement (ex1, ex2) ->"exports." ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
-  | ModelDeclear (mn, p_li, ex) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
+  | ModduleDeclear (mn, p_li, ex) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
+  | FunctionDeclear (mn, p_li, ex) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
+
   ;;
 
 let rec string_of_program (states : statement list) : string =

@@ -24,11 +24,14 @@ type expression =
     | Seq of expression * expression 
     | Abort of  expression * expression 
     | Loop of  expression 
+    | Hop of  expression 
     | Yield
     | Halt
     | Signal of string
     | Present of expression * expression 
-
+    | Async of string * expression 
+    | Lambda of expression * expression
+    | Continue of expression * expression 
 
 
 type param = 
@@ -40,8 +43,10 @@ type statement =
     | ExportStatement of expression * expression
     | VarDeclear of string * expression 
     | ConsDeclear of string * expression 
-    | ModelDeclear of string * param list * expression
+    | ModduleDeclear of string * param list * expression
     | Let of expression * expression
+    | FunctionDeclear of string * param list * expression
+
    
 
 
