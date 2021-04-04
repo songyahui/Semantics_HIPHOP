@@ -37,6 +37,7 @@ type expression =
 type param = 
     | IN of string
     | OUT of string 
+    | Data of string
 
 type statement = 
     | ImportStatement of string
@@ -46,6 +47,8 @@ type statement =
     | ModduleDeclear of string * param list * expression
     | Let of expression * expression
     | FunctionDeclear of string * param list * expression
+    | Call of string list * expression list 
+    | Assign of string list * expression
 
    
 

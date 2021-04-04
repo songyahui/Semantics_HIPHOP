@@ -27,12 +27,12 @@ m.debug_emitted_func = console.log;
 
 m.addEventListener( "O", foo );
 
-console.log( ";" )
+console.log( ";" );
 m.react();
 
 m.addEventListener( "O", foo2 );
 
-console.log( "I(34)" )
+console.log( "I(34)" );
 m.inputAndReact( "I", 34 );
 
 m.addEventListener( "O", foo3 );

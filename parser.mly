@@ -71,7 +71,6 @@ expression:
 | FORK LBRACK ex1 = expression_shell RBRACK PAR LBRACK ex2 = expression_shell RBRACK obj = maybePar {ForkPar (ex1::ex2::obj)}
 | LOOP LBRACK ex1 = expression_shell RBRACK {Loop ex1}
 | HOP LBRACK ex1 = expression_shell RBRACK {Hop ex1}
-
 | ABORT LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
 | YIELD {Yield}
 | SIGNAL ex = VAR {Signal ex}
@@ -149,11 +148,19 @@ statement:
 | CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
 | LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
 | FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK {FunctionDeclear (mn, parm, ex)}
-
+| s = separated_list (CONCAT, VAR) obj = callOrAssign {
+  match obj with 
+  | Left exl -> Call (s, exl)
+  | Right ex -> Assign (s, ex)
+}
+callOrAssign:
+| LPAR obj  = call_aux RPAR SIMI {Left obj}
+| EQ ex = expression SIMI{Right  ex}
 
 param:
 | IN str = VAR {IN str}
 | OUT str = VAR {OUT str}
+| str = VAR {Data str}
 
 
 parameter:
