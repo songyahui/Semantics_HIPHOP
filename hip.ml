@@ -42,6 +42,8 @@ let rec string_of_expression (expr: expression): string =
   | Async (str, ex) -> "async " ^ str ^" = "^ string_of_expression ex 
   | Lambda (ex1, ex) -> "lamdba " ^ string_of_expression ex1 ^" => "^ string_of_expression ex 
   | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
+  | Return ex -> "return " ^ string_of_expression ex
+  | Break ex -> "Break " ^ string_of_expression ex
 
   | Yield -> "yield"
   | Halt -> "Halt"
@@ -55,8 +57,7 @@ let string_of_statement (state) : string =
   | ImportStatement str -> str 
   | VarDeclear (str, ex) -> "var " ^ str ^" = "^ string_of_expression ex 
   | ConsDeclear (str, ex) -> "const " ^ str ^" = "^ string_of_expression ex 
-  | Let (ex1, ex2) ->"exports." ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
-  | ExportStatement (ex1, ex2) ->"exports." ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
+  | Let (ex1, ex2) ->"let " ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
   | ModduleDeclear (mn, p_li, ex) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
   | FunctionDeclear (mn, p_li, ex) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
   | Call (str_li, ex_li) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li    ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"

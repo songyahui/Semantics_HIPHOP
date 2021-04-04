@@ -41,7 +41,6 @@ rule token = parse
 | "<=" {LTEQ}
 | "var" {VARKEY}
 | "new" {NEW}
-| "exports" {EXPORTS}
 | "hiphop" {HIPHOP} 
 | "module" {MODULE}
 | "in" {IN}
@@ -63,6 +62,8 @@ rule token = parse
 | "hop" {HOP}
 | "async" {ASYNC}
 | "function" {FUNCTION}
+| "return" {RETURN}
+| "break" {BREAK}
 | "=>" {IMPLY}
 | '(' { LPAR }
 | ')' { RPAR }
@@ -76,6 +77,7 @@ rule token = parse
 | '*' {KLEENE}
 | ';' { SIMI }
 | '"'      { read_string (Buffer.create 17) lexbuf }
+| "//" { read_single_line_comment lexbuf }
 
 
 | eof { EOF }

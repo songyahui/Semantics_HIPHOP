@@ -7,9 +7,10 @@
 %token  LPAR RPAR SIMI  COMMA LBRACK RBRACK      
 %token  MINUS PLUS   
 %token EOF GT LT EQ  GTEQ LTEQ   CONCAT 
-%token VARKEY KLEENE NEW EXPORTS HIPHOP MODULE IN OUT 
+%token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
-%token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY
+%token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
+%token RETURN BREAK
 
 
 
@@ -77,7 +78,8 @@ expression:
 | IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Present (ex, ex1)}
 | HALT {Halt}
 | ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK {Async (str, ex1)}
-
+| RETURN ex =  expression {Return ex}
+| BREAK ex =  expression {Break ex}
 
 maybeExpr:
 | {None}
@@ -143,11 +145,10 @@ binary_aux:
 statement:
 | s = STRING {ImportStatement s}
 | VARKEY str = VAR EQ ex = expression SIMI {VarDeclear (str, ex) }
-| EXPORTS CONCAT ex = VAR EQ ex2 = expression  SIMI{ExportStatement(Variable ex,ex2)}
 | HIPHOP MODULE  mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex)}
 | CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
 | LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
-| FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK {FunctionDeclear (mn, parm, ex)}
+| FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK SIMI{FunctionDeclear (mn, parm, ex)}
 | s = separated_list (CONCAT, VAR) obj = callOrAssign {
   match obj with 
   | Left exl -> Call (s, exl)

@@ -19,7 +19,7 @@ type expression =
     | NewExpr of expression
     | Emit of string * expression option
     | Await of expression 
-    | DoEvery of expression * expression 
+    | DoEvery of expression * expression
     | ForkPar of expression list 
     | Seq of expression * expression 
     | Abort of  expression * expression 
@@ -32,6 +32,8 @@ type expression =
     | Async of string * expression 
     | Lambda of expression * expression
     | Continue of expression * expression 
+    | Return of expression 
+    | Break of expression 
 
 
 type param = 
@@ -41,7 +43,6 @@ type param =
 
 type statement = 
     | ImportStatement of string
-    | ExportStatement of expression * expression
     | VarDeclear of string * expression 
     | ConsDeclear of string * expression 
     | ModduleDeclear of string * param list * expression
