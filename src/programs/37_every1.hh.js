@@ -4,9 +4,9 @@
 const hh = require( "hiphop" );
 
 hiphop module prg( in I, O ) {
-   every( I.now ) {
+    do {
       emit O();
-   }
+   }every( I.now )
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "every1" );

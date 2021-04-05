@@ -51,6 +51,8 @@ type statement =
     | FunctionDeclear of string * param list * expression
     | Call of string list * expression list 
     | Assign of string list * expression
+    | TryCatch of expression * expression * expression
+
 
    
 

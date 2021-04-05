@@ -6,7 +6,7 @@ hiphop module prg( J ) {
    signal I;
    
    fork {
-      if( I.now ) emit J();
+      if( I.now ) {emit J()};
    } par {
       emit I();
    }

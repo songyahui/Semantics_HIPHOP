@@ -10,7 +10,7 @@
 %token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
-%token RETURN BREAK COLON ELSE
+%token RETURN BREAK COLON ELSE TRY CATCH
 
 
 
@@ -64,6 +64,7 @@ maybeContinue:
 
 expression:
 | LPAR ex = expression RPAR {ex}
+| LBRACK ex = expression RBRACK {ex}
 | NEW ex = expression {NewExpr ex}
 | b = binary {b}
 | EMIT  ex = VAR LPAR obj = maybeExpr RPAR {Emit (ex,obj) }
@@ -148,19 +149,24 @@ binary_aux:
 | COLON LBRACK e2 = expression_shell RBRACK {Left(":", e2)}
 
 
+simiOrnot:
+| {()}
+| SIMI {()}
 
 statement:
-| s = STRING {ImportStatement s}
+| s = STRING simiOrnot{ImportStatement s}
 | VARKEY str = VAR EQ ex = expression SIMI {VarDeclear (str, ex) }
 | HIPHOP MODULE  mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex)}
 | CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
 | LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
-| FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK SIMI{FunctionDeclear (mn, parm, ex)}
+| FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK simiOrnot{FunctionDeclear (mn, parm, ex)}
 | s = separated_list (CONCAT, VAR) obj = callOrAssign {
   match obj with 
   | Left exl -> Call (s, exl)
   | Right ex -> Assign (s, ex)
 }
+| TRY LBRACK  ex1 = expression_shell RBRACK CATCH LPAR e = expression RPAR LBRACK  ex2 = expression_shell RBRACK simiOrnot{TryCatch(ex1, e, ex2)}
+
 callOrAssign:
 | LPAR obj  = call_aux RPAR SIMI {Left obj}
 | EQ ex = expression SIMI{Right  ex}

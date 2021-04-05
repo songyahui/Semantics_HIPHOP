@@ -4,7 +4,7 @@ var hh = require( "hiphop" );
 
 hiphop module prg( O ) {
    loop {
-      signal S = 1;
+      signal S ;//= 1;
       
       emit S( S.preval + 1 );
       emit O( S.nowval );

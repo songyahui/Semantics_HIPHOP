@@ -3,9 +3,9 @@
 var hh = require( "hiphop" );
 
 hiphop module prg( in I, O ) {
-   every immediate( I.now ) {
+   do {
       emit O();
-   }
+   }every count( 2, I.now )
 }
 
-exports.prg = new hh.ReactiveMachine( prg, "everyimmediate" );
+exports.prg = new hh.ReactiveMachine( prg, "everydelay" );
