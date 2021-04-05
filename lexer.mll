@@ -67,6 +67,7 @@ rule token = parse
 | "else" {ELSE}
 | "try" {TRY}
 | "catch" {CATCH}
+| "run" {RUN}
 | "=>" {IMPLY}
 | '(' { LPAR }
 | ')' { RPAR }

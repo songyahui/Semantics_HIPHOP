@@ -7,12 +7,20 @@ hiphop module M1( a ) {
    }
 }
 
-hiphop machine m( a, b ) {
-   run M1( a as b );
+hiphop module m( a, b ) {
+   run M1( a  );
+   yield;
+   run M1( a );
 }
 
 m.addEventListener( "a", e => console.log( "a=", e.nowval ) );
 m.addEventListener( "b", e => console.log( "b=", e.nowval ) );
 
+m.react();
+m.react();
+m.react();
+m.react();
+m.react();
+m.react();
 m.react();
 m.react();

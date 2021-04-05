@@ -7,7 +7,11 @@ type literal =
     | INT of int
     | STRING of string
     | BOOL of bool
-
+    
+type param = 
+    | IN of string
+    | OUT of string 
+    | Data of string
 
 type expression = 
     | Unit
@@ -35,12 +39,11 @@ type expression =
     | Return of expression 
     | Break of expression 
     | Trap of expression * expression
+    | Run of expression
+    | FunctionExpr of param list * expression
 
 
-type param = 
-    | IN of string
-    | OUT of string 
-    | Data of string
+
 
 type statement = 
     | ImportStatement of string

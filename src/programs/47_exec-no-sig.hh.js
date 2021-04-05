@@ -4,14 +4,13 @@ const hh = require( "hiphop" );
 
 hiphop module prg( O, OT ) {
    fork {
-      async {
+      async OT{
 	 console.log( "Oi." );
 	 setTimeout( () => {
 	    console.log( "Oi timeout." );
 	    this.notify( 5, false );
 	 }, 3000 );
       }
-      emit OT();
    } par {
       emit O();
    }
@@ -24,8 +23,5 @@ machine.react();
 machine.react();
 machine.react();
 console.log( "......." );
-setTimeout( function() {
-   machine.react()
-   machine.react()
-}, 5000 );
+
 

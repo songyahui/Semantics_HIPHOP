@@ -16,7 +16,7 @@ hiphop module prg( in R, O, OT, in T ) {
 		  self.notify( glob++ , false );
 		 }, 1000, this);
 	    }
-	 }
+	 };
 	 emit OT( T.nowval);
       } par {
 	 emit O();
@@ -25,19 +25,6 @@ hiphop module prg( in R, O, OT, in T ) {
 }
 
 var machine = new hh.ReactiveMachine( prg, "exec" );
-machine.debug_emitted_func = console.log
+machine.debug_emitted_func = console.log;
 
-machine.react()
-
-setTimeout( function() {
-   machine.inputAndReact( "R" )
-}, 500 );
-
-setTimeout( function() {
-   machine.react()
-}, 1100 );
-
-setTimeout( function() {
-   machine.react()
-}, 2000 );
-
+machine.react();

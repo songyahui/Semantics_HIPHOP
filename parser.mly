@@ -10,7 +10,7 @@
 %token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
-%token RETURN BREAK COLON ELSE TRY CATCH
+%token RETURN BREAK COLON ELSE TRY CATCH RUN
 
 
 
@@ -64,7 +64,7 @@ maybeContinue:
 
 expression:
 | LPAR ex = expression RPAR {ex}
-| LBRACK ex = expression RBRACK {ex}
+| LBRACK ex = expression_shell RBRACK {ex}
 | NEW ex = expression {NewExpr ex}
 | b = binary {b}
 | EMIT  ex = VAR LPAR obj = maybeExpr RPAR {Emit (ex,obj) }
@@ -81,6 +81,9 @@ expression:
 | ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK {Async (str, ex1)}
 | RETURN ex =  expression {Return ex}
 | BREAK ex =  expression {Break ex}
+| RUN ex = expression {Run ex}
+| FUNCTION LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK simiOrnot{FunctionExpr (parm, ex)}
+
 
 maybeElse:
 | {None}
@@ -97,6 +100,8 @@ maybePar:
 
 
 expr_aux:
+| {Unit}
+| LPAR ex = expr_aux RPAR {ex}
 | l = literal {Literal l }
 | str = VAR ex = varOraccess 
   {

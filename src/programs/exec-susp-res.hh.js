@@ -1,7 +1,7 @@
 "use hiphop"
 "use hopscript"
 
-/* check if semantics of suspends / resume is correct when a task is over */
+// check if semantics of suspends / resume is correct when a task is over 
 
 const hh = require( "hiphop" );
 
@@ -21,11 +21,11 @@ hiphop module prg( in RESS, in S, O, OT, in T ) {
 	 } resume {
 	    console.log( "resumed.");
 	 }
-      }
+      };
       emit OT( T.nowval );
    } par {
       emit O();
-   }
+   };
 
    await( RESS.now );
    emit OT( T.nowval );
@@ -34,18 +34,18 @@ hiphop module prg( in RESS, in S, O, OT, in T ) {
 var machine = new hh.ReactiveMachine( prg, "exec" );
 machine.debug_emitted_func = console.log;
 
-machine.react()
-machine.inputAndReact( "S" )
-machine.inputAndReact( "S" )
-machine.inputAndReact( "S" )
-machine.inputAndReact( "S" )
-machine.react()
-machine.react()
-machine.inputAndReact( "S" )
+machine.react();
+machine.inputAndReact( "S" );
+machine.inputAndReact( "S" );
+machine.inputAndReact( "S" );
+machine.inputAndReact( "S" );
+machine.react();
+machine.react();
+machine.inputAndReact( "S" );
 
 setTimeout( function() {
-   machine.react()
-   machine.inputAndReact( "RESS" )
-   machine.inputAndReact( "S" )
-   machine.react()
+   machine.react();
+   machine.inputAndReact( "RESS" );
+   machine.inputAndReact( "S" );
+   machine.react();
 }, 2000 );
