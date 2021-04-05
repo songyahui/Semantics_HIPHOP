@@ -64,12 +64,14 @@ rule token = parse
 | "function" {FUNCTION}
 | "return" {RETURN}
 | "break" {BREAK}
+| "else" {ELSE}
 | "=>" {IMPLY}
 | '(' { LPAR }
 | ')' { RPAR }
 | '{' { LBRACK  }
 | '}' { RBRACK }
 | '.' { CONCAT }
+| ':' { COLON }
 | id as str { VAR str }
 | '+' { PLUS }
 | '-' { MINUS }
@@ -118,7 +120,7 @@ and read_string buf = parse
 
 
 (*
-| ':' { COLON }
+
 | '~' {NEGATION}
 | float { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
 | '[' { LBrackets }

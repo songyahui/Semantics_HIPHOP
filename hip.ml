@@ -44,11 +44,16 @@ let rec string_of_expression (expr: expression): string =
   | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
   | Return ex -> "return " ^ string_of_expression ex
   | Break ex -> "Break " ^ string_of_expression ex
+  | Trap (ex1, ex) -> "trap " ^ string_of_expression ex1 ^" : "^ string_of_expression ex 
 
   | Yield -> "yield"
   | Halt -> "Halt"
   | Signal str -> "signal "^ str
-  | Present (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
+  | Present (ex1, ex2, ex3) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2 ^ (
+    match ex3 with 
+    | None -> ""
+    | Some ex -> "else " ^ string_of_expression ex
+  )
   
 
   ;;

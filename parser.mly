@@ -10,7 +10,7 @@
 %token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
-%token RETURN BREAK
+%token RETURN BREAK COLON ELSE
 
 
 
@@ -75,11 +75,15 @@ expression:
 | ABORT LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
 | YIELD {Yield}
 | SIGNAL ex = VAR {Signal ex}
-| IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Present (ex, ex1)}
+| IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
 | HALT {Halt}
 | ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK {Async (str, ex1)}
 | RETURN ex =  expression {Return ex}
 | BREAK ex =  expression {Break ex}
+
+maybeElse:
+| {None}
+|  ELSE LBRACK ex = expression_shell RBRACK {Some ex}
 
 maybeExpr:
 | {None}
@@ -119,6 +123,7 @@ binary :
   | None -> ex1 
   | Some (Left (str, ex2)) -> 
     if String.compare str "=>" == 0 then Lambda (ex1, ex2)
+    else if String.compare str ":" == 0 then Trap (ex1, ex2)
     else BinOp (str, ex1, ex2)
   | Some (Right (obj)) -> FunctionCall (ex1, obj)
 }
@@ -140,6 +145,8 @@ binary_aux:
 | LTEQ e2 = expression   {Left ( "<=", e2)}
 | GTEQ e2 = expression   {Left ( ">=", e2)}
 | IMPLY e2 = expression   {Left ( "=>", e2)}
+| COLON LBRACK e2 = expression_shell RBRACK {Left(":", e2)}
+
 
 
 statement:

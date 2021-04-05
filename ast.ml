@@ -28,12 +28,13 @@ type expression =
     | Yield
     | Halt
     | Signal of string
-    | Present of expression * expression 
+    | Present of expression * expression * expression option
     | Async of string * expression 
     | Lambda of expression * expression
     | Continue of expression * expression 
     | Return of expression 
     | Break of expression 
+    | Trap of expression * expression
 
 
 type param = 
