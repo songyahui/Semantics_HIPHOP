@@ -1,6 +1,20 @@
 (* Hiphop.js Syntax *)
 (*-| Representations for modules' exports.*)
 
+
+(*
+
+es: 
+  | Bottom ⏊   _|_ 
+  | Empty  𝝐    emp 
+  | Instant  of Signals.t   {B} {B, A} {}
+  | Await    of Signals.event   C?
+  | Sequence of instants * instants    {B}·{C} //es. es
+  | Union    of instants * instants  es \/ es    {B}·{C} \/ A?·{C}
+  | Parallel of instants * instants  (es) || es
+  | Kleene   of instants   ()^*
+*)
+
 type ('a, 'b, 'c)  either = Left of 'a | Right of 'b 
 
 type literal = 
