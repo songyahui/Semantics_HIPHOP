@@ -6,9 +6,17 @@ function func() {
    console.log( "atom works!" );
 }
 
-hiphop module prg() {
+hiphop module prg() 
+   /*@ requires emp @*/
+   /*@ ensures  ({})^* @*/
+   /*@ ensures  ({A, B})^* @*/
+   /*@ ensures  ({A}.{B})^* @*/
+{
    loop {
       yield;
+      emit A;
+      yield;
+      emit B;
       hop { func() };
    }
 }
