@@ -66,14 +66,14 @@ expression:
 | LPAR ex = expression RPAR {ex}
 | LBRACK ex = expression_shell RBRACK {ex}
 | NEW ex = expression {NewExpr ex}
-| b = binary {b}
+| b = binary_continuation {b}
 | EMIT  ex = VAR LPAR obj = maybeExpr RPAR {Emit (ex,obj) }
 | AWAIT ex = expression {Await ex}
 | DO LBRACK ex1 = expression_shell RBRACK EVERY ex2 = expression {DoEvery (ex1, ex2)}
 | FORK LBRACK ex1 = expression_shell RBRACK PAR LBRACK ex2 = expression_shell RBRACK obj = maybePar {ForkPar (ex1::ex2::obj)}
 | LOOP LBRACK ex1 = expression_shell RBRACK {Loop ex1}
 | HOP LBRACK ex1 = expression_shell RBRACK {Hop ex1}
-| ABORT LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
+| ABORT ex = expression LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
 | YIELD {Yield}
 | SIGNAL ex = VAR {Signal ex}
 | IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
@@ -122,6 +122,18 @@ call_aux:
 call_aux1:
 | {[]}
 | COMMA obj = call_aux {obj}
+
+binary_continuation:
+| ex1 = binary v = binaryContinue {
+  match v with 
+  | None -> ex1 
+  | Some obj -> Continue (ex1, obj)
+  }
+
+binaryContinue:
+| {None}
+| CONCAT obj = binary_continuation {Some obj}
+
 
 binary :
 | ex1 = expr_aux v = maybebinary_aux {
