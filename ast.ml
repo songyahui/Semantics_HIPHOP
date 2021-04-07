@@ -71,7 +71,40 @@ type statement =
     | TryCatch of expression * expression * expression
 
 
-   
+
+type signal = One of string | Zero of string 
+
+(*signal set*)
+type instance = signal list ;;
+
+
+type terms = Var of string
+           | Number of int
+           | Plus of terms * terms
+           | Minus of terms * terms
+
+
+type es = Bot  (*_|_*)
+        | Emp  (* emp *)
+        | Wait of string 
+        | Instance of instance (*logical tick*) (* {} *)
+        | Cons of es * es (* .  *)
+        | Choice of es * es (* \/ *)
+        | Par of es * es (* ||  *)
+        | RealTime of es * terms (*real time tick*) (* es # t *)
+        | Kleene of es (* es^* *)
+
+(*Arithimetic pure formulae*)
+type pure = TRUE
+          | FALSE
+          | Gt of terms * terms
+          | Lt of terms * terms
+          | GtEq of terms * terms
+          | LtEq of terms * terms
+          | Eq of terms * terms
+          | PureOr of pure * pure
+          | PureAnd of pure * pure
+          | Neg of pure
 
 
 (*

@@ -4,6 +4,7 @@
 %token <string> STRING
 %token <string> VAR 
 %token <int> INTE
+%token <bool> TRUEE FALSEE 
 %token  LPAR RPAR SIMI  COMMA LBRACK RBRACK      
 %token  MINUS PLUS   
 %token EOF GT LT EQ  GTEQ LTEQ   CONCAT 
@@ -11,6 +12,8 @@
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
 %token RETURN BREAK COLON ELSE TRY CATCH RUN
+%token EMPTY REQUIRE ENSURE CONJ QUESTION LSPEC RSPEC TRUEToken  FALSEToken
+%token NEGATION SHARP POWER LBrackets RBrackets DISJ LTLNOT
 
 
 
@@ -204,3 +207,72 @@ parameter:
 maybeNext:
 | {None}
 | COMMA v = parameter {Some v}
+
+(* effects .......*)
+singleVAR: 
+| var = VAR {[(One var)]}
+| LTLNOT var = VAR {[(Zero var)]}
+
+
+existVar:
+| {[]}
+| p = singleVAR {p}
+| p1 = singleVAR  COMMA  p2 = existVar {append p1 p2 }
+
+term:
+| str = VAR { Var str }
+| n = INTE {Number n}
+| LPAR r = term RPAR { r }
+| a = term b = INTE {Minus (a, Number (0 -  b))}
+
+| LPAR a = term MINUS b = term RPAR {Minus (a, b )}
+
+| LPAR a = term PLUS b = term RPAR {Plus (a, b)}
+
+(*
+realtime:
+| EQ a = INTE {EqConst a}
+| GT a = INTE {Greater a}
+| LT a = INTE {LessThan a}
+| a = realtime CONJ b = realtime {RTAnd (a, b)}
+| a = realtime DISJ b = realtime {RTOr (a, b)}
+*)
+
+pure:
+| TRUEToken {TRUE}
+| FALSEToken {FALSE}
+| NEGATION LPAR a = pure RPAR {Neg a}
+| LPAR r = pure RPAR { r }
+| a = term GT b = term {Gt (a, b)}
+| a = term LT b = term {Lt (a, b)}
+| a = term GTEQ b = term {GtEq (a, b)}
+| a = term LTEQ b = term {LtEq (a, b)}
+| a = term EQ b = term {Eq (a, b)}
+| a = pure CONJ b = pure {PureAnd (a, b)}
+| a = pure DISJ b = pure {PureOr (a, b)}
+
+
+
+es:
+| EMPTY { Emp }
+| var = VAR QUESTION {Wait var}
+| LBRACK signals = existVar RBRACK 
+{
+  
+  Instance (signals) }
+  
+| LPAR r = es RPAR { r }
+| a = es SHARP b = term {RealTime (a, b) }
+| a = es CONCAT b = es { Cons(a, b) } 
+| a = es DISJ b = es { Choice(a, b) } 
+| a = es PAR b = es {Par (a, b )}
+| LPAR a = es RPAR POWER KLEENE {Kleene a}
+
+(*| LPAR r = es RPAR n = term { Ttimes (r,  n) }
+*)
+
+effect:
+| LPAR r = effect RPAR { r }
+| a = pure  CONJ  b= es  {[(a, b)]}
+| LPAR LBrackets nn= existVar RBrackets  eff= effect RPAR{
+  eff}

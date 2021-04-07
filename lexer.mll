@@ -69,7 +69,25 @@ rule token = parse
 | "catch" {CATCH}
 | "run" {RUN}
 | "=>" {IMPLY}
+| '#' { SHARP }
+| '^' { POWER } 
+| '~' {NEGATION}
+| "TRUE" { TRUEToken }
+| "FALSE" { FALSEToken }
+| "/*@" {LSPEC} 
+| "@*/" {RSPEC}
+| '?' {QUESTION}
+| "/\\" {CONJ}
+| "emp" { EMPTY } 
+| "require" {REQUIRE}
+| "ensure" {ENSURE}
+| "true" { TRUEE (bool_of_string (Lexing.lexeme lexbuf))}
+| "false" { FALSEE (bool_of_string (Lexing.lexeme lexbuf))}
 | '(' { LPAR }
+| "\\/" {DISJ}
+| '!' {LTLNOT}
+| '[' { LBrackets }
+| ']' { RBrackets }
 | ')' { RPAR }
 | '{' { LBRACK  }
 | '}' { RBRACK }
@@ -126,10 +144,9 @@ and read_string buf = parse
 
 | '~' {NEGATION}
 | float { FLOAT (float_of_string (Lexing.lexeme lexbuf)) }
-| '[' { LBrackets }
-| ']' { RBrackets }
+
 | "|-" {ENTIL}
-| "\\/" {DISJ}
+
 | "/*@" {LSPEC}
 | "@*/" {RSPEC}
 | "/\\" {CONJ}
