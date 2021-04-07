@@ -65,7 +65,9 @@ let string_of_statement (state) : string =
   | VarDeclear (str, ex) -> "var " ^ str ^" = "^ string_of_expression ex 
   | ConsDeclear (str, ex) -> "const " ^ str ^" = "^ string_of_expression ex 
   | Let (ex1, ex2) ->"let " ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
-  | ModduleDeclear (mn, p_li, ex, _, _) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
+  | ModduleDeclear (mn, p_li, ex, pre, post) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^")"^ 
+  string_of_effect pre ^ "\n" ^ string_of_effect post ^"\n" ^
+  "{" ^ string_of_expression ex ^"\n }"
   | FunctionDeclear (mn, p_li, ex) -> "function " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
   | Call (str_li, ex_li) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li    ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
   | Assign (str_li, ex) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li   ^ " = " ^ string_of_expression ex

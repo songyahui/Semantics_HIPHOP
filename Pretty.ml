@@ -4,6 +4,7 @@
 
 open List
 open Printf
+open Ast
 
 
 exception Foo of string
@@ -101,3 +102,103 @@ let rec input_lines file =
 ;;
 
 
+let string_of_state (state :signal):string = 
+  match state with 
+    One name -> name 
+  | Zero name -> "!"^name 
+  ;;
+
+
+let string_of_sl (sl: instance):string = 
+  List.fold_left (fun acc (sig_) -> 
+  acc ^ "," ^ 
+  string_of_state sig_ (*^ (
+    match n with 
+      None -> ";"
+    | Some n -> "(" ^ string_of_int n ^");"
+  )*)
+  ) "" sl
+;;
+
+let string_of_instance (mapping:instance) :string = 
+  let temp1 = "{" ^ string_of_sl mapping ^ "}" in 
+  temp1
+  ;;
+
+let rec string_of_terms (t:terms):string = 
+  match t with
+    Var name -> name
+  | Number n -> string_of_int n
+  | Plus (t1, t2) -> (string_of_terms t1) ^ ("+") ^ (string_of_terms t2)
+  | Minus (t1, t2) -> (string_of_terms t1) ^ ("-") ^ (string_of_terms t2)
+
+  ;;
+
+(*
+let string_of_promise (pro:promise) : string = 
+  match pro with 
+    Sing (s, arg) -> 
+    (
+    match arg with 
+      None -> ""
+    | Some (n) -> "(" ^ string_of_int n ^")"
+    )
+  | Count (t, (s, arg)) ->
+    "count("^string_of_terms t ^ ", "^
+    (
+    match arg with 
+      None -> ""
+    | Some (n) -> "(" ^ string_of_int n ^")"
+    ) 
+;;
+*)
+
+
+
+
+let rec string_of_es (es:es) :string = 
+  match es with 
+    Bot -> "_|_"  
+  | Emp -> "emp"
+  | Wait name -> name ^ "?"
+  | Instance ins  -> string_of_instance ins
+  | Cons (es1, es2) ->  "("^string_of_es es1 ^ " . " ^ string_of_es es2^")"
+  | Kleene esIn -> "(" ^ string_of_es esIn ^ ")*" 
+  (*| Ttimes (esIn, t) ->"(" ^ string_of_es esIn ^ ")" ^ string_of_terms t *)
+  | RealTime (es, t)-> "(" ^ string_of_es es ^ "#" ^string_of_terms t^")"
+  | Choice (es1, es2) -> "("^string_of_es es1 ^ " + " ^ string_of_es es2^")"
+  | Par (es1, es2) -> "("^string_of_es es1 ^ " || " ^ string_of_es es2^")"
+  ;;
+
+let rec string_of_terms (t:terms):string = 
+  match t with
+    Var name -> name
+  | Number n -> string_of_int n
+  | Plus (t1, t2) -> (string_of_terms t1) ^ ("+") ^ (string_of_terms t2)
+  | Minus (t1, t2) -> (string_of_terms t1) ^ ("-") ^ (string_of_terms t2)
+
+  ;;
+
+(*To pretty print pure formulea*)
+let rec string_of_pure (p:pure):string = 
+  match p with
+    TRUE -> "true"
+  | FALSE -> "false"
+  | Gt (t1, t2) -> (string_of_terms t1) ^ ">" ^ (string_of_terms t2)
+  | Lt (t1, t2) -> (string_of_terms t1) ^ "<" ^ (string_of_terms t2)
+  | GtEq (t1, t2) -> (string_of_terms t1) ^ ">=" ^ (string_of_terms t2)
+  | LtEq (t1, t2) -> (string_of_terms t1) ^ "<=" ^ (string_of_terms t2)
+  | Eq (t1, t2) -> (string_of_terms t1) ^ "=" ^ (string_of_terms t2)
+  | PureOr (p1, p2) -> "("^string_of_pure p1 ^ "\\/" ^ string_of_pure p2^")"
+  | PureAnd (p1, p2) -> "("^string_of_pure p1 ^ "/\\" ^ string_of_pure p2^")"
+  | Neg p -> "(!" ^ "(" ^ string_of_pure p^"))"
+  ;; 
+
+
+let rec string_of_effect(eff:effect): string = 
+  match eff with 
+    [] -> ""
+  | [(p , es)] -> string_of_pure p ^ "&" ^ string_of_es es
+  | (p , es)::xs -> string_of_pure p ^ "&" ^ string_of_es es  ^ "\\/" ^ string_of_effect xs 
+  
+;;
