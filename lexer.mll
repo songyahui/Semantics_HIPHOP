@@ -68,21 +68,19 @@ rule token = parse
 | "try" {TRY}
 | "catch" {CATCH}
 | "run" {RUN}
+| "/*@" {LSPEC} 
+| "@*/" {RSPEC}
 | "=>" {IMPLY}
 | '#' { SHARP }
 | '^' { POWER } 
 | '~' {NEGATION}
-| "TRUE" { TRUEToken }
-| "FALSE" { FALSEToken }
-| "/*@" {LSPEC} 
-| "@*/" {RSPEC}
+| "true" { TRUEToken }
+| "false" { FALSEToken }
 | '?' {QUESTION}
 | "/\\" {CONJ}
 | "emp" { EMPTY } 
-| "require" {REQUIRE}
-| "ensure" {ENSURE}
-| "true" { TRUEE (bool_of_string (Lexing.lexeme lexbuf))}
-| "false" { FALSEE (bool_of_string (Lexing.lexeme lexbuf))}
+| "requires" {REQUIRE}
+| "ensures" {ENSURE}
 | '(' { LPAR }
 | "\\/" {DISJ}
 | '!' {LTLNOT}

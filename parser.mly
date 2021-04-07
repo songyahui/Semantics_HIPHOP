@@ -4,7 +4,6 @@
 %token <string> STRING
 %token <string> VAR 
 %token <int> INTE
-%token <bool> TRUEE FALSEE 
 %token  LPAR RPAR SIMI  COMMA LBRACK RBRACK      
 %token  MINUS PLUS   
 %token EOF GT LT EQ  GTEQ LTEQ   CONCAT 
@@ -176,7 +175,9 @@ simiOrnot:
 statement:
 | s = STRING simiOrnot{ImportStatement s}
 | VARKEY str = VAR EQ ex = expression SIMI {VarDeclear (str, ex) }
-| HIPHOP MODULE  mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex)}
+| HIPHOP MODULE  mn = VAR LPAR parm = parameter RPAR 
+LSPEC REQUIRE pre = effect RSPEC LSPEC ENSURE post = effect RSPEC
+LBRACK   ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex, pre, post)}
 | CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
 | LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
 | FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK simiOrnot{FunctionDeclear (mn, parm, ex)}
@@ -194,6 +195,7 @@ callOrAssign:
 param:
 | IN str = VAR {IN str}
 | OUT str = VAR {OUT str}
+| VARKEY str = VAR {Data str}
 | str = VAR {Data str}
 
 
@@ -273,6 +275,6 @@ es:
 
 effect:
 | LPAR r = effect RPAR { r }
-| a = pure  CONJ  b= es  {[(a, b)]}
-| LPAR LBrackets nn= existVar RBrackets  eff= effect RPAR{
-  eff}
+| a = pure  COLON  b= es  {[(a, b)]}
+| a = effect  DISJ  b=effect  { List.append a b }
+

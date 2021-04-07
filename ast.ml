@@ -14,6 +14,42 @@ es:
   | Parallel of instants * instants  (es) || es
   | Kleene   of instants   ()^*
 *)
+type signal = One of string | Zero of string 
+
+(*signal set*)
+type instance = signal list ;;
+
+
+type terms = Var of string
+           | Number of int
+           | Plus of terms * terms
+           | Minus of terms * terms
+
+
+type es = Bot  (*_|_*)
+        | Emp  (* emp *)
+        | Wait of string 
+        | Instance of instance (*logical tick*) (* {} *)
+        | Cons of es * es (* .  *)
+        | Choice of es * es (* \/ *)
+        | Par of es * es (* ||  *)
+        | RealTime of es * terms (*real time tick*) (* es # t *)
+        | Kleene of es (* es^* *)
+
+(*Arithimetic pure formulae*)
+type pure = TRUE
+          | FALSE
+          | Gt of terms * terms
+          | Lt of terms * terms
+          | GtEq of terms * terms
+          | LtEq of terms * terms
+          | Eq of terms * terms
+          | PureOr of pure * pure
+          | PureAnd of pure * pure
+          | Neg of pure
+
+
+type effect = (pure * es) list 
 
 type ('a, 'b, 'c)  either = Left of 'a | Right of 'b 
 
@@ -63,7 +99,7 @@ type statement =
     | ImportStatement of string
     | VarDeclear of string * expression 
     | ConsDeclear of string * expression 
-    | ModduleDeclear of string * param list * expression
+    | ModduleDeclear of string * param list * expression * effect * effect
     | Let of expression * expression
     | FunctionDeclear of string * param list * expression
     | Call of string list * expression list 
@@ -72,39 +108,6 @@ type statement =
 
 
 
-type signal = One of string | Zero of string 
-
-(*signal set*)
-type instance = signal list ;;
-
-
-type terms = Var of string
-           | Number of int
-           | Plus of terms * terms
-           | Minus of terms * terms
-
-
-type es = Bot  (*_|_*)
-        | Emp  (* emp *)
-        | Wait of string 
-        | Instance of instance (*logical tick*) (* {} *)
-        | Cons of es * es (* .  *)
-        | Choice of es * es (* \/ *)
-        | Par of es * es (* ||  *)
-        | RealTime of es * terms (*real time tick*) (* es # t *)
-        | Kleene of es (* es^* *)
-
-(*Arithimetic pure formulae*)
-type pure = TRUE
-          | FALSE
-          | Gt of terms * terms
-          | Lt of terms * terms
-          | GtEq of terms * terms
-          | LtEq of terms * terms
-          | Eq of terms * terms
-          | PureOr of pure * pure
-          | PureAnd of pure * pure
-          | Neg of pure
 
 
 (*
