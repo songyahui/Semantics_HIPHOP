@@ -99,7 +99,7 @@ type statement =
     | ImportStatement of string
     | VarDeclear of string * expression 
     | ConsDeclear of string * expression 
-    | ModduleDeclear of string * param list * expression * effect * effect
+    | ModduleDeclear of string * param list * expression * string * string
     | Let of expression * expression
     | FunctionDeclear of string * param list * expression
     | Call of string list * expression list 

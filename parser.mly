@@ -176,7 +176,7 @@ statement:
 | s = STRING simiOrnot{ImportStatement s}
 | VARKEY str = VAR EQ ex = expression SIMI {VarDeclear (str, ex) }
 | HIPHOP MODULE  mn = VAR LPAR parm = parameter RPAR 
-LSPEC REQUIRE pre = effect RSPEC LSPEC ENSURE post = effect RSPEC
+LSPEC REQUIRE pre = STRING RSPEC LSPEC ENSURE post = STRING RSPEC
 LBRACK   ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex, pre, post)}
 | CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
 | LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
@@ -210,7 +210,9 @@ maybeNext:
 | {None}
 | COMMA v = parameter {Some v}
 
-(* effects .......*)
+
+
+(* effects SYH.......*)
 singleVAR: 
 | var = VAR {[(One var)]}
 | LTLNOT var = VAR {[(Zero var)]}

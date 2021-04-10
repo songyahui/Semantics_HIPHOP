@@ -59,6 +59,13 @@ let rec string_of_expression (expr: expression): string =
   
 
   ;;
+
+let rec show_effects_list (eff_li: Sleek.effects list) : string =
+  match eff_li with 
+  | [] -> ""
+  | x :: xs -> Sleek.show_effects x ^ "\\/" ^ show_effects_list xs ;;
+
+
 let string_of_statement (state) : string = 
   match state with
   | ImportStatement str -> str 
@@ -66,7 +73,7 @@ let string_of_statement (state) : string =
   | ConsDeclear (str, ex) -> "const " ^ str ^" = "^ string_of_expression ex 
   | Let (ex1, ex2) ->"let " ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
   | ModduleDeclear (mn, p_li, ex, pre, post) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^")"^ 
-  string_of_effect pre ^ "\n" ^ string_of_effect post ^"\n" ^
+  show_effects_list (Sleek.parse_effects pre) ^ "\n" ^ show_effects_list (Sleek.parse_effects post) ^"\n" ^
   "{" ^ string_of_expression ex ^"\n }"
   | FunctionDeclear (mn, p_li, ex) -> "function " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
   | Call (str_li, ex_li) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li    ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
