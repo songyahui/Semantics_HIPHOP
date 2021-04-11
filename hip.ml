@@ -88,6 +88,48 @@ let rec string_of_program (states : statement list) : string =
   | x::xs -> string_of_statement x ^ "\n\n" ^ string_of_program xs 
   ;;
 
+let string_of_prog_states (ps: prog_states) : string = 
+  List.fold_left  (fun acc (_, _, instance,  _) -> 
+    acc^  " : " ^ string_of_instance instance  
+  ) " "ps
+  ;;
+
+let forward (env: string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
+  match prog with 
+  | Halt -> current
+  | _ -> print_string (List.hd env ^ string_of_expression prog ^ string_of_program  full); current
+  ;;
+
+
+
+
+let forward_verification (prog : statement) (whole: statement list): string = 
+  match prog with 
+  | ModduleDeclear (mn, p_li, ex, pre, post) -> 
+    print_string (string_of_program [prog]^"\n");
+    let pre = Sleek.parse_effects pre in 
+    let post = Sleek.parse_effects post in 
+    let inp_sig = List.fold_left (fun acc a ->  List.append acc 
+      (match a with 
+      | OUT str -> [str]
+      | _ -> []) 
+      ) [] p_li in 
+    let raw_final = (*effects_inference*) forward inp_sig (*pre*) [] ex whole in 
+    print_string (string_of_prog_states raw_final);
+    let final = (Sleek.True, Sleek.Bottom) in 
+    
+    let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = final; rhs = List.hd (post) })  in 
+    "\n========== Module: "^ mn ^" ==========\n" ^
+    "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
+    "[Post Condition] " ^ show_effects_list post ^"\n"^
+    "[Final  Effects] " ^ show_effects_list [final] ^"\n\n"^
+    (*(string_of_inclusion final_effects post) ^ "\n" ^*)
+    "[TRS: Verification for Post Condition]\n" ^ 
+    Sleek.show_history  history    ~verbose
+    
+  | _ -> ""
+  ;;
+
 
 
 let () =
@@ -100,9 +142,7 @@ print_string (inputfile ^ "\n" ^ outputfile^"\n");*)
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in
       let progs = Parser.program Lexer.token (Lexing.from_string line) in
       
-
-      print_string (string_of_program progs^"\n");
-      
+      print_string (List.fold_left (fun acc a -> acc ^ forward_verification a progs) "" progs ) ; 
       flush stdout;                (* 现在写入默认设备 *)
       close_in ic                  (* 关闭输入通道 *)
 
