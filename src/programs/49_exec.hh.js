@@ -3,6 +3,8 @@
 const hh = require( "hiphop" );
 
 hiphop module prg( in T, O, OT ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ (OT || O)^* @*/
    fork {
       async T {
 	 console.log( "Oi." );

@@ -16,6 +16,8 @@ function foo3( evt ) {
 
 
 hiphop module prg( in I, out O ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ (I.now?.{O(I.nowval)})^* @*/
    loop {
       await( I.now );
       emit O( I.nowval );

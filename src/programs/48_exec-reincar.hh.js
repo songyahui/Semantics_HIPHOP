@@ -6,6 +6,8 @@ const hh = require( "hiphop" );
 var glob = 5;
 
 hiphop module prg( in R, O, OT, in T ) {
+    /*@ requires TRUE /\ emp @*/
+   /*@ ensures TRUE /\ (OT || O)^* @*/
    do {
       fork {
 	 abort( R.now ) {

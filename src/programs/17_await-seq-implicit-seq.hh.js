@@ -3,6 +3,8 @@
 var hh = require( "hiphop" );
 
 hiphop module prg( in A, in B, out O ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ (A.now?.B.now?.{O}) @*/
    await( A.now );
    await( B.now );
    emit O();

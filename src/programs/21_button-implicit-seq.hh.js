@@ -22,6 +22,8 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 		      out TOGGLE_ALARM_COMMAND,
 		      out STOP_ALARM_BEEP_COMMAND,
 		      out EXIT_SET_ALARM_MODE_COMMAND ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ (WATCH_MODE_COMMAND.(LL.now || (LR.now.TOGGLE_24H_MODE_COMMAND)^*)^*)^* @*/
    // global loop
    fork {
       loop {

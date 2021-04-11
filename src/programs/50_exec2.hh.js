@@ -4,6 +4,8 @@
 const hh = require( "hiphop" );
 
 hiphop module prg( O ) {
+    /*@ requires TRUE /\ emp @*/
+   /*@ ensures TRUE /\ emp @*/
    async O {
       setTimeout( () => this.notify( 5 ), 3000 );
    }

@@ -8,6 +8,8 @@ function foo( evt ) {
 };
 
 hiphop module prg( in I, out O ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ (I.now?.{O(I.nowval)}) @*/
    await( I.now );
    emit O( I.nowval );
 }

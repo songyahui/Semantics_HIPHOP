@@ -3,6 +3,8 @@
 const hh = require( "hiphop" );
 
 hiphop module prg( A, B, C ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ ((A || {})^* || (B || {})^*) @*/
    fork {
       loop {
 	 if( B.nowval > 3 ) {emit A()};
