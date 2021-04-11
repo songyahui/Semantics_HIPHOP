@@ -4,6 +4,8 @@
 const hh = require( "hiphop" );
 
 hiphop module prg( in X, Y, Z ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ (X.now?.(Y.X)^*.Z) @*/
    await( X.now );
 
    do {

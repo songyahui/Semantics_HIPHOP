@@ -3,6 +3,8 @@
 var hh = require( "hiphop" );
 
 hiphop module prg( J ) {
+    /*@ requires TRUE /\ emp @*/
+   /*@ ensures TRUE /\ ( (J || {} )|| I) @*/
    signal I;
    
    fork {

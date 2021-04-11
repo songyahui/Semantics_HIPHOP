@@ -1,6 +1,8 @@
 "use hopscript"
 
 hiphop module M1( a ) {
+    /*@ requires TRUE /\ emp @*/
+   /*@ ensures TRUE /\ a.a? @*/
    emit a( 100 );
    async a {
       this.notify( 10 );

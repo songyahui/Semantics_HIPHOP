@@ -7,6 +7,8 @@ function sum( arg1, arg2 ) {
 };
 
 hiphop module prg( O ) {
+    /*@ requires TRUE /\ emp @*/
+   /*@ ensures TRUE /\ (S.O)^* @*/
    loop {
       signal S ;//= 1;
 

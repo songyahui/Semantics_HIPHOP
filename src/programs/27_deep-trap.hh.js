@@ -3,6 +3,8 @@
 const hh = require( "hiphop" );
 
 hiphop module prg() {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ emp @*/
    t: {
       t2: {
 	 break t2;
