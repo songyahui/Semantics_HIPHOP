@@ -1,6 +1,7 @@
 
 open Pretty
 open Ast
+open List
 
 exception Foo of string
 
@@ -8,210 +9,23 @@ exception Foo of string
 prog_states = 
 (Sleek.pi * Sleek.instants * instance option * string option) list 
 
-let rec zip a b =
-  match (a,b) with
-    ([],[]) -> []
-    | ([],n::ns)-> []
-    | (n::ns,[]) -> []
-    | (k::ks, h::hs) -> (k,h)::zip ks hs ;;
-;;
+
 *)
 
-
-
-let rec forward (current:prog_states) (prog:expression) (full: statement list): prog_states =
-
-  match prog with 
-  | Unit -> current
-  | Halt -> 
-      List.map (fun state ->
-        match state with 
-        | (pi, his, Some (_, cur), k) -> (pi, Sleek.Sequence (his, Sleek.Instant cur), None,  k)
-        | (_, _, None, _) -> state
-      )  current
-  
-  | Emit (s, _ ) -> 
-      List.map (fun state ->
-        match state with 
-        | (pi, his, Some (t, cur), k) -> (pi, his , Some (t, Sleek__Signals.merge cur (Sleek__Signals.from s)),  k)
-        | (_, _, None, _) -> state
-      )  current
-
-  | Signal (_, p) -> forward current p full 
-
-(*
-  | ForkPar (e1::e2::_) -> 
-      let states1 = forward current e1 full in 
-      let states2 = forward current e2 full in 
-      let zip = zip states1 states2 in 
-      List.map (fun acc a -> 
-        (
-          match a with 
-          | ((p1, his1, cur1, k1),(p2, his2, cur2, k2)) -> (Sleek.And(p1, p2), Sleek.Parallel (his1,his2))  
-        )
-      
-      :: acc ) zip 
-
-   *)   
-
-  
-  | _ -> print_string( string_of_program full ) ;current
- 
+let rec lengthOfEs (es:Sleek.instants) : int =
+  match es with 
+    Bottom  -> raise (Foo "Bottom does not have length")
+  | Empty -> 0
+  | Await _ -> 1
+  | Instant _ -> 1
+  | Sequence (es1, es2) -> lengthOfEs es1 + lengthOfEs es2
+  | Union (es1, es2) -> if lengthOfEs es1 > lengthOfEs es2 then lengthOfEs es1 else lengthOfEs es2
+  | Parallel (es1, es2) -> if lengthOfEs es1 > lengthOfEs es2 then lengthOfEs es1 else lengthOfEs es2
+  | Timed (es1, _) -> lengthOfEs es1 
+  | Kleene es1 -> lengthOfEs es1 
   ;;
-(*
 
-
-  | Emit (s, _ ) -> 
-    List.map (fun (pi, his, cur, k) ->(pi, his , ((One s)::cur )(*setState cur s 1*), k))  current (* flag 0 - Zero, 1- One, 2-Wait *)
-  | Await (s) -> 
-    List.map (fun (pi, his, cur, k) ->(pi, Cons (his, Cons(Wait s , Instance cur)) , [] (*setState cur s 2*), k))  current (* flag 0 - Zero, 1- One, 2-Wait *)
-
-  | Present (s, p1, p2) ->
-    List.fold_left (fun acc (pi, his, cur, k) -> 
-      List.append acc (
-          if isPresent s cur then forward env current p1 full 
-          else forward env current p2 full) 
-    ) [] current
-
-  
-  | Async (s, p) -> 
-    List.map (fun (pi1, his1, cur1, k1) ->
-      let term = Var getAnewVar in 
-      (PureAnd (pi1, GtEq (term, Number delay)), RealTime (Cons (his1, Instance cur1), term), [(One s)](*setState (make_nothing env) s 1*), k1)
-        ) (forward env current p full)
-
-  | Assert eff -> 
-
-      let (_, re, _, _) = check_containment (List.map (fun (pi, his, cur, k) -> (pi, Cons(his, Instance cur))) current) eff in 
-      if re then current 
-      else raise (Foo "assertion failed")
-   
-  | Seq (p1, p2) -> 
-    
-    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
-    List.append acc (  
-    (match k1 with 
-      Some str -> [(pi1, his1, cur1, k1)] 
-    | None -> forward env [(pi1, his1, cur1, k1)] p2 full
-    )
-    )
-    ) [] ( forward env current p1 full)
-    
-
-  | Trap (mn, p1) -> 
-    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
-      List.append acc (  
-    
-    [(match k1 with 
-      Some str -> if String.compare str mn == 0 then (pi1, his1, cur1, None) else (pi1, his1, cur1, k1)
-    | None -> (pi1, his1, cur1, k1)
-    )]
-      )
-    ) [] ( forward env current p1 full)
-
-  | Break name -> 
-    List.map (fun (pi, his, cur, k) ->
-      (match k with 
-        Some str -> (pi, his, cur, k)
-      | None -> (pi, his, cur, Some name)
-      )
-    ) current
-
-  | Abort (delay, p) ->
-    List.map (fun (pi1, his1, cur1, k1) ->
-    let term = Var getAnewVar in 
-    (PureAnd (pi1, Lt (term, Number delay)), RealTime (Cons (his1, Instance cur1),  term) , [] (*make_nothing env*), k1)
-    )
-    (forward env current p full)
-
-  | Run (mn, _) ->
-  List.fold_left (fun acc (pi, his, cur, k) ->
-
-    List.append acc (  
-      let (fun_name, inp, outp, precon, postcon, _) = findProg mn full in 
-      let (_, re, _, _) = check_containment [(pi, Cons (his, Instance cur))] precon in 
-      
-      
-      List.map (fun (pi1, es1) -> 
-      if re then (PureAnd (pi, pi1), Cons (Cons (his, Instance cur), es1), make_nothing env, k)
-      else raise (Foo "precondiction check failed")
-      ) precon
-    )
-   ) [] current 
-
-  | Loop p ->
-List.flatten(
-  List.fold_left (fun acc (pi, his, cur, k) ->
-
-
-  List.append acc (  
-   
-    List.map (fun (pi1, his1, cur1, k1) -> 
-    (match k1 with 
-      Some trap -> [(PureAnd (pi, pi1), Cons (Cons (his, Instance cur), his1), cur1, k1)]
-    | None -> 
-      List.map ( fun ins ->
-
-      match (ins, cur1) with 
-      | ([], _) -> (pi1, Cons (Cons (his, Instance cur), Kleene (Cons (derivativePar (SL ins) his1, Instance cur1))), make_nothing env, k1)
-      | (_, []) -> (pi1, Cons (Cons (his, Instance (List.append cur ins)), Kleene (Cons (derivativePar (SL ins) his1, Instance ins))), make_nothing env, k1)
-      | _ -> (pi1, Cons (Cons (his, Instance (List.append cur ins)), Kleene (Cons (derivativePar (SL ins) his1, Instance (List.append cur1 ins)))), make_nothing env, k1)
-      ) (fst_simple his1)
-    
-    )
-    ) (forward env [(pi, Emp, [], k)] p full)
-
-  )
-  
-  
-  ) [] current )
-
-  | Fork (p1, p2) -> 
-  List.flatten (
-  List.fold_left (fun acc (pi, his, cur, k) ->
-
-  List.append acc (  
-
-  let temp1 = forward env [(pi, Emp, cur, k)] p1 full in 
-  let temp2 = forward env [(pi, Emp, cur, k)] p2 full in 
-  let combine = zip (temp1, temp2) in 
-
-
-
-  List.map (fun (  (pi1, his1, cur1, k1),(pi2, his2, cur2, k2)) ->
-
- 
-  match (k1, k2) with
-    (None, None) -> let (pi_new, es_new) = parallelES pi1 pi2 (Cons (his1, Instance cur1)) (Cons (his2, Instance cur2)) in
-      
-    List.map 
-      (fun (pi_new_, his_new, cur_new) -> 
-        (pi_new_, Cons(his, his_new), cur_new, None) )
-      (splitEffects  (normalES es_new pi_new) pi_new)      
-      
-      
-  | (Some trap, None) -> let (pi_new, es_new) = parallelES pi1 pi2 (Cons (his1, Instance cur1)) (Cons (his2, Instance cur2)) in
-                    
-      List.map (
-        fun (pi_new_, his_new, cur_new) -> 
-          (pi_new, Cons(his, his_new), cur_new, k1) )
-      (splitEffects  (normalES es_new pi_new) pi_new)        
-
-  
-  | (None, Some trap) -> let (pi_new, es_new) = parallelES pi1 pi2 (Cons (his1, Instance cur1)) (Cons (his2, Instance cur2)) in
-      List.map (
-        fun (pi_new_, his_new, cur_new) -> 
-        (pi_new, Cons(his, his_new), cur_new, k2) )
-      (splitEffects  (normalES es_new pi_new) pi_new)                    
-
-  | (Some t1, Some t2) -> raise (Foo ("not defined curretly"))
-
-  ) combine
-  )) [] current
-  )
-  *)
-
-let rec splitEffects (es:Sleek.instants) (pi:Sleek.pi) :(Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option) list = 
+let rec splitEffects (es:Sleek.instants) (pi:Sleek.pi) :prog_states= 
   match es with 
   | Bottom -> []
   | Empty -> [(pi, Empty, Some (None, Sleek__Signals.empty))]
@@ -249,11 +63,354 @@ let rec splitEffects (es:Sleek.instants) (pi:Sleek.pi) :(Sleek.pi* Sleek.instant
       | (p, e, None) ->  (p, e, None)
     ) temp
 
-  | Parallel (_, _) -> raise (Foo " I don't know how to split a Parallel")
-    
+  | Parallel (es1, es2) -> 
+    let len1 = lengthOfEs es1 in 
+    let len2 = lengthOfEs es2 in 
+    if len1 > len2 then 
+      let temp = splitEffects es1 pi in 
+      List.map (fun (p, e, i) -> (p, Sleek.Parallel (e, es2), i)) temp
+    else if len1 < len2 then 
+      let temp = splitEffects es2 pi in 
+      List.map (fun (p, e, i) -> (p, Sleek.Parallel (e, es1), i)) temp
+    else 
+      let temp1 = splitEffects es1 pi in 
+      let temp2 = splitEffects es2 pi in 
+      let combine = zip (temp1, temp2) in 
+      List.map (fun ((p1, e1, i1), (p2, e2, i2)) -> (Sleek.And(p1, p2), Sleek.Parallel(e1, e2), 
+      (
+        match (i1, i2) with 
+        | (Some(None,cur1 ), Some(None,cur2 )) -> Some (None, Sleek__Signals.merge cur1 cur2)
+        | _ -> None 
+      )
+      
+      )) combine
+
     
 
   ;;
+
+
+
+
+let rec fstPar (es:Sleek.instants) :parfst list = 
+  match es with 
+    Bottom -> []
+  | Empty -> []
+  | Await s -> [(W s)] 
+  | Instant ins ->  [(SL ins)]
+  | Sequence (es1 , es2) ->  if Sleek__Inference.nullable es1 then append (fstPar  es1) (fstPar  es2) else fstPar  es1
+  | Union (es1, es2) -> append (fstPar  es1) (fstPar  es2)
+  | Timed (es1, _) -> fstPar es1
+  | Kleene es1 -> fstPar  es1
+  | Parallel (_ , _) -> 
+    (raise (Foo "should not be here fstPar"))
+    (*let fst1 = fstPar es1 in
+    let fst2 = fstPar es2 in
+    let combine = zip (fst1,  fst2) in 
+    List.map (fun (a, b) -> 
+    
+    List.append a b) combine
+    *)
+  
+
+    ;;
+
+
+
+
+let rec derivativePar (fst: parfst) (es:Sleek.instants) : Sleek.instants =
+  match es with 
+  | Bottom ->  Bottom
+  | Empty ->  Bottom
+  | Await s -> 
+    (
+      match fst with 
+        W (f) ->  if Sleek__Signals.compare_event f s  then Empty else Bottom
+      | SL ins -> if Sleek__Signals.isSigOne s ins then Empty else Bottom
+    )
+  | Instant ins ->  
+    (
+      match fst with 
+        W f ->  if Sleek__Signals.isSigOne f ins then Empty else Bottom
+      | SL f -> if Sleek__Signals.(|-)  f ins then Empty else Bottom
+    )
+    
+  | Sequence (es1 , es2) -> 
+      let esF = derivativePar fst es1  in 
+      let esL = Sleek.Sequence(esF,  es2) in  
+      if Sleek__Inference.nullable es1 
+      then 
+          let esR =  derivativePar fst es2 in 
+          Union (esL, esR)
+      else esL
+
+  | Union (es1, es2) -> 
+      let temp1 =  derivativePar fst es1  in
+      let temp2 =  derivativePar fst es2  in 
+      Union (temp1,temp2)
+
+  | _ -> raise (Foo "derivativePar error")
+
+  
+
+  ;;
+
+
+let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek.instants) : (Sleek.pi * Sleek.instants) =
+  let norES1 = Sleek.normalize_es es1 in 
+  let norES2 = Sleek.normalize_es es2 in 
+
+  let fst1 = fstPar norES1 in
+  let fst2 = fstPar norES2 in 
+  let headcom = zip (fst1, fst2) in 
+  let esLIST = List.map (
+  fun (f1, f2) -> 
+
+    let der1 = Sleek.normalize_es  (derivativePar f1 norES1) in 
+    let der2 = Sleek.normalize_es  (derivativePar f2 norES2) in 
+
+    match (f1, f2) with  
+      (W _, W _ ) -> raise (Foo "there is a deadlock")
+    | (W s, SL ins) -> 
+      if Sleek__Signals.isSigOne s ins then 
+        parallelES pi1 pi2 der1 der2
+      else 
+        let (p, es) = parallelES pi1 pi2 es1 der2  in 
+        (p, Sequence (Instant ins, es))
+    | (SL ins, W s) -> 
+      if Sleek__Signals.isSigOne s ins then 
+        parallelES pi1 pi2 der1 der2
+      else 
+        let (p, es) = parallelES pi1 pi2 der1 es2  in 
+        (p, Sequence (Instant ins, es))
+    | (SL ins1, SL ins2) -> 
+      (match (der1, der2) with 
+      | (Empty, _) -> (True, Sequence (Instant (Sleek__Signals.merge ins1 ins2), der2))
+      | (_, Empty) -> (True, Sequence (Instant (Sleek__Signals.merge ins1 ins2), der1))
+      | (der1, der2) -> 
+        let (pi, es) = (parallelES pi1 pi2 der1 der2) in 
+        (pi, Sequence (Instant (Sleek__Signals.merge ins1 ins2), es))
+      
+    ) 
+
+
+
+
+    
+  ) headcom
+  in List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
+
+
+  
+ ;;
+
+let tAdd_None (t:Sleek__Signals.t option  ): (Sleek.term option * Sleek__Signals.t) option=
+  match t with
+  | None -> None
+  | Some ins -> Some (None, ins)
+  ;;
+
+
+let rec forward (current:prog_states) (prog:expression) (full: statement list): prog_states =
+
+  match prog with 
+  | Unit -> current
+  | Halt -> 
+      List.map (fun state ->
+        match state with 
+        | (pi, his, Some (_, cur)) -> (pi, Sleek.Sequence (his, Sleek.Instant cur), None)
+        | (_, _, None) -> state
+      )  current
+  
+  | Emit (s, _ ) -> 
+      List.map (fun state ->
+        match state with 
+        | (pi, his, Some (t, cur)) -> (pi, his , Some (t, Sleek__Signals.merge cur (Sleek__Signals.from s)))
+        | (_, _, None) -> state
+      )  current
+
+  | Signal (_, p) -> forward current p full 
+
+
+  | ForkPar (p1::p2::_) -> 
+    List.flatten (
+    List.fold_left (fun acc (pi, his, cur) ->
+  
+    List.append acc (  
+  
+    let temp1 = forward [(pi, Empty, cur)] p1 full in 
+    let temp2 = forward [(pi, Empty, cur)] p2 full in 
+    let combine = zip (temp1, temp2) in 
+  
+  
+  
+    List.map (fun (  (pi1, his1, cur1),(pi2, his2, cur2)) ->
+  
+   
+    match (cur1, cur2) with
+        
+    | (Some (None, cur1), Some (None, cur2)) -> 
+      let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Instant cur1)) (Sequence (his2, Instant cur2)) in 
+      List.map (fun (a, b, c) -> (a, Sleek.Sequence(his,b), c)) (splitEffects (Sleek.normalize_es es_new) pi_new )  
+    
+    | (Some (Some t, cur1), Some (None, cur2))-> 
+      let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Timed (Instant cur1, t))) (Sequence (his2, Instant cur2)) in 
+      List.map (fun (a, b, c) -> (a, Sleek.Sequence(his,b), c)) (splitEffects (Sleek.normalize_es es_new) pi_new )  
+    
+    | (Some (None, cur1), Some (Some t, cur2))-> 
+      let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Instant cur1)) (Sequence (his2, Timed (Instant cur2, t))) in 
+      List.map (fun (a, b, c) -> (a, Sleek.Sequence(his,b), c)) (splitEffects (Sleek.normalize_es es_new) pi_new )  
+    
+    | (Some (Some t1, cur1), Some (Some t2, cur2))-> 
+      let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Timed (Instant cur1, t1))) (Sequence (his2, Timed (Instant cur2, t2))) in 
+      List.map (fun (a, b, c) -> (a, Sleek.Sequence(his,b), c)) (splitEffects (Sleek.normalize_es es_new) pi_new )  
+
+    | _ -> 
+      let (pi_new, es_new) = parallelES pi1 pi2 (Sequence(his,his1)) (his2) 
+      in [(pi_new, es_new, None)] 
+
+    ) combine
+    )) [] current
+    )
+
+   
+
+  
+  | _ -> print_string( string_of_program full ) ;current
+ 
+  ;;
+(*
+
+
+  | Emit (s, _ ) -> 
+    List.map (fun (pi, his, cur, k) ->(pi, his , ((One s)::cur )(*setState cur s 1*), k))  current (* flag 0 - Zero, 1- One, 2-Await *)
+  | Await (s) -> 
+    List.map (fun (pi, his, cur, k) ->(pi, Sequence (his, Sequence(Await s , Instant cur)) , [] (*setState cur s 2*), k))  current (* flag 0 - Zero, 1- One, 2-Await *)
+
+  | Present (s, p1, p2) ->
+    List.fold_left (fun acc (pi, his, cur, k) -> 
+      List.append acc (
+          if isPresent s cur then forward env current p1 full 
+          else forward env current p2 full) 
+    ) [] current
+
+  
+  | Async (s, p) -> 
+    List.map (fun (pi1, his1, cur1, k1) ->
+      let term = Var getAnewVar in 
+      (PureAnd (pi1, GtEq (term, Number delay)), Timed (Sequence (his1, Instant cur1), term), [(One s)](*setState (make_nothing env) s 1*), k1)
+        ) (forward env current p full)
+
+  | Assert eff -> 
+
+      let (_, re, _, _) = check_containment (List.map (fun (pi, his, cur, k) -> (pi, Sequence(his, Instant cur))) current) eff in 
+      if re then current 
+      else raise (Foo "assertion failed")
+   
+  | Seq (p1, p2) -> 
+    
+    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
+    List.append acc (  
+    (match k1 with 
+      Some str -> [(pi1, his1, cur1, k1)] 
+    | None -> forward env [(pi1, his1, cur1, k1)] p2 full
+    )
+    )
+    ) [] ( forward env current p1 full)
+    
+
+  | Trap (mn, p1) -> 
+    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
+      List.append acc (  
+    
+    [(match k1 with 
+      Some str -> if String.compare str mn == 0 then (pi1, his1, cur1, None) else (pi1, his1, cur1, k1)
+    | None -> (pi1, his1, cur1, k1)
+    )]
+      )
+    ) [] ( forward env current p1 full)
+
+  | Break name -> 
+    List.map (fun (pi, his, cur, k) ->
+      (match k with 
+        Some str -> (pi, his, cur, k)
+      | None -> (pi, his, cur, Some name)
+      )
+    ) current
+
+  | Abort (delay, p) ->
+    List.map (fun (pi1, his1, cur1, k1) ->
+    let term = Var getAnewVar in 
+    (PureAnd (pi1, Lt (term, Number delay)), Timed (Sequence (his1, Instant cur1),  term) , [] (*make_nothing env*), k1)
+    )
+    (forward env current p full)
+
+  | Run (mn, _) ->
+  List.fold_left (fun acc (pi, his, cur, k) ->
+
+    List.append acc (  
+      let (fun_name, inp, outp, precon, postcon, _) = findProg mn full in 
+      let (_, re, _, _) = check_containment [(pi, Sequence (his, Instant cur))] precon in 
+      
+      
+      List.map (fun (pi1, es1) -> 
+      if re then (PureAnd (pi, pi1), Sequence (Sequence (his, Instant cur), es1), make_nothing env, k)
+      else raise (Foo "precondiction check failed")
+      ) precon
+    )
+   ) [] current 
+
+  | Loop p ->
+List.flatten(
+  List.fold_left (fun acc (pi, his, cur, k) ->
+
+
+  List.append acc (  
+   
+    List.map (fun (pi1, his1, cur1, k1) -> 
+    (match k1 with 
+      Some trap -> [(PureAnd (pi, pi1), Sequence (Sequence (his, Instant cur), his1), cur1, k1)]
+    | None -> 
+      List.map ( fun ins ->
+
+      match (ins, cur1) with 
+      | ([], _) -> (pi1, Sequence (Sequence (his, Instant cur), Kleene (Sequence (derivativePar (SL ins) his1, Instant cur1))), make_nothing env, k1)
+      | (_, []) -> (pi1, Sequence (Sequence (his, Instant (List.append cur ins)), Kleene (Sequence (derivativePar (SL ins) his1, Instant ins))), make_nothing env, k1)
+      | _ -> (pi1, Sequence (Sequence (his, Instant (List.append cur ins)), Kleene (Sequence (derivativePar (SL ins) his1, Instant (List.append cur1 ins)))), make_nothing env, k1)
+      ) (fst_simple his1)
+    
+    )
+    ) (forward env [(pi, Empty, [], k)] p full)
+
+  )
+  
+  
+  ) [] current )
+
+  | Fork (p1, p2) -> 
+ 
+      
+  | (Some trap, None) -> let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Instant cur1)) (Sequence (his2, Instant cur2)) in
+                    
+      List.map (
+        fun (pi_new_, his_new, cur_new) -> 
+          (pi_new, Sequence(his, his_new), cur_new, k1) )
+      (splitEffects  (normalES es_new pi_new) pi_new)        
+
+  
+  | (None, Some trap) -> let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Instant cur1)) (Sequence (his2, Instant cur2)) in
+      List.map (
+        fun (pi_new_, his_new, cur_new) -> 
+        (pi_new, Sequence(his, his_new), cur_new, k2) )
+      (splitEffects  (normalES es_new pi_new) pi_new)                    
+
+  | (Some t1, Some t2) -> raise (Foo ("not defined curretly"))
+
+  ) combine
+  )) [] current
+  )
+  *)
+
 
 
 
@@ -271,8 +428,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
       | _ -> []) 
       ) [] p_li in 
       *)
-    let init = List.map (fun (pre_pi, pre_his, pre_cur) -> (pre_pi, pre_his, pre_cur, None)) 
-      (List.fold_left (fun acc (pre_pi, pre_es) ->
+    let init = (List.fold_left (fun acc (pre_pi, pre_es) ->
         List.append acc (splitEffects pre_es  pre_pi)
         ) [] pre
       ) in 
@@ -280,10 +436,10 @@ let forward_verification (prog : statement) (whole: statement list): string =
     print_string (string_of_prog_states raw_final);
     let final = List.map (fun state ->
         match state with 
-        | (pi, his, Some (None, cur), _) -> Sleek.normalize (pi, Sleek.Sequence (his, Sleek.Instant cur))
-        | (pi, his, Some (Some t, cur), _) ->Sleek.normalize (pi, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)))
+        | (pi, his, Some (None, cur)) -> Sleek.normalize (pi, Sleek.Sequence (his, Sleek.Instant cur))
+        | (pi, his, Some (Some t, cur)) ->Sleek.normalize (pi, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)))
 
-        | (pi, his, None, _) -> (pi, his)
+        | (pi, his, None) -> (pi, his)
       ) raw_final in 
     
     let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = List.hd final; rhs = List.hd (post) })  in 
