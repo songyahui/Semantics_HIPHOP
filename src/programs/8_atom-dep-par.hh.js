@@ -4,6 +4,8 @@
 const hh = require("hiphop");
 
 hiphop module prg(out A ) {
+    /*@ requires TRUE /\ emp @*/
+    /*@ ensures TRUE /\ (A^* || A^* || A^*) @*/
    fork {
       loop {
 	 emit A( 0 );

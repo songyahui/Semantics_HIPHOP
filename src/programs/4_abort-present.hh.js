@@ -4,7 +4,9 @@ var hh = require( "hiphop" );
 
 hiphop module prg
    ( in I, out J, 
-   out K, out V ) {
+     out K, out V ) {
+       /*@ requires TRUE /\ emp @*/
+       /*@ ensures TRUE /\ (J.V || K)^* @*/
    loop {
       abort( I.now ) {
 	 emit J();
