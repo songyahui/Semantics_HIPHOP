@@ -215,7 +215,7 @@ let string_of_prog_states (ps: prog_states) : string =
     acc^  " : " ^ 
     (match instance with 
     | None -> "none instance"
-    | Some ins -> Sleek__Signals.show ins  
+    | Some (_, ins) -> Sleek__Signals.show ins  
     )
 
   ) " "ps

@@ -18,18 +18,25 @@ let forward (current:prog_states) (prog:expression) (full: statement list): prog
   | Halt -> 
       List.map (fun state ->
         match state with 
-        | (pi, his, Some cur, k) -> (pi, Sleek.Sequence (his, Sleek.Instant cur), None,  k)
+        | (pi, his, Some (_, cur), k) -> (pi, Sleek.Sequence (his, Sleek.Instant cur), None,  k)
         | (_, _, None, _) -> state
       )  current
+  
+  | Emit (s, _ ) -> 
+      List.map (fun state ->
+        match state with 
+        | (pi, his, Some (t, cur), k) -> (pi, his , Some (t, Sleek__Signals.merge cur (Sleek__Signals.from s)),  k)
+        | (_, _, None, _) -> state
+      )  current
+
+
   
   | _ -> print_string( string_of_program full ) ;current
  
   ;;
 (*
 
-| Yield -> 
-    List.map (fun (pi, his, cur, k) -> (pi, Cons (his,Instance cur) , [](*make_nothing env *), k))  current
-  
+
   | Emit (s, _ ) -> 
     List.map (fun (pi, his, cur, k) ->(pi, his , ((One s)::cur )(*setState cur s 1*), k))  current (* flag 0 - Zero, 1- One, 2-Wait *)
   | Await (s) -> 
@@ -182,6 +189,50 @@ List.flatten(
   )
   *)
 
+let rec splitEffects (es:Sleek.instants) (pi:Sleek.pi) :(Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option) list = 
+  match es with 
+  | Bottom -> []
+  | Empty -> [(pi, Empty, Some (None, Sleek__Signals.empty))]
+  | Await s -> [(pi, Await s, Some (None, Sleek__Signals.empty))]
+
+  | Instant ins -> [(pi, Empty, Some (None, ins))]
+  | Sequence (es1, es2) -> 
+    let temp = splitEffects es2 pi in 
+    List.map (fun state ->
+      match state with 
+      | (pi2, es2', ins2) -> (pi2, Sleek.Sequence (es1, es2'), ins2)
+    ) temp
+  | Union (es1, es2) -> 
+    List.append (splitEffects es1 pi ) (splitEffects es2 pi)
+  
+  | Kleene es1 -> 
+    let temp = splitEffects es1 pi in 
+    List.map (fun state ->
+      match state with 
+      | (pi2, es2', ins2) -> (pi2, Sleek.Sequence (es, es2'), ins2)
+    ) temp
+
+  | Timed (es1, t) -> 
+    let temp = splitEffects es1 pi in 
+    List.map (fun state ->
+      let newTV1 = getAnewVar_rewriting () in
+      let newTV2 = getAnewVar_rewriting () in
+      match state with 
+      | (p, e, Some (None, i)) -> 
+        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        (newPi, Sleek.Timed (e, Sleek.Var newTV1), Some (Some (Sleek.Var newTV2), i))
+      | (p, e, Some (Some t', i)) -> 
+        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        (Sleek.And(newPi, Sleek.Atomic(Sleek.Eq, t', Var newTV2)), Sleek.Timed (e, Sleek.Var newTV1), Some (Some (Sleek.Var newTV2), i))
+      | (p, e, None) ->  (p, e, None)
+    ) temp
+
+  | Parallel (_, _) -> raise (Foo " I don't know how to split a Parallel")
+    
+    
+
+  ;;
+
 
 
 
@@ -198,15 +249,26 @@ let forward_verification (prog : statement) (whole: statement list): string =
       | _ -> []) 
       ) [] p_li in 
       *)
-    let raw_final = (*effects_inference*) forward (*pre*) [] ex whole in 
+    let init = List.map (fun (pre_pi, pre_his, pre_cur) -> (pre_pi, pre_his, pre_cur, None)) 
+      (List.fold_left (fun acc (pre_pi, pre_es) ->
+        List.append acc (splitEffects pre_es  pre_pi)
+        ) [] pre
+      ) in 
+    let raw_final = (*effects_inference*) forward init ex whole in 
     print_string (string_of_prog_states raw_final);
-    let final = (Sleek.True, Sleek.Bottom) in 
+    let final = List.map (fun state ->
+        match state with 
+        | (pi, his, Some (None, cur), _) -> Sleek.normalize (pi, Sleek.Sequence (his, Sleek.Instant cur))
+        | (pi, his, Some (Some t, cur), _) ->Sleek.normalize (pi, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)))
+
+        | (pi, his, None, _) -> (pi, his)
+      ) raw_final in 
     
-    let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = final; rhs = List.hd (post) })  in 
+    let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = List.hd final; rhs = List.hd (post) })  in 
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^
-    "[Final  Effects] " ^ show_effects_list [final] ^"\n\n"^
+    "[Final  Effects] " ^ show_effects_list final ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
     Sleek.show_history  history    ~verbose ^ "\n\n"
