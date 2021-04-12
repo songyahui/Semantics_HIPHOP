@@ -8,10 +8,18 @@ exception Foo of string
 prog_states = 
 (Sleek.pi * Sleek.instants * instance option * string option) list 
 
-
+let rec zip a b =
+  match (a,b) with
+    ([],[]) -> []
+    | ([],n::ns)-> []
+    | (n::ns,[]) -> []
+    | (k::ks, h::hs) -> (k,h)::zip ks hs ;;
+;;
 *)
 
-let forward (current:prog_states) (prog:expression) (full: statement list): prog_states =
+
+
+let rec forward (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
   match prog with 
   | Unit -> current
@@ -29,6 +37,22 @@ let forward (current:prog_states) (prog:expression) (full: statement list): prog
         | (_, _, None, _) -> state
       )  current
 
+  | Signal (_, p) -> forward current p full 
+
+(*
+  | ForkPar (e1::e2::_) -> 
+      let states1 = forward current e1 full in 
+      let states2 = forward current e2 full in 
+      let zip = zip states1 states2 in 
+      List.map (fun acc a -> 
+        (
+          match a with 
+          | ((p1, his1, cur1, k1),(p2, his2, cur2, k2)) -> (Sleek.And(p1, p2), Sleek.Parallel (his1,his2))  
+        )
+      
+      :: acc ) zip 
+
+   *)   
 
   
   | _ -> print_string( string_of_program full ) ;current
@@ -49,9 +73,7 @@ let forward (current:prog_states) (prog:expression) (full: statement list): prog
           else forward env current p2 full) 
     ) [] current
 
-  | Signal (s, p) -> 
-    forward (List.append env [s]) current p full 
-
+  
   | Async (s, p) -> 
     List.map (fun (pi1, his1, cur1, k1) ->
       let term = Var getAnewVar in 
