@@ -51,7 +51,7 @@ type expression =
     | Hop of  expression 
     | Yield
     | Halt
-    | Signal of string
+    | Signal of string * expression
     | Present of expression * expression * expression option
     | Async of string * expression 
     | Lambda of expression * expression
@@ -76,7 +76,8 @@ type statement =
     | Assign of string list * expression
     | TryCatch of expression * expression * expression
 
-type prog_states = (Sleek.pi * Sleek.instants * instance * string option) list
+
+type prog_states = (Sleek.pi * Sleek.instants * (Sleek__Signals.t) option * string option) list
 
 
 

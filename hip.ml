@@ -4,117 +4,201 @@ open Ast
 
 exception Foo of string
 
-let string_of_param (p : param) : string =
-  match p with 
-  | IN str -> "in " ^ str 
-  | OUT str -> "out " ^ str
-  | Data str -> str
-  ;;
+(*
+prog_states = 
+(Sleek.pi * Sleek.instants * instance option * string option) list 
 
-let string_of_literal (l:literal) : string = 
-  match l with 
-  | STRING str -> str
-  | INT n -> string_of_int n 
-  | BOOL f -> string_of_bool f
-  ;;
 
-let rec string_of_expression (expr: expression): string =
-  match expr with 
-  | Unit -> "()"
-  | Variable mn -> mn
-  | Literal lit -> string_of_literal lit
-  | Access mn_li -> List.fold_left (fun acc a -> acc ^"."^a) "." mn_li   
-  | BinOp (str, e2, e3) -> string_of_expression e2 ^ " "^ str ^ " " ^ string_of_expression e3
-  | FunctionCall (ex, ex_li) -> string_of_expression ex ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
-  | NewExpr ex -> "new " ^ string_of_expression ex
-  | Emit (str, ex) -> "emit " ^ str ^ "(" ^ 
-    (match ex with 
-    | None -> ")"
-    | Some ex -> string_of_expression ex ^")"
+*)
+
+let forward (current:prog_states) (prog:expression) (full: statement list): prog_states =
+
+  match prog with 
+  | Unit -> current
+  | Halt -> 
+      List.map (fun state ->
+        match state with 
+        | (pi, his, Some cur, k) -> (pi, Sleek.Sequence (his, Sleek.Instant cur), None,  k)
+        | (_, _, None, _) -> state
+      )  current
+  
+  | _ -> print_string( string_of_program full ) ;current
+ 
+  ;;
+(*
+
+| Yield -> 
+    List.map (fun (pi, his, cur, k) -> (pi, Cons (his,Instance cur) , [](*make_nothing env *), k))  current
+  
+  | Emit (s, _ ) -> 
+    List.map (fun (pi, his, cur, k) ->(pi, his , ((One s)::cur )(*setState cur s 1*), k))  current (* flag 0 - Zero, 1- One, 2-Wait *)
+  | Await (s) -> 
+    List.map (fun (pi, his, cur, k) ->(pi, Cons (his, Cons(Wait s , Instance cur)) , [] (*setState cur s 2*), k))  current (* flag 0 - Zero, 1- One, 2-Wait *)
+
+  | Present (s, p1, p2) ->
+    List.fold_left (fun acc (pi, his, cur, k) -> 
+      List.append acc (
+          if isPresent s cur then forward env current p1 full 
+          else forward env current p2 full) 
+    ) [] current
+
+  | Signal (s, p) -> 
+    forward (List.append env [s]) current p full 
+
+  | Async (s, p) -> 
+    List.map (fun (pi1, his1, cur1, k1) ->
+      let term = Var getAnewVar in 
+      (PureAnd (pi1, GtEq (term, Number delay)), RealTime (Cons (his1, Instance cur1), term), [(One s)](*setState (make_nothing env) s 1*), k1)
+        ) (forward env current p full)
+
+  | Assert eff -> 
+
+      let (_, re, _, _) = check_containment (List.map (fun (pi, his, cur, k) -> (pi, Cons(his, Instance cur))) current) eff in 
+      if re then current 
+      else raise (Foo "assertion failed")
+   
+  | Seq (p1, p2) -> 
+    
+    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
+    List.append acc (  
+    (match k1 with 
+      Some str -> [(pi1, his1, cur1, k1)] 
+    | None -> forward env [(pi1, his1, cur1, k1)] p2 full
     )
-  | Await ex -> "await " ^ string_of_expression ex
-  | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_expression ex2
-  | ForkPar (e_li) -> "PAR:\n " ^ List.fold_left (fun acc a -> acc ^"\n||\n"^string_of_expression a) "" e_li
-  | Seq (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
-  | Abort (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
-  | Loop ex -> "loop " ^ string_of_expression ex
-  | Hop ex -> "Hop " ^ string_of_expression ex
-  | Async (str, ex) -> "async " ^ str ^" = "^ string_of_expression ex 
-  | Lambda (ex1, ex) -> "lamdba " ^ string_of_expression ex1 ^" => "^ string_of_expression ex 
-  | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
-  | Return ex -> "return " ^ string_of_expression ex
-  | Break ex -> "Break " ^ string_of_expression ex
-  | Trap (ex1, ex) -> "trap " ^ string_of_expression ex1 ^" : "^ string_of_expression ex 
-  | Yield -> "yield"
-  | Halt -> "Halt"
-  | Run ex -> " run " ^ string_of_expression ex
-  | Signal str -> "signal "^ str
-  | Present (ex1, ex2, ex3) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2 ^ (
-    match ex3 with 
-    | None -> ""
-    | Some ex -> "else " ^ string_of_expression ex
+    )
+    ) [] ( forward env current p1 full)
+    
+
+  | Trap (mn, p1) -> 
+    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
+      List.append acc (  
+    
+    [(match k1 with 
+      Some str -> if String.compare str mn == 0 then (pi1, his1, cur1, None) else (pi1, his1, cur1, k1)
+    | None -> (pi1, his1, cur1, k1)
+    )]
+      )
+    ) [] ( forward env current p1 full)
+
+  | Break name -> 
+    List.map (fun (pi, his, cur, k) ->
+      (match k with 
+        Some str -> (pi, his, cur, k)
+      | None -> (pi, his, cur, Some name)
+      )
+    ) current
+
+  | Abort (delay, p) ->
+    List.map (fun (pi1, his1, cur1, k1) ->
+    let term = Var getAnewVar in 
+    (PureAnd (pi1, Lt (term, Number delay)), RealTime (Cons (his1, Instance cur1),  term) , [] (*make_nothing env*), k1)
+    )
+    (forward env current p full)
+
+  | Run (mn, _) ->
+  List.fold_left (fun acc (pi, his, cur, k) ->
+
+    List.append acc (  
+      let (fun_name, inp, outp, precon, postcon, _) = findProg mn full in 
+      let (_, re, _, _) = check_containment [(pi, Cons (his, Instance cur))] precon in 
+      
+      
+      List.map (fun (pi1, es1) -> 
+      if re then (PureAnd (pi, pi1), Cons (Cons (his, Instance cur), es1), make_nothing env, k)
+      else raise (Foo "precondiction check failed")
+      ) precon
+    )
+   ) [] current 
+
+  | Loop p ->
+List.flatten(
+  List.fold_left (fun acc (pi, his, cur, k) ->
+
+
+  List.append acc (  
+   
+    List.map (fun (pi1, his1, cur1, k1) -> 
+    (match k1 with 
+      Some trap -> [(PureAnd (pi, pi1), Cons (Cons (his, Instance cur), his1), cur1, k1)]
+    | None -> 
+      List.map ( fun ins ->
+
+      match (ins, cur1) with 
+      | ([], _) -> (pi1, Cons (Cons (his, Instance cur), Kleene (Cons (derivativePar (SL ins) his1, Instance cur1))), make_nothing env, k1)
+      | (_, []) -> (pi1, Cons (Cons (his, Instance (List.append cur ins)), Kleene (Cons (derivativePar (SL ins) his1, Instance ins))), make_nothing env, k1)
+      | _ -> (pi1, Cons (Cons (his, Instance (List.append cur ins)), Kleene (Cons (derivativePar (SL ins) his1, Instance (List.append cur1 ins)))), make_nothing env, k1)
+      ) (fst_simple his1)
+    
+    )
+    ) (forward env [(pi, Emp, [], k)] p full)
+
   )
-  | FunctionExpr (p_li, ex) -> "function " ^ "("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
+  
+  
+  ) [] current )
+
+  | Fork (p1, p2) -> 
+  List.flatten (
+  List.fold_left (fun acc (pi, his, cur, k) ->
+
+  List.append acc (  
+
+  let temp1 = forward env [(pi, Emp, cur, k)] p1 full in 
+  let temp2 = forward env [(pi, Emp, cur, k)] p2 full in 
+  let combine = zip (temp1, temp2) in 
+
+
+
+  List.map (fun (  (pi1, his1, cur1, k1),(pi2, his2, cur2, k2)) ->
+
+ 
+  match (k1, k2) with
+    (None, None) -> let (pi_new, es_new) = parallelES pi1 pi2 (Cons (his1, Instance cur1)) (Cons (his2, Instance cur2)) in
+      
+    List.map 
+      (fun (pi_new_, his_new, cur_new) -> 
+        (pi_new_, Cons(his, his_new), cur_new, None) )
+      (splitEffects  (normalES es_new pi_new) pi_new)      
+      
+      
+  | (Some trap, None) -> let (pi_new, es_new) = parallelES pi1 pi2 (Cons (his1, Instance cur1)) (Cons (his2, Instance cur2)) in
+                    
+      List.map (
+        fun (pi_new_, his_new, cur_new) -> 
+          (pi_new, Cons(his, his_new), cur_new, k1) )
+      (splitEffects  (normalES es_new pi_new) pi_new)        
 
   
+  | (None, Some trap) -> let (pi_new, es_new) = parallelES pi1 pi2 (Cons (his1, Instance cur1)) (Cons (his2, Instance cur2)) in
+      List.map (
+        fun (pi_new_, his_new, cur_new) -> 
+        (pi_new, Cons(his, his_new), cur_new, k2) )
+      (splitEffects  (normalES es_new pi_new) pi_new)                    
 
-  ;;
+  | (Some t1, Some t2) -> raise (Foo ("not defined curretly"))
 
-let rec show_effects_list (eff_li: Sleek.effects list) : string =
-  match eff_li with 
-  | [] -> ""
-  | x :: xs -> Sleek.show_effects x ^ "\\/" ^ show_effects_list xs ;;
+  ) combine
+  )) [] current
+  )
+  *)
 
-
-let string_of_statement (state) : string = 
-  match state with
-  | ImportStatement str -> str 
-  | VarDeclear (str, ex) -> "var " ^ str ^" = "^ string_of_expression ex 
-  | ConsDeclear (str, ex) -> "const " ^ str ^" = "^ string_of_expression ex 
-  | Let (ex1, ex2) ->"let " ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
-  | ModduleDeclear (mn, p_li, ex, pre, post) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^")"^ 
-  show_effects_list (Sleek.parse_effects pre) ^ "\n" ^ show_effects_list (Sleek.parse_effects post) ^"\n" ^
-  "{" ^ string_of_expression ex ^"\n }"
-  | FunctionDeclear (mn, p_li, ex) -> "function " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
-  | Call (str_li, ex_li) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li    ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
-  | Assign (str_li, ex) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li   ^ " = " ^ string_of_expression ex
-  | TryCatch (ex1, e, ex) -> "try " ^ string_of_expression ex1 ^"\n catch (" ^ string_of_expression e ^ ")" ^ string_of_expression ex 
-
-  ;;
-
-let rec string_of_program (states : statement list) : string =
-  match states with
-    [] -> ""
-  | x::xs -> string_of_statement x ^ "\n\n" ^ string_of_program xs 
-  ;;
-
-let string_of_prog_states (ps: prog_states) : string = 
-  List.fold_left  (fun acc (_, _, instance,  _) -> 
-    acc^  " : " ^ string_of_instance instance  
-  ) " "ps
-  ;;
-
-let forward (env: string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
-  match prog with 
-  | Halt -> current
-  | _ -> print_string (List.hd env ^ string_of_expression prog ^ string_of_program  full); current
-  ;;
 
 
 
 
 let forward_verification (prog : statement) (whole: statement list): string = 
   match prog with 
-  | ModduleDeclear (mn, p_li, ex, pre, post) -> 
+  | ModduleDeclear (mn, (*p_li*)_ , ex, pre, post) -> 
     print_string (string_of_program [prog]^"\n");
     let pre = Sleek.parse_effects pre in 
     let post = Sleek.parse_effects post in 
-    let inp_sig = List.fold_left (fun acc a ->  List.append acc 
+    (*let inp_sig = List.fold_left (fun acc a ->  List.append acc 
       (match a with 
       | OUT str -> [str]
       | _ -> []) 
       ) [] p_li in 
-    let raw_final = (*effects_inference*) forward inp_sig (*pre*) [] ex whole in 
+      *)
+    let raw_final = (*effects_inference*) forward (*pre*) [] ex whole in 
     print_string (string_of_prog_states raw_final);
     let final = (Sleek.True, Sleek.Bottom) in 
     
@@ -125,7 +209,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "[Final  Effects] " ^ show_effects_list [final] ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
-    Sleek.show_history  history    ~verbose
+    Sleek.show_history  history    ~verbose ^ "\n\n"
     
   | _ -> ""
   ;;
