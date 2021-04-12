@@ -231,6 +231,32 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
 
   | Signal (_, p) -> forward current p full 
 
+  | Seq (p1, p2) -> 
+    forward (forward current p1 full) p2 full
+
+  | Async (s, p) -> 
+    List.map (fun (pi1, his, cur1) ->
+      match cur1 with 
+      | None -> (pi1, his, cur1)
+      | Some (None, cur) -> (pi1, Sleek.Sequence (his, Sleek.Instant cur), Some (None, Sleek__Signals.make [(Sleek__Signals.present s)]))
+      | Some (Some t, cur) -> (pi1, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)), Some (None, Sleek__Signals.make [(Sleek__Signals.present s)]))
+      ) (forward current p full)
+
+  
+  
+  (*
+    | Await (Variable s) -> 
+    List.map (fun (pi1, his, cur1) -> 
+      match cur1 with 
+      | None -> (pi1, his, cur1)
+      | Some (None, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Instant cur, Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
+      | Some (Some t, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Timed (Sleek.Instant cur, t), Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
+      
+
+    )  current (* flag 0 - Zero, 1- One, 2-Await *)
+
+*)
+
 
   | ForkPar (p1::p2::_) -> 
     List.flatten (
@@ -295,11 +321,6 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
     ) [] current
 
   
-  | Async (s, p) -> 
-    List.map (fun (pi1, his1, cur1, k1) ->
-      let term = Var getAnewVar in 
-      (PureAnd (pi1, GtEq (term, Number delay)), Timed (Sequence (his1, Instant cur1), term), [(One s)](*setState (make_nothing env) s 1*), k1)
-        ) (forward env current p full)
 
   | Assert eff -> 
 
@@ -307,17 +328,7 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
       if re then current 
       else raise (Foo "assertion failed")
    
-  | Seq (p1, p2) -> 
-    
-    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
-    List.append acc (  
-    (match k1 with 
-      Some str -> [(pi1, his1, cur1, k1)] 
-    | None -> forward env [(pi1, his1, cur1, k1)] p2 full
-    )
-    )
-    ) [] ( forward env current p1 full)
-    
+  
 
   | Trap (mn, p1) -> 
     List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
@@ -433,7 +444,6 @@ let forward_verification (prog : statement) (whole: statement list): string =
         ) [] pre
       ) in 
     let raw_final = (*effects_inference*) forward init ex whole in 
-    print_string (string_of_prog_states raw_final);
     let final = List.map (fun state ->
         match state with 
         | (pi, his, Some (None, cur)) -> Sleek.normalize (pi, Sleek.Sequence (his, Sleek.Instant cur))
@@ -446,7 +456,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^
-    "[Final  Effects] " ^ show_effects_list final ^"\n\n"^
+    "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek.normalize a) final) ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
     Sleek.show_history  history    ~verbose ^ "\n\n"
