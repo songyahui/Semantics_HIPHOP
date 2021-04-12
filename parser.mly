@@ -77,7 +77,7 @@ expression:
 | HOP LBRACK ex1 = expression_shell RBRACK {Hop ex1}
 | ABORT ex = expression LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
 | YIELD {Yield}
-| SIGNAL ex = VAR {Signal ex}
+| SIGNAL ex = VAR SIMI ex1 = expression_shell {Signal (ex, ex1)}
 | IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
 | HALT {Halt}
 | ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK {Async (str, ex1)}

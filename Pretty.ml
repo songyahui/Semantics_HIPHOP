@@ -125,80 +125,98 @@ let string_of_instance (mapping:instance) :string =
   temp1
   ;;
 
-let rec string_of_terms (t:terms):string = 
-  match t with
-    Var name -> name
-  | Number n -> string_of_int n
-  | Plus (t1, t2) -> (string_of_terms t1) ^ ("+") ^ (string_of_terms t2)
-  | Minus (t1, t2) -> (string_of_terms t1) ^ ("-") ^ (string_of_terms t2)
-
+let string_of_param (p : param) : string =
+  match p with 
+  | IN str -> "in " ^ str 
+  | OUT str -> "out " ^ str
+  | Data str -> str
   ;;
 
-(*
-let string_of_promise (pro:promise) : string = 
-  match pro with 
-    Sing (s, arg) -> 
-    (
-    match arg with 
-      None -> ""
-    | Some (n) -> "(" ^ string_of_int n ^")"
+let string_of_literal (l:literal) : string = 
+  match l with 
+  | STRING str -> str
+  | INT n -> string_of_int n 
+  | BOOL f -> string_of_bool f
+  ;;
+
+let rec string_of_expression (expr: expression): string =
+  match expr with 
+  | Unit -> "()"
+  | Variable mn -> mn
+  | Literal lit -> string_of_literal lit
+  | Access mn_li -> List.fold_left (fun acc a -> acc ^"."^a) "." mn_li   
+  | BinOp (str, e2, e3) -> string_of_expression e2 ^ " "^ str ^ " " ^ string_of_expression e3
+  | FunctionCall (ex, ex_li) -> string_of_expression ex ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
+  | NewExpr ex -> "new " ^ string_of_expression ex
+  | Emit (str, ex) -> "emit " ^ str ^ "(" ^ 
+    (match ex with 
+    | None -> ")"
+    | Some ex -> string_of_expression ex ^")"
     )
-  | Count (t, (s, arg)) ->
-    "count("^string_of_terms t ^ ", "^
-    (
-    match arg with 
-      None -> ""
-    | Some (n) -> "(" ^ string_of_int n ^")"
-    ) 
-;;
-*)
+  | Await ex -> "await " ^ string_of_expression ex
+  | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_expression ex2
+  | ForkPar (e_li) -> "PAR:\n " ^ List.fold_left (fun acc a -> acc ^"\n||\n"^string_of_expression a) "" e_li
+  | Seq (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
+  | Abort (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
+  | Loop ex -> "loop " ^ string_of_expression ex
+  | Hop ex -> "Hop " ^ string_of_expression ex
+  | Async (str, ex) -> "async " ^ str ^" = "^ string_of_expression ex 
+  | Lambda (ex1, ex) -> "lamdba " ^ string_of_expression ex1 ^" => "^ string_of_expression ex 
+  | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
+  | Return ex -> "return " ^ string_of_expression ex
+  | Break ex -> "Break " ^ string_of_expression ex
+  | Trap (ex1, ex) -> "trap " ^ string_of_expression ex1 ^" : "^ string_of_expression ex 
+  | Yield -> "yield"
+  | Halt -> "Halt"
+  | Run ex -> " run " ^ string_of_expression ex
+  | Signal (str, p) -> "signal: "^ str ^ string_of_expression p
+  | Present (ex1, ex2, ex3) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2 ^ (
+    match ex3 with 
+    | None -> ""
+    | Some ex -> "else " ^ string_of_expression ex
+  )
+  | FunctionExpr (p_li, ex) -> "function " ^ "("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
 
-
-
-
-let rec string_of_es (es:es) :string = 
-  match es with 
-    Bot -> "_|_"  
-  | Emp -> "emp"
-  | Wait name -> name ^ "?"
-  | Instance ins  -> string_of_instance ins
-  | Cons (es1, es2) ->  "("^string_of_es es1 ^ " . " ^ string_of_es es2^")"
-  | Kleene esIn -> "(" ^ string_of_es esIn ^ ")*" 
-  (*| Ttimes (esIn, t) ->"(" ^ string_of_es esIn ^ ")" ^ string_of_terms t *)
-  | RealTime (es, t)-> "(" ^ string_of_es es ^ "#" ^string_of_terms t^")"
-  | Choice (es1, es2) -> "("^string_of_es es1 ^ " + " ^ string_of_es es2^")"
-  | Par (es1, es2) -> "("^string_of_es es1 ^ " || " ^ string_of_es es2^")"
-  ;;
-
-let rec string_of_terms (t:terms):string = 
-  match t with
-    Var name -> name
-  | Number n -> string_of_int n
-  | Plus (t1, t2) -> (string_of_terms t1) ^ ("+") ^ (string_of_terms t2)
-  | Minus (t1, t2) -> (string_of_terms t1) ^ ("-") ^ (string_of_terms t2)
-
-  ;;
-
-(*To pretty print pure formulea*)
-let rec string_of_pure (p:pure):string = 
-  match p with
-    TRUE -> "true"
-  | FALSE -> "false"
-  | Gt (t1, t2) -> (string_of_terms t1) ^ ">" ^ (string_of_terms t2)
-  | Lt (t1, t2) -> (string_of_terms t1) ^ "<" ^ (string_of_terms t2)
-  | GtEq (t1, t2) -> (string_of_terms t1) ^ ">=" ^ (string_of_terms t2)
-  | LtEq (t1, t2) -> (string_of_terms t1) ^ "<=" ^ (string_of_terms t2)
-  | Eq (t1, t2) -> (string_of_terms t1) ^ "=" ^ (string_of_terms t2)
-  | PureOr (p1, p2) -> "("^string_of_pure p1 ^ "\\/" ^ string_of_pure p2^")"
-  | PureAnd (p1, p2) -> "("^string_of_pure p1 ^ "/\\" ^ string_of_pure p2^")"
-  | Neg p -> "(!" ^ "(" ^ string_of_pure p^"))"
-  ;; 
-
-
-let rec string_of_effect(eff:effect): string = 
-  match eff with 
-    [] -> ""
-  | [(p , es)] -> string_of_pure p ^ "&" ^ string_of_es es
-  | (p , es)::xs -> string_of_pure p ^ "&" ^ string_of_es es  ^ "\\/" ^ string_of_effect xs 
   
-;;
+
+  ;;
+
+let rec show_effects_list (eff_li: Sleek.effects list) : string =
+  match eff_li with 
+  | [] -> ""
+  | [x] -> Sleek.show_effects x 
+  | x :: xs -> Sleek.show_effects x ^ "\\/" ^ show_effects_list xs ;;
+
+
+let string_of_statement (state) : string = 
+  match state with
+  | ImportStatement str -> str 
+  | VarDeclear (str, ex) -> "var " ^ str ^" = "^ string_of_expression ex 
+  | ConsDeclear (str, ex) -> "const " ^ str ^" = "^ string_of_expression ex 
+  | Let (ex1, ex2) ->"let " ^ string_of_expression ex1 ^ " = " ^ string_of_expression ex2
+  | ModduleDeclear (mn, p_li, ex, pre, post) -> "hiphop module " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^")"^ 
+  show_effects_list (Sleek.parse_effects pre) ^ "\n" ^ show_effects_list (Sleek.parse_effects post) ^"\n" ^
+  "{" ^ string_of_expression ex ^"\n }"
+  | FunctionDeclear (mn, p_li, ex) -> "function " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
+  | Call (str_li, ex_li) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li    ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
+  | Assign (str_li, ex) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li   ^ " = " ^ string_of_expression ex
+  | TryCatch (ex1, e, ex) -> "try " ^ string_of_expression ex1 ^"\n catch (" ^ string_of_expression e ^ ")" ^ string_of_expression ex 
+
+  ;;
+
+let rec string_of_program (states : statement list) : string =
+  match states with
+    [] -> ""
+  | x::xs -> string_of_statement x ^ "\n\n" ^ string_of_program xs 
+  ;;
+
+let string_of_prog_states (ps: prog_states) : string = 
+  List.fold_left  (fun acc (_, _, instance,  _) -> 
+    acc^  " : " ^ 
+    (match instance with 
+    | None -> "none instance"
+    | Some ins -> Sleek__Signals.show ins  
+    )
+
+  ) " "ps
+  ;;
