@@ -160,14 +160,22 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
   let norES1 = Sleek.normalize_es es1 in 
   let norES2 = Sleek.normalize_es es2 in 
 
+  print_string (Sleek.show_instants (norES1)^"\n");
+  print_string (Sleek.show_instants (norES2)^"\n\n");
+
+
+
   let fst1 = fstPar norES1 in
   let fst2 = fstPar norES2 in 
+
   let headcom = zip (fst1, fst2) in 
   let esLIST = List.map (
   fun (f1, f2) -> 
 
     let der1 = Sleek.normalize_es  (derivativePar f1 norES1) in 
     let der2 = Sleek.normalize_es  (derivativePar f2 norES2) in 
+
+  
 
     match (f1, f2) with  
       (W _, W _ ) -> raise (Foo "there is a deadlock")
@@ -198,7 +206,10 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
 
     
   ) headcom
-  in List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
+  in 
+  print_string ((List.fold_left (fun acc a -> acc ^ Sleek.show_effects a ) "" esLIST) ^"\n"); 
+
+  List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
 
 
   
@@ -244,18 +255,17 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
 
   
   
-  (*
+
     | Await (Variable s) -> 
-    List.map (fun (pi1, his, cur1) -> 
-      match cur1 with 
-      | None -> (pi1, his, cur1)
-      | Some (None, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Instant cur, Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
-      | Some (Some t, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Timed (Sleek.Instant cur, t), Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
+      List.map (fun (pi1, his, cur1) -> 
+        match cur1 with 
+        | None -> (pi1, his, cur1)
+        | Some (None, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Instant cur, Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
+        | Some (Some t, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Timed (Sleek.Instant cur, t), Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
       
 
-    )  current (* flag 0 - Zero, 1- One, 2-Await *)
+    )  current 
 
-*)
 
 
   | ForkPar (p1::p2::_) -> 
@@ -267,8 +277,7 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
     let temp1 = forward [(pi, Empty, cur)] p1 full in 
     let temp2 = forward [(pi, Empty, cur)] p2 full in 
     let combine = zip (temp1, temp2) in 
-  
-  
+
   
     List.map (fun (  (pi1, his1, cur1),(pi2, his2, cur2)) ->
   
@@ -276,6 +285,7 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
     match (cur1, cur2) with
         
     | (Some (None, cur1), Some (None, cur2)) -> 
+      
       let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Instant cur1)) (Sequence (his2, Instant cur2)) in 
       List.map (fun (a, b, c) -> (a, Sleek.Sequence(his,b), c)) (splitEffects (Sleek.normalize_es es_new) pi_new )  
     
@@ -451,7 +461,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
 
         | (pi, his, None) -> (pi, his)
       ) raw_final in 
-    
+
     let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = List.hd final; rhs = List.hd (post) })  in 
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
