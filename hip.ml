@@ -157,8 +157,8 @@ let rec derivativePar (fst: parfst) (es:Sleek.instants) : Sleek.instants =
 
 
 let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek.instants) : (Sleek.pi * Sleek.instants) =
-  let norES1 = Sleek.normalize_es es1 in 
-  let norES2 = Sleek.normalize_es es2 in 
+  let norES1 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es1 in 
+  let norES2 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es2 in 
 
   print_string (Sleek.show_instants (norES1)^"\n");
   print_string (Sleek.show_instants (norES2)^"\n\n");
@@ -466,6 +466,8 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^
+    "[Final  Effects] " ^ show_effects_list final ^"\n\n"^
+
     "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek.normalize a) final) ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 

@@ -4,7 +4,7 @@ hiphop module main (out Prep, in Tick, out Ready, out Go, out Cook)
 
 {
 	fork{ // One thread produces: true /\ Ready?.{Go}
-		await Ready; emit Go (); 
+		emit Ready(); emit Go (); 
 	} par{ // The other thread produces: 0<t<3 /\ {Prep, Cook}#t.{Ready}
 		emit Prep ();
 		async Ready { run cook (3, Tick, Cook); }}}
@@ -25,3 +25,4 @@ hiphop module authenticate (var d, var name, var passwd, in Tick, out Connecting
 			emit Connecting (); 
 			// Execute authenticateSvc after a 3 seconds' delay
 			setTimeout(authenticateSvc(name, passwd).post().then( v => this.notify(v)), 3); }}}
+
