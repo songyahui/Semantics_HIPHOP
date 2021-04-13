@@ -211,12 +211,20 @@ let rec string_of_program (states : statement list) : string =
   ;;
 
 let string_of_prog_states (ps: prog_states) : string = 
-  List.fold_left  (fun acc (_, _, instance,  _) -> 
+  List.fold_left  (fun acc (_, _, instance) -> 
     acc^  " : " ^ 
     (match instance with 
     | None -> "none instance"
-    | Some ins -> Sleek__Signals.show ins  
+    | Some (_, ins) -> Sleek__Signals.show ins  
     )
 
   ) " "ps
   ;;
+
+let rec zip (ls:'a list * 'b list) : ('a * 'b) list =
+  let (xs,ys) = ls in
+  match (xs,ys) with
+      ([],_) -> []
+    | (_,[]) -> []
+    | (x::xrest, y::yrest) -> (x,y)::zip (xrest,yrest)
+;;
