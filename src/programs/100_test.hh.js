@@ -4,7 +4,7 @@ hiphop module main (out Prep, in Tick, out Ready, out Go, out Cook)
 
 {
 	fork{ // One thread produces: true /\ Ready?.{Go}
-		emit Ready(); emit Go (); 
+		await Ready; emit Go (); 
 	} par{ // The other thread produces: 0<t<3 /\ {Prep, Cook}#t.{Ready}
 		emit Prep ();
 		async Ready { run cook (3, Tick, Cook); }}}

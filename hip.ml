@@ -175,26 +175,38 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
     let der1 = Sleek.normalize_es  (derivativePar f1 norES1) in 
     let der2 = Sleek.normalize_es  (derivativePar f2 norES2) in 
 
-  
+
+
 
     match (f1, f2) with  
       (W _, W _ ) -> raise (Foo "there is a deadlock")
     | (W s, SL ins) -> 
       if Sleek__Signals.isSigOne s ins then 
-        parallelES pi1 pi2 der1 der2
+        match (der1, der2) with 
+        | (Empty, _) -> (Sleek.And (pi1, pi2), Sleek.Sequence (Instant ins, der2))
+        | (_, Empty) -> (Sleek.And (pi1, pi2), Sleek.Sequence (Instant ins, der1))
+        | _ -> let(p, es) = parallelES pi1 pi2 der1 der2 in 
+               (p, Sleek.Sequence (Instant ins, es))
+
       else 
         let (p, es) = parallelES pi1 pi2 es1 der2  in 
-        (p, Sequence (Instant ins, es))
+        (p, Sleek.Sequence (Instant ins, es))
+
     | (SL ins, W s) -> 
       if Sleek__Signals.isSigOne s ins then 
-        parallelES pi1 pi2 der1 der2
+        match (der1, der2) with 
+        | (Empty, _) -> (Sleek.And (pi1, pi2), Sleek.Sequence (Instant ins, der2))
+        | (_, Empty) -> (Sleek.And (pi1, pi2), Sleek.Sequence (Instant ins, der1))
+        | _ -> let(p, es) = parallelES pi1 pi2 der1 der2 in 
+               (p, Sleek.Sequence (Instant ins, es))
+
       else 
         let (p, es) = parallelES pi1 pi2 der1 es2  in 
         (p, Sequence (Instant ins, es))
     | (SL ins1, SL ins2) -> 
       (match (der1, der2) with 
-      | (Empty, _) -> (True, Sequence (Instant (Sleek__Signals.merge ins1 ins2), der2))
-      | (_, Empty) -> (True, Sequence (Instant (Sleek__Signals.merge ins1 ins2), der1))
+      | (Empty, _) -> (Sleek.And (pi1, pi2), Sequence (Instant (Sleek__Signals.merge ins1 ins2), der2))
+      | (_, Empty) -> (Sleek.And (pi1, pi2), Sequence (Instant (Sleek__Signals.merge ins1 ins2), der1))
       | (der1, der2) -> 
         let (pi, es) = (parallelES pi1 pi2 der1 der2) in 
         (pi, Sequence (Instant (Sleek__Signals.merge ins1 ins2), es))
@@ -466,9 +478,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^
-    "[Final  Effects] " ^ show_effects_list final ^"\n\n"^
-
-    "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek.normalize a) final) ^"\n\n"^
+    "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek__Utils.fixpoint ~f: Sleek.normalize a) final) ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
     Sleek.show_history  history    ~verbose ^ "\n\n"
