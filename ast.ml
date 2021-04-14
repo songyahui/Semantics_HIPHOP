@@ -63,13 +63,14 @@ type expression =
     | FunctionExpr of param list * expression
 
 
+type effects = (Sleek.pi* Sleek.instants) list
 
 
 type statement = 
     | ImportStatement of string
     | VarDeclear of string * expression 
     | ConsDeclear of string * expression 
-    | ModduleDeclear of string * param list * expression * string * string
+    | ModduleDeclear of string * param list * expression * effects * effects
     | Let of expression * expression
     | FunctionDeclear of string * param list * expression
     | Call of string list * expression list 
@@ -83,7 +84,6 @@ type parfst = SL of Sleek__Signals.t | W of Sleek__Signals.event
     (*
     (Sleek.pi * Sleek.instants * (Sleek__Signals.t) option * string option) list
     *)
-
 
 
 

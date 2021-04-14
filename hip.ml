@@ -115,7 +115,16 @@ let rec fstPar (es:Sleek.instants) :parfst list =
 
     ;;
 
-
+let rec findProg name full:(param list* effects * effects) = 
+  match full with 
+  | [] -> raise (Foo ("function " ^ name ^ " is not found!"))
+  | x::xs -> 
+    match x with 
+    | ModduleDeclear (str, p_li, _, pre, post) -> 
+      if String.compare str name == 0 then (p_li, pre, post)
+      else findProg name xs
+    | _ -> findProg name xs
+;;
 
 
 let rec derivativePar (fst: parfst) (es:Sleek.instants) : Sleek.instants =
@@ -149,7 +158,11 @@ let rec derivativePar (fst: parfst) (es:Sleek.instants) : Sleek.instants =
       let temp2 =  derivativePar fst es2  in 
       Union (temp1,temp2)
 
-  | _ -> raise (Foo "derivativePar error")
+  | Timed (es1, _) -> derivativePar fst es1
+
+  | _ -> 
+  print_string (Sleek.show_instants es );
+  raise (Foo "derivativePar error")
 
   
 
@@ -160,9 +173,10 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
   let norES1 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es1 in 
   let norES2 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es2 in 
 
-  print_string (Sleek.show_instants (norES1)^"\n");
+  
+  (*print_string (Sleek.show_instants (norES1)^"\n");
   print_string (Sleek.show_instants (norES2)^"\n\n");
-
+*)
 
 
   let fst1 = fstPar norES1 in
@@ -219,8 +233,9 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
     
   ) headcom
   in 
-  print_string ((List.fold_left (fun acc a -> acc ^ Sleek.show_effects a ) "" esLIST) ^"\n"); 
-
+  
+  (*print_string ((List.fold_left (fun acc a -> acc ^ Sleek.show_effects a ) "" esLIST) ^"\n"); 
+*)
   List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
 
 
@@ -258,6 +273,7 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
     forward (forward current p1 full) p2 full
 
   | Async (s, p) -> 
+    print_string (string_of_prog_states current ^"\n");
     List.map (fun (pi1, his, cur1) ->
       match cur1 with 
       | None -> (pi1, his, cur1)
@@ -265,10 +281,45 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
       | Some (Some t, cur) -> (pi1, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)), Some (None, Sleek__Signals.make [(Sleek__Signals.present s)]))
       ) (forward current p full)
 
-  
+  | Run p -> forward current p full 
+
+  | FunctionCall (Variable mn, _) ->
+    let (_, precon, postcon) = findProg mn full in 
+    List.flatten (
+
+    List.fold_left (fun acc (pi, his, cur) ->
+
+    (match cur with 
+    | None -> [current]
+    | Some (None, ins) -> 
+
+      List.append acc (  
+        let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = (pi, Sequence (his, Sleek.Instant ins)); rhs = List.hd (precon) })  in 
+        if verbose then 
+          List.map (fun (pi1, es1) -> 
+            let (_, pae_es) = parallelES pi pi1 (Sleek.Instant ins)  es1 in 
+            splitEffects (Sleek.normalize_es (Sleek.Sequence (his, pae_es))) (Sleek.And (pi, pi1)) 
+          ) postcon
+        else raise (Foo "precondiction check failed")
+      )
+    | Some (Some t, ins) -> 
+
+      List.append acc (  
+        let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = (pi, Sequence (his, Sleek.Instant ins)); rhs = List.hd (precon) })  in 
+        if verbose then 
+          List.map (fun (pi1, es1) -> 
+          let (_, pae_es) = parallelES pi pi1 (Sleek.Timed (Sleek.Instant ins, t))  es1 in 
+          splitEffects (Sleek.normalize_es (Sleek.Sequence (his, pae_es))) (Sleek.And (pi, pi1)) 
+           ) postcon
+        else raise (Foo "precondiction check failed")
+      )
+    )
+   ) [] current 
+    )
+
   
 
-    | Await (Variable s) -> 
+  | Await (Variable s) -> 
       List.map (fun (pi1, his, cur1) -> 
         match cur1 with 
         | None -> (pi1, his, cur1)
@@ -324,7 +375,8 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
    
 
   
-  | _ -> print_string( string_of_program full ) ;current
+  | _ -> (*print_string( string_of_program full )
+  *) current
  
   ;;
 (*
@@ -378,20 +430,6 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
     )
     (forward env current p full)
 
-  | Run (mn, _) ->
-  List.fold_left (fun acc (pi, his, cur, k) ->
-
-    List.append acc (  
-      let (fun_name, inp, outp, precon, postcon, _) = findProg mn full in 
-      let (_, re, _, _) = check_containment [(pi, Sequence (his, Instant cur))] precon in 
-      
-      
-      List.map (fun (pi1, es1) -> 
-      if re then (PureAnd (pi, pi1), Sequence (Sequence (his, Instant cur), es1), make_nothing env, k)
-      else raise (Foo "precondiction check failed")
-      ) precon
-    )
-   ) [] current 
 
   | Loop p ->
 List.flatten(
@@ -452,9 +490,8 @@ List.flatten(
 let forward_verification (prog : statement) (whole: statement list): string = 
   match prog with 
   | ModduleDeclear (mn, (*p_li*)_ , ex, pre, post) -> 
-    print_string (string_of_program [prog]^"\n");
-    let pre = Sleek.parse_effects pre in 
-    let post = Sleek.parse_effects post in 
+    (*print_string (string_of_program [prog]^"\n");
+*)
     (*let inp_sig = List.fold_left (fun acc a ->  List.append acc 
       (match a with 
       | OUT str -> [str]

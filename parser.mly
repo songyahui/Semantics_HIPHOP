@@ -176,7 +176,7 @@ statement:
 | VARKEY str = VAR EQ ex = expression SIMI {VarDeclear (str, ex) }
 | HIPHOP MODULE  mn = VAR LPAR parm = parameter RPAR 
 LSPEC REQUIRE pre = STRING RSPEC LSPEC ENSURE post = STRING RSPEC
-LBRACK   ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex, pre, post)}
+LBRACK   ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex, Sleek.parse_effects pre, Sleek.parse_effects post)}
 | CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
 | LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
 | FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK simiOrnot{FunctionDeclear (mn, parm, ex)}
