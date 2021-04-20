@@ -1,0 +1,9 @@
+
+    "True && {A}^*  |-  True && {A}^* : true";
+    "True && {A}    |-  True && {A}^* : true";
+    "True && {A}^*  |-  True && {A}   : false";
+    "True && {A, B}^*   |-  True && {A}^* : true";
+    "True && {A, B}^*   |-  True && emp^* : false";
+    "True && {A, B}^*   |-  True && _|_^* : false";
+    "False && {A, B}^*  |-  True && _|_^* : true";
+ 

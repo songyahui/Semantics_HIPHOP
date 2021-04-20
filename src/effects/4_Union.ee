@@ -1,0 +1,9 @@
+
+    "True && {A} + {B}  |-  True && {A} : false";
+    "True && {A}  |-  True && {A} + {B} : true";
+    "True && {A} + {B}  |-  True && {B} + {A} : true";
+    "True && ({A} + {C}) + {B}  |-  True && ({C} + {A}) + {B} : true";
+    "True && {A} + ({C} + {B})  |-  True && {B} + ({A} + {C}) : true";
+    "True && {A} + {B} + {C} + {D} + {E}  |-  True && {A, B, C, D, E} : false";
+    "True && {A, B, C, D, E}  |-  True && {A} + {B} + {C} + {D} + {E} : true";
+    

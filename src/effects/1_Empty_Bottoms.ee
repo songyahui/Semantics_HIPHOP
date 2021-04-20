@@ -1,0 +1,19 @@
+
+    "True && emp  |-  True && {}  : false";
+    "True && emp  |-  True && {A} : false";
+    "True && emp  |-  True && emp : true";
+    "True && emp  |-  True && emp : true";
+    "True && _|_  |-  True && emp  : true";
+    "True && _|_  |-  True && {}   : true";
+    "True && _|_  |-  False && {}  : true";
+    "True && _|_  |-  False && {}  : true";
+    "True && _|_  |-  False && _|_ : true";
+    "False && {}  |-  True && {}   : true";
+    "True && {}   |-  False && _|_ : false";
+    "True && {} .  _|_  |-  True && _|_ : true";
+    "True && {} +  _|_  |-  True && _|_ : false";
+    "True && {} // _|_  |-  True && _|_ : true";
+    "True && {} // _|_  |-  True && _|_ : true";
+    "True && _|_^*  |-  True && emp : true";
+    "True && _|_^*  |-  True && _|_ : false";
+    

@@ -1,0 +1,7 @@
+
+    "True && {}    |-  False && {}  : false";
+    "False && {}   |-  True && {}   : true";
+    "False && {}   |-  False && {}  : true";
+    "False && {}   |-  False && _|_ : true";
+    "False && emp  |-  False && _|_ : true";
+    

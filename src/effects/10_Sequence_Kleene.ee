@@ -1,0 +1,7 @@
+
+    "True && {A}.{B}^*.{C}.{A, B}  |-  True && {A}.{B}^*.{C}.{A}   : true";
+    "True && {A}.{B}^*.{C}.{A, B}  |-  True && {A}.{B}^*.{}.{A}^*  : true";
+    "True && {A}.{B}^*.{C}^*  |-  True && {A}^*.{B}^*.{C}^* : true";
+    "True && {A}.{B}^*.{C}^*  |-  True && {A}^*.{B, C}^*    : false";
+    "True && {A}.{B, C}^*  |-  True && {A}^*.{B}^*.{C}^*    : true";
+

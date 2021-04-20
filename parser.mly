@@ -11,15 +11,19 @@
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
 %token RETURN BREAK COLON ELSE TRY CATCH RUN
-%token EMPTY REQUIRE ENSURE  LSPEC RSPEC
+%token REQUIRE ENSURE  LSPEC RSPEC
 
 
 
-%start program
+%start program entialments 
 %type <(Ast.statement) list> program
+%type <(string) list> entialments
 
 
 %%
+entialments:
+| EOF {[]}
+| a = STRING SIMI r = entialments { ( a) ::r }
 
 program:
 | EOF {[]}

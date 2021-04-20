@@ -1,0 +1,11 @@
+
+    "True && {A}.{B} // {C}.{D}  |-  True && {C}.{D} // {A}.{B} : true";
+    "True && {A}.({B} // {C}).{D}  |-  True && {}.{}.{} : true";
+    "True && {A}.({B} // {C}).{D}  |-  True && {}.{B, C}.{} : true";
+    "True && {A}.({B} // {C}).{D}  |-  True && {A}.{B, C}.{D} : true";
+    "True && {A}.({B} // {C}).{D}  |-  True && {A}.{B}.{D} // {A}.{C}.{D} : true";
+    "True && {A}.({B} // {C}).{D}  |-  True && ({A}.{B} // {A}.{C}).{D} : true";
+    "True && {A}.{C}.{E} // {B}.{D}.{F}  |-  True && {A, B}.{C, D}.{E, F} : true";
+    "True && {A}.{C}.{E} // {B}.{D}  |-  True && {A, B}.{C, D}.{E} : true";
+    "True && {A}.{C}.{E} // {B, D}  |-  True && {B, D}.{C}.{E} : true";
+    

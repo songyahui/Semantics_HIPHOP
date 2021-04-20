@@ -1,0 +1,12 @@
+    
+    "True && {A}.{B}^*.{C}^*    |-  True && {A}^*.({B} + {C})^*   : true";
+    "True && {A}^*.{B}^*.{C}^*  |-  True && ({A} + {B} + {C})^*  : true";
+    "True && ({A}.{B}.{C})^*    |-  True && ({A} + {B} + {C})^*  : true";
+    "True && {B}.({A} + ({B} + {C}))^*  |-  True && ({B} + ({A} + {C}))^* : true";
+    "True && {A, B}.({A} + ({B} // {C}))^*  |-  True && {}^* : true";
+    "True && {A, C}.({A} + ({A} // {C}))^*  |-  True && {A}^* + ({A} + {C})^* : true";
+    "True && {A, C}^*.({A} + ({A} // {C}))^*  |-  True && {A}^* + ({A} + {C})^* : true";
+    "True && ({A}+{D}).{B, E}.({C}//{F})  |-  True && (({A}+{D}).{B, E}.({C}//{F}))^* : true";
+    "True && (({A}+{D}).{B, E}.({C}//{F}))^*  |-  True && (({A}+{D}).{B, E}.({C}//{F}))^* : true";
+    "True && (({A}+{D}).{B, E}.({C}//{F}))^*  |-  True && ({A}+{B}+{C}+{D}+{E})^* : true";
+    

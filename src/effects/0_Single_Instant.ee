@@ -1,0 +1,5 @@
+    
+    "True && {A}  |-  True && {A} : true";
+    "True && {}   |-  True && {A} : false";
+    "True && {A}  |-  True && {}  : true";
+    
