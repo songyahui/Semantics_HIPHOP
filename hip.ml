@@ -379,109 +379,6 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
   *) current
  
   ;;
-(*
-
-
-  | Emit (s, _ ) -> 
-    List.map (fun (pi, his, cur, k) ->(pi, his , ((One s)::cur )(*setState cur s 1*), k))  current (* flag 0 - Zero, 1- One, 2-Await *)
-  | Await (s) -> 
-    List.map (fun (pi, his, cur, k) ->(pi, Sequence (his, Sequence(Await s , Instant cur)) , [] (*setState cur s 2*), k))  current (* flag 0 - Zero, 1- One, 2-Await *)
-
-  | Present (s, p1, p2) ->
-    List.fold_left (fun acc (pi, his, cur, k) -> 
-      List.append acc (
-          if isPresent s cur then forward env current p1 full 
-          else forward env current p2 full) 
-    ) [] current
-
-  
-
-  | Assert eff -> 
-
-      let (_, re, _, _) = check_containment (List.map (fun (pi, his, cur, k) -> (pi, Sequence(his, Instant cur))) current) eff in 
-      if re then current 
-      else raise (Foo "assertion failed")
-   
-  
-
-  | Trap (mn, p1) -> 
-    List.fold_left (fun acc (pi1, his1, cur1, k1) ->  
-      List.append acc (  
-    
-    [(match k1 with 
-      Some str -> if String.compare str mn == 0 then (pi1, his1, cur1, None) else (pi1, his1, cur1, k1)
-    | None -> (pi1, his1, cur1, k1)
-    )]
-      )
-    ) [] ( forward env current p1 full)
-
-  | Break name -> 
-    List.map (fun (pi, his, cur, k) ->
-      (match k with 
-        Some str -> (pi, his, cur, k)
-      | None -> (pi, his, cur, Some name)
-      )
-    ) current
-
-  | Abort (delay, p) ->
-    List.map (fun (pi1, his1, cur1, k1) ->
-    let term = Var getAnewVar in 
-    (PureAnd (pi1, Lt (term, Number delay)), Timed (Sequence (his1, Instant cur1),  term) , [] (*make_nothing env*), k1)
-    )
-    (forward env current p full)
-
-
-  | Loop p ->
-List.flatten(
-  List.fold_left (fun acc (pi, his, cur, k) ->
-
-
-  List.append acc (  
-   
-    List.map (fun (pi1, his1, cur1, k1) -> 
-    (match k1 with 
-      Some trap -> [(PureAnd (pi, pi1), Sequence (Sequence (his, Instant cur), his1), cur1, k1)]
-    | None -> 
-      List.map ( fun ins ->
-
-      match (ins, cur1) with 
-      | ([], _) -> (pi1, Sequence (Sequence (his, Instant cur), Kleene (Sequence (derivativePar (SL ins) his1, Instant cur1))), make_nothing env, k1)
-      | (_, []) -> (pi1, Sequence (Sequence (his, Instant (List.append cur ins)), Kleene (Sequence (derivativePar (SL ins) his1, Instant ins))), make_nothing env, k1)
-      | _ -> (pi1, Sequence (Sequence (his, Instant (List.append cur ins)), Kleene (Sequence (derivativePar (SL ins) his1, Instant (List.append cur1 ins)))), make_nothing env, k1)
-      ) (fst_simple his1)
-    
-    )
-    ) (forward env [(pi, Empty, [], k)] p full)
-
-  )
-  
-  
-  ) [] current )
-
-  | Fork (p1, p2) -> 
- 
-      
-  | (Some trap, None) -> let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Instant cur1)) (Sequence (his2, Instant cur2)) in
-                    
-      List.map (
-        fun (pi_new_, his_new, cur_new) -> 
-          (pi_new, Sequence(his, his_new), cur_new, k1) )
-      (splitEffects  (normalES es_new pi_new) pi_new)        
-
-  
-  | (None, Some trap) -> let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, Instant cur1)) (Sequence (his2, Instant cur2)) in
-      List.map (
-        fun (pi_new_, his_new, cur_new) -> 
-        (pi_new, Sequence(his, his_new), cur_new, k2) )
-      (splitEffects  (normalES es_new pi_new) pi_new)                    
-
-  | (Some t1, Some t2) -> raise (Foo ("not defined curretly"))
-
-  ) combine
-  )) [] current
-  )
-  *)
-
 
 
 
@@ -518,6 +415,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek__Utils.fixpoint ~f: Sleek.normalize a) final) ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
+    "[" ^ (if verbose then "SUCCEED" else "FAIL") ^ "]\n" ^ 
     Sleek.show_history  history    ~verbose ^ "\n\n"
     
   | _ -> ""
