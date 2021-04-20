@@ -115,7 +115,7 @@ let rec fstPar (es:Sleek.instants) :parfst list =
 
     ;;
 
-let rec findProg name full:(param list* effects * effects) = 
+let rec findProg name full:(param list* Sleek.effects * Sleek.effects) = 
   match full with 
   | [] -> raise (Foo ("function " ^ name ^ " is not found!"))
   | x::xs -> 
@@ -294,7 +294,7 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
     | Some (None, ins) -> 
 
       List.append acc (  
-        let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = (pi, Sequence (his, Sleek.Instant ins)); rhs = List.hd (precon) })  in 
+        let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sequence (his, Sleek.Instant ins))]; rhs = (precon) })  in 
         if verbose then 
           List.map (fun (pi1, es1) -> 
             let (_, pae_es) = parallelES pi pi1 (Sleek.Instant ins)  es1 in 
@@ -305,7 +305,7 @@ let rec forward (current:prog_states) (prog:expression) (full: statement list): 
     | Some (Some t, ins) -> 
 
       List.append acc (  
-        let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = (pi, Sequence (his, Sleek.Instant ins)); rhs = List.hd (precon) })  in 
+        let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sequence (his, Sleek.Instant ins))]; rhs = (precon) })  in 
         if verbose then 
           List.map (fun (pi1, es1) -> 
           let (_, pae_es) = parallelES pi pi1 (Sleek.Timed (Sleek.Instant ins, t))  es1 in 
@@ -511,7 +511,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
         | (pi, his, None) -> (pi, his)
       ) raw_final in 
 
-    let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = List.hd final; rhs = List.hd (post) })  in 
+    let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = final; rhs = (post) })  in 
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^

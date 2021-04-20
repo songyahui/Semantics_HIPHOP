@@ -181,11 +181,11 @@ let rec string_of_expression (expr: expression): string =
 
   ;;
 
-let rec show_effects_list (eff_li: Sleek.effects list) : string =
+let rec show_effects_list (eff_li: Sleek.effects) : string =
   match eff_li with 
   | [] -> ""
-  | [x] -> Sleek.show_effects x 
-  | x :: xs -> Sleek.show_effects x ^ "\\/" ^ show_effects_list xs ;;
+  | [x] -> Sleek.show_simple_effects x 
+  | x :: xs -> Sleek.show_simple_effects x ^ "\\/" ^ show_effects_list xs ;;
 
 
 let string_of_statement (state) : string = 
