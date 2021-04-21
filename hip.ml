@@ -169,6 +169,8 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
 
 
 
+
+
 (*
 (Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option) list  
 *)
@@ -194,6 +196,9 @@ let rec splitEffects (env: string list) (es:Sleek.instants) (pi:Sleek.pi) :prog_
       match state with 
       | (pi2, es2', ins2) -> (pi2, Sleek.Sequence (es, es2'), ins2)
     ) temp
+
+  | Timed (Instant ins, t) -> [(pi, Empty, Some (Some t, ins))]
+
 
   | Timed (es1, t) -> 
     let temp = splitEffects env es1 pi in 
@@ -239,8 +244,74 @@ let rec splitEffects (env: string list) (es:Sleek.instants) (pi:Sleek.pi) :prog_
 
   ;;
 
+(* (Sleek.pi * (Sleek.term option * Sleek__Signals.t) * Sleek.instants) list *)
+let rec splitEffectsFromTheHead (env: string list) (es:Sleek.instants) (pi:Sleek.pi) : prog_states_reverse= 
+  match es with 
+  | Bottom -> []
+  | Empty -> [(pi, (None, Sleek__Signals.initUndef env), Empty)]
+  | Instant ins -> [(pi, (None, Sleek__Signals.add_UndefSigs env ins), Empty)]
+  | Await s -> [(pi, (None, Sleek__Signals.initUndef env), Await s)]
+  | Sequence (es1, es2) -> 
+    let states = splitEffectsFromTheHead env es1 pi in 
+    List.map (fun (pinew, h, es1') -> 
+      (pinew, h, Sleek.Sequence(es1', es2))
+    ) states
+  | Union    (es1, es2) -> 
+    let states1 = splitEffectsFromTheHead env es1 pi in 
+    let states2 = splitEffectsFromTheHead env es2 pi in 
+    List.append states1 states2
+  | Parallel (es1, es2) ->
+    let (newPi, newEs) = parallelES pi pi  es1 es2 in 
+    splitEffectsFromTheHead env newEs newPi 
+  | Kleene   (es1) -> 
+    let states = splitEffectsFromTheHead env es1 pi in 
+    List.map (fun (pinew, h, es1') -> 
+      (pinew, h, Sleek.Sequence(es1', es))
+    ) states
+  | Timed (Instant ins, t) -> [(pi, (Some t, ins), Empty)]
+  | Timed    (es1, t) -> 
+    let temp = splitEffectsFromTheHead env es1 pi in 
+    List.map (fun state ->
+      let newTV1 = getAnewVar_rewriting () in
+      let newTV2 = getAnewVar_rewriting () in
+      match state with 
+      | (p, (None, i), e) -> 
+        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        (newPi, (Some (Sleek.Var newTV1), i), Sleek.Timed (e, Sleek.Var newTV2))
+      | (p, (Some t', i), e) -> 
+        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        (Sleek.And(newPi, Sleek.Atomic(Sleek.Eq, t', Var newTV1)), (Some (Sleek.Var newTV1), i), Sleek.Timed (e, Sleek.Var newTV2))
+    ) temp
 
 
+  ;;
+
+
+let concatFromTheEnd (env:string list) (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek.instants) : (Sleek.pi * Sleek.instants) list=
+  let left_End = splitEffects env es1 pi1 in 
+  let head_Right = splitEffectsFromTheHead env es2 pi2 in 
+  let combine = zip (left_End, head_Right) in 
+  List.map (fun (le, hr) ->
+      match le with 
+      | (p_le, es_le, None) -> (p_le, es_le)
+      | (p_le, es_le, Some (None, insL))->
+          (match hr with 
+          | (p_hr, (None, insR), es_hr) -> 
+            (Sleek.And(p_le, p_hr),  Sleek.Sequence (Sleek.Sequence(es_le , Instant(Sleek__Signals.merge insL insR)) ,  es_hr))
+          | (p_hr, (Some t', insR), es_hr) -> 
+            (Sleek.And(p_le, p_hr), Sleek.Sequence (Sequence(es_le , Timed ( Instant(Sleek__Signals.merge insL insR), t')) ,  es_hr))
+          )
+      | (p_le, es_le, Some (Some t, insL))->
+          (match hr with 
+          | (p_hr, (None, insR), es_hr) -> 
+            (Sleek.And(p_le, p_hr), Sleek.Sequence (Sequence(es_le , Timed ( Instant(Sleek__Signals.merge insL insR), t)) ,  es_hr))
+          | (p_hr, (Some t', insR), es_hr) ->  
+            let pinew =  Sleek.And(Sleek.And(p_le, p_hr), Sleek.Atomic(Sleek.Eq, t, t') ) in 
+            (pinew, Sleek.Sequence (Sleek.Sequence (es_le, Timed ( Instant(Sleek__Signals.merge insL insR), t)) ,  es_hr))
+          )
+
+    ) combine
+    ;;
 
 
 let rec findProg name full:(param list* Sleek.effects * Sleek.effects) = 
