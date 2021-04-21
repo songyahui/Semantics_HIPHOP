@@ -2,23 +2,6 @@
 (*-| Representations for modules' exports.*)
 
 
-(*
-
-es: 
-  | Bottom ⏊   _|_ 
-  | Empty  𝝐    emp 
-  | Instant  of Signals.t   {B} {B, A} {}
-  | Await    of Signals.event   C?
-  | Sequence of instants * instants    {B}·{C} //es. es
-  | Union    of instants * instants  es \/ es    {B}·{C} \/ A?·{C}
-  | Parallel of instants * instants  (es) || es
-  | Kleene   of instants   ()^*
-*)
-type signal = One of string | Zero of string 
-
-(*signal set*)
-type instance = signal list ;;
-
 
 
 type ('a, 'b, 'c)  either = Left of 'a | Right of 'b 
@@ -80,67 +63,4 @@ type statement =
 type prog_states = (Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option) list
     
 type parfst = SL of Sleek__Signals.t | W of Sleek__Signals.event
-    (*
-    (Sleek.pi * Sleek.instants * (Sleek__Signals.t) option * string option) list
-    *)
-
-
-
-(*
- | TypeAliasDeclaration of _type * _type
-     | ModuleDeclaration of mn * exportSet
-
-    | TypeDeclaration of _type * (_type list)
-    | PortTypeDeclaration of mn * _type
-    | PortDeclaration of mn * ( mn list)  * expression
-    | FunctionTypeDeclaration of mn * _type
-    | FunctionDeclaration of pattern * expression
-    | PortModuleDeclaration of mn * exportSet
-type exportSet = AllExport
-        | SubsetExport of ( exportSet list)
-        | FunctionExport of mn
-        | TypeExport of mn *( exportSet option)
-
-
-(*-| Representations for Elm's type syntax.*)
-type _type = 
-    | TypeConstructor of (mn list) * ( _type list)
-    | TypeVariable of mn
-    | TypeRecordConstructor of _type * ( ( mn* _type ) list)
-    | TypeRecord of ( ( mn*  _type ) list)
-    | TypeTuple of ( _type list)
-    | TypeApplication of _type * _type
-
-
-type pattern = PWildcard
-    | PVariable of mn
-    | PLiteral of literal
-    | PApplication of pattern * pattern
-    | PTuple of ( pattern list)
-    | PRecord of (mn list)
-
-    (*
-    | PConstructor of mn
-    | PCons of pattern * pattern
-    | PList of ( pattern list)
-    | PA of pattern * mn
-    *)
-
-
-type expression = Literal of literal 
-    | Variable of mn
-    | List of ( expression list)
-    | Tuple of ( expression list)
-    | Access of expression * ( mn list)
-    | AccessFunction of mn
-    | Record of ( ( mn * expression ) list)
-    | RecordUpdate of mn * ( ( mn * expression )list)
-    | If of expression * expression * expression
-    | Let of (  ( pattern* expression )list ) * expression
-    | Case of expression * ( ( pattern * expression ) list)
-    | Lambda of (pattern list) * expression
-    | Application of expression * expression
-    | BinOp of expression * expression * expression
-    | Glsl 
-
-*)
+ 

@@ -88,6 +88,7 @@ rule token = parse
 | ';' { SIMI }
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | "//" { read_single_line_comment lexbuf }
+| "(*" { read_multi_line_comment lexbuf }
 
 
 | eof { EOF }
@@ -101,7 +102,7 @@ and read_single_line_comment = parse
   | _ { read_single_line_comment lexbuf }
   
 and read_multi_line_comment = parse
-  | "-}" { token lexbuf }
+  | "*)" { token lexbuf }
   | newline { next_line lexbuf; read_multi_line_comment lexbuf }
   | eof { raise (SyntaxError ("Lexer - Unexpected EOF - please terminate your comment.")) }
   | _ { read_multi_line_comment lexbuf }

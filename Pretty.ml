@@ -102,28 +102,9 @@ let rec input_lines file =
 ;;
 
 
-let string_of_state (state :signal):string = 
-  match state with 
-    One name -> name 
-  | Zero name -> "!"^name 
-  ;;
 
 
-let string_of_sl (sl: instance):string = 
-  List.fold_left (fun acc (sig_) -> 
-  acc ^ "," ^ 
-  string_of_state sig_ (*^ (
-    match n with 
-      None -> ";"
-    | Some n -> "(" ^ string_of_int n ^");"
-  )*)
-  ) "" sl
-;;
 
-let string_of_instance (mapping:instance) :string = 
-  let temp1 = "{" ^ string_of_sl mapping ^ "}" in 
-  temp1
-  ;;
 
 let string_of_param (p : param) : string =
   match p with 
