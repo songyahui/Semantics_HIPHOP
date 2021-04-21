@@ -20,6 +20,8 @@ print_string (inputfile ^ "\n" ^ outputfile^"\n");*)
       |> List.iteri (fun no str ->
          let case = Sleek.parse_specification str in
          let correct, verdict, history = Sleek.verify_specification case in
+         "\n====================================\n"^
+         (if correct then "Succeed\n" else "Fail\n")^
          Sleek.show_verification ~case ~no ~verdict ~verbose:(not correct) ~history |> print_endline;
          assert correct);
 
