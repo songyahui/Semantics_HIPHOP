@@ -366,7 +366,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     forward env (forward env current p1 full) p2 full
 
   | Async (s, p) -> 
-    print_string (string_of_prog_states current ^"\n");
+    (*print_string (string_of_prog_states current ^"\n");*)
     List.map (fun (pi1, his, cur1) ->
       match cur1 with 
       | None -> (pi1, his, cur1)
@@ -421,6 +421,37 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       
 
     )  current 
+
+  | Abort (FunctionCall (_, (Variable s)::_), p) ->
+    let newTV1 = getAnewVar_rewriting () in
+    let newPi = Sleek.And(p, Sleek.Atomic(Sleek.LT, Var newTV1, Var s)) in 
+
+
+    List.fold_left (fun acc (pi, his, cur) ->
+    
+      List.append acc (
+        List.map (fun (pi1, his1, cur1) ->
+        match cur1 with 
+        | None -> (pi1, Sleek.Sequence(his, his1), cur1)
+        | Some (None, cur) -> (newPi, Sleek.Sequence (his, Sleek.Instant cur), Some (None, Sleek__Signals.make [(Sleek__Signals.present s)]))
+        | Some (Some t, cur) -> (newPi, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)), Some (None, Sleek__Signals.make [(Sleek__Signals.present s)]))
+      
+        ) (forward env [(newPi, Empty, cur)] p full)
+
+      )) [] current
+
+
+    List.map (fun (pi1, his, cur1) ->
+      match cur1 with 
+      | None -> (pi1, his, cur1)
+      | Some (None, cur) -> (newPi, Sleek.Sequence (his, Sleek.Instant cur), Some (None, Sleek__Signals.make [(Sleek__Signals.present s)]))
+      | Some (Some t, cur) -> (newPi, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)), Some (None, Sleek__Signals.make [(Sleek__Signals.present s)]))
+      ) (forward env [(pi, Empty, cur)] p full)
+
+
+
+
+
 
 
 
