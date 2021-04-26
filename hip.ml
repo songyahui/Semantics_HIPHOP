@@ -564,3 +564,14 @@ print_string (inputfile ^ "\n" ^ outputfile^"\n");*)
       raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
 
    ;;
+
+   (*
+   statck , heap, -> op semantcis 
+
+   traces  -> instrumental semantics. 
+
+   state |= logic
+
+   then the logic. 
+
+*)
