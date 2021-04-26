@@ -7,7 +7,7 @@ hiphop module authenticate (
 	 	out Connected)
 	 
 /*@ requires "d>3  && {Login} " @*/
-/*@ ensures  "(t<3 && t<d) && {Connecting}#t.{Connected} 
+/*@ ensures  "(d>3 && t<3 && t<d) && ({Connecting}.{Connected}) #t
 		  \\/ t1=d && {Connecting}#t1 " @*/
 
 {
