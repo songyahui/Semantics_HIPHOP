@@ -6,14 +6,16 @@ open List
 exception Foo of string
 
 
-let rec fstPar (es:Sleek.instants) :parfst list = 
+let rec fstPar (es:Sleek.instants) :(parfst* (Sleek.term option)) list = 
   match es with 
     Bottom -> []
   | Empty -> []
-  | Await s -> [(W s)] 
-  | Instant ins ->  [(SL ins)]
+  | Await s -> [(W s, None)] 
+  | Instant ins ->  [(SL ins, None)]
   | Sequence (es1 , es2) ->  if Sleek__Inference.nullable es1 then append (fstPar  es1) (fstPar  es2) else fstPar  es1
   | Union (es1, es2) -> append (fstPar  es1) (fstPar  es2)
+  | Timed (Instant ins, t) -> [(SL ins, Some t)]
+  | Timed (Await s, t) -> [(W s, Some t)] 
   | Timed (es1, _) -> fstPar es1
   | Kleene es1 -> fstPar  es1
   | Parallel (_ , _) -> 
@@ -30,21 +32,38 @@ let rec fstPar (es:Sleek.instants) :parfst list =
     ;;
 
 
-let rec derivativePar (fst: parfst) (es:Sleek.instants) (pi:Sleek.pi): (Sleek.pi * Sleek.instants) =
+let rec derivativePar (fst: parfst * (Sleek.term option)) (es:Sleek.instants) (pi:Sleek.pi): (Sleek.pi * Sleek.instants) =
   match es with 
   | Bottom ->  (pi, Bottom)
   | Empty ->  (pi, Bottom)
   | Await s -> 
     (
       match fst with 
-        W (f) ->  if Sleek__Signals.compare_event f s  then (pi, Empty) else (pi, Bottom)
-      | SL ins -> if Sleek__Signals.isEventExist s ins then (pi, Empty) else (pi, Bottom)
+        (W (f), None) ->  if Sleek__Signals.compare_event f s  then (pi, Empty) else (pi, Bottom)
+      | (SL ins, None) -> if Sleek__Signals.isEventExist s ins then (pi, Empty) else (pi, Bottom)
+      | _ -> (pi, Bottom)
     )
   | Instant ins ->  
     (
       match fst with 
-        W f ->  if Sleek__Signals.isEventExist f ins then (pi, Empty) else (pi, Bottom)
-      | SL f -> if Sleek__Signals.(|-)  f ins then (pi, Empty) else (pi, Bottom)
+      | (W f, None) ->  if Sleek__Signals.isEventExist f ins then (pi, Empty) else (pi, Bottom)
+      | (SL f, None)-> if Sleek__Signals.(|-)  f ins then (pi, Empty) else (pi, Bottom)
+      | _ -> (pi, Bottom)
+    )
+
+  | Timed (Instant ins, _) -> 
+    (
+      match fst with 
+      | (W f, Some _) ->  if Sleek__Signals.isEventExist f ins then (pi, Empty) else (pi, Bottom)
+      | (SL f, Some _ )-> if Sleek__Signals.(|-)  f ins then (pi, Empty) else (pi, Bottom)
+      | _ -> (pi, Bottom)
+    )
+  | Timed (Await s, _) -> 
+    (
+      match fst with 
+        (W (f), Some _) ->  if Sleek__Signals.compare_event f s  then (pi, Empty) else (pi, Bottom)
+      | (SL ins, Some _ ) -> if Sleek__Signals.isEventExist s ins then (pi, Empty) else (pi, Bottom)
+      | _ -> (pi, Bottom)
     )
     
   | Sequence (es1 , es2) -> 
@@ -100,6 +119,21 @@ let rec lengthOfEs (es:Sleek.instants) : int =
   | Kleene es1 -> lengthOfEs es1 
   ;;
 
+let unifyOptionalTerms t1 t2 : (Sleek.term option * Sleek.pi) = 
+  match (t1, t2) with 
+  | (None, None) -> (None, Sleek.True )
+  | (Some t, None) -> (Some t, Sleek.True )
+  | (None, Some t) -> (Some t, Sleek.True )
+  | (Some tt1, Some tt2) -> (Some tt1, Sleek.Atomic(Sleek.Eq, tt1, tt2) )
+
+  ;;
+
+let addOptionaLTerm ins t = 
+  match t with 
+  | None -> ins
+  | Some t -> Sleek.Timed (ins, t)
+  ;;
+  
 let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek.instants) : (Sleek.pi * Sleek.instants) =
   let norES1 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es1 in 
   let norES2 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es2 in 
@@ -122,44 +156,54 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
     let newPi = Sleek.And (newpi1, newpi2) in 
 
     match (f1, f2) with  
-      (W _, W _ ) -> raise (Foo "there is a deadlock")
-    | (W s, SL ins) -> 
+      ((W _, _) , (W _ , _)) -> raise (Foo "there is a deadlock")
+    | ((W s, t1), (SL ins, t2)) -> 
+      let (t_add, p_add) = unifyOptionalTerms t1 t2 in 
       if Sleek__Signals.isEventExist s ins then 
         match (der1, der2) with 
-        | (Empty, _) -> (newPi, Sleek.Sequence (Instant ins, der2))
-        | (_, Empty) -> (newPi, Sleek.Sequence (Instant ins, der1))
+        | (Empty, _) -> (Sleek.And(newPi, p_add), Sleek.Sequence (addOptionaLTerm (Instant ins) t_add, der2))
+        | (_, Empty) -> (Sleek.And(newPi, p_add), Sleek.Sequence (addOptionaLTerm (Instant ins) t_add, der1))
         | _ -> let(p, es) = parallelES pi1 pi2 der1 der2 in 
-               (p, Sleek.Sequence (Instant ins, es))
+               (Sleek.And(p, p_add), Sleek.Sequence (addOptionaLTerm (Instant ins) t_add, es))
 
       else 
+        
         let (p, es) = parallelES pi1 pi2 es1 der2  in 
-        (p, Sleek.Sequence (Instant ins, es))
+        (Sleek.And(p, p_add), Sleek.Sequence (addOptionaLTerm (Instant ins) t_add, es))
 
-    | (SL ins, W s) -> 
+    | ((SL ins, t1), (W s ,t2)) -> 
+      let (t_add, p_add) = unifyOptionalTerms t1 t2 in 
+
       if Sleek__Signals.isEventExist s ins then 
         match (der1, der2) with 
-        | (Empty, _) -> (newPi, Sleek.Sequence (Instant ins, der2))
-        | (_, Empty) -> (newPi, Sleek.Sequence (Instant ins, der1))
+        | (Empty, _) -> (Sleek.And(newPi, p_add), Sleek.Sequence (addOptionaLTerm (Instant ins) t_add, der2))
+        | (_, Empty) -> (Sleek.And(newPi, p_add), Sleek.Sequence (addOptionaLTerm (Instant ins) t_add, der1))
         | _ -> let(p, es) = parallelES pi1 pi2 der1 der2 in 
-               (p, Sleek.Sequence (Instant ins, es))
+               (Sleek.And(p, p_add), Sleek.Sequence (addOptionaLTerm (Instant ins) t_add, es))
 
       else 
         let (p, es) = parallelES pi1 pi2 der1 es2  in 
-        (p, Sequence (Instant ins, es))
-    | (SL ins1, SL ins2) -> 
+        
+        (Sleek.And(p, p_add), Sequence (addOptionaLTerm (Instant ins) t_add, es))
+
+    | ((SL ins1, t1), (SL ins2, t2)) -> 
+      let (t_add, p_add) = unifyOptionalTerms t1 t2 in 
+
       (match (der1, der2) with 
-      | (Empty, _) -> (newPi, Sequence (Instant (Sleek__Signals.merge ins1 ins2), der2))
-      | (_, Empty) -> (newPi, Sequence (Instant (Sleek__Signals.merge ins1 ins2), der1))
+      | (Empty, _) -> (Sleek.And(newPi, p_add), Sequence (addOptionaLTerm (Instant (Sleek__Signals.merge ins1 ins2)) t_add, der2))
+      | (_, Empty) -> (Sleek.And(newPi, p_add), Sequence (addOptionaLTerm (Instant (Sleek__Signals.merge ins1 ins2)) t_add, der1))
       | (der1, der2) -> 
         let (pi, es) = (parallelES pi1 pi2 der1 der2) in 
-        (pi, Sequence (Instant (Sleek__Signals.merge ins1 ins2), es))
+
+        (Sleek.And(pi, p_add), Sequence (addOptionaLTerm (Instant (Sleek__Signals.merge ins1 ins2)) t_add, es))
       
     ) 
  
   ) headcom
   in 
   
-  (*print_string ((List.fold_left (fun acc a -> acc ^ Sleek.show_effects a ) "" esLIST) ^"\n"); 
+  (*
+  print_string ((List.fold_left (fun acc a -> acc ^ Sleek.show_effects [a] ) "" esLIST) ^"\n"); 
 *)
   List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
 
@@ -478,9 +522,11 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let temp1 = forward env [(pi, Empty, cur)] p1 full in 
     let temp2 = forward env [(pi, Empty, cur)] p2 full in 
 
+(*
     print_string (string_of_states temp1^"\n---\n");
     print_string (string_of_states temp2^"\n===>\n");
 
+*)
     let combine = zip (temp1, temp2) in 
 
   
@@ -513,7 +559,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     ) combine
     )) [] current
     )in 
-    print_string (string_of_states final);
     final
 
 
@@ -558,7 +603,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek__Utils.fixpoint ~f: Sleek.normalize a) final) ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
-    "[" ^ (if verbose then "SUCCEED" else "FAIL") ^ "]\n" ^ 
+    "[" ^ (if verbose then "FAIL"  else "SUCCEED") ^ "]\n" ^ 
     Sleek.show_history  history    ~verbose ^ "\n\n"
     
   | _ -> ""
