@@ -63,9 +63,9 @@ let rec derivativePar (fst: parfst) (es:Sleek.instants) (pi:Sleek.pi): (Sleek.pi
 
   | Timed (es1, t) -> 
     let (pi1, temp1) =  derivativePar fst es1 pi  in
-    let newTV1 = getAnewVar_rewriting () in
-    let newTV2 = getAnewVar_rewriting () in
-    let newPi = Sleek.And(pi1, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+    let (newTV1, newPi1) = getAnewVar_rewriting () in
+    let (newTV2, newPi2) = getAnewVar_rewriting () in
+    let newPi = Sleek.And(Sleek.And(newPi1, newPi2) , Sleek.And(pi1, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t))) in 
     (newPi, Timed(temp1, Var newTV2))
 
   | Kleene (es1) -> 
@@ -203,14 +203,15 @@ let rec splitEffects (env: string list) (es:Sleek.instants) (pi:Sleek.pi) :prog_
   | Timed (es1, t) -> 
     let temp = splitEffects env es1 pi in 
     List.map (fun state ->
-      let newTV1 = getAnewVar_rewriting () in
-      let newTV2 = getAnewVar_rewriting () in
+      let (newTV1, newPi1) = getAnewVar_rewriting () in
+      let (newTV2, newPi2) = getAnewVar_rewriting () in
+      let newPi12 = Sleek.And (newPi1, newPi2) in 
       match state with 
       | (p, e, Some (None, i)) -> 
-        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        let newPi = Sleek.And (newPi12, Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t))) in 
         (newPi, Sleek.Timed (e, Sleek.Var newTV1), Some (Some (Sleek.Var newTV2), i))
       | (p, e, Some (Some t', i)) -> 
-        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        let newPi = Sleek.And (newPi12, Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t))) in 
         (Sleek.And(newPi, Sleek.Atomic(Sleek.Eq, t', Var newTV2)), Sleek.Timed (e, Sleek.Var newTV1), Some (Some (Sleek.Var newTV2), i))
       | (p, e, None) ->  (p, e, None)
     ) temp
@@ -272,14 +273,15 @@ let rec splitEffectsFromTheHead (env: string list) (es:Sleek.instants) (pi:Sleek
   | Timed    (es1, t) -> 
     let temp = splitEffectsFromTheHead env es1 pi in 
     List.map (fun state ->
-      let newTV1 = getAnewVar_rewriting () in
-      let newTV2 = getAnewVar_rewriting () in
+      let (newTV1, newPi1) = getAnewVar_rewriting () in
+      let (newTV2, newPi2) = getAnewVar_rewriting () in
+      let newPi12 = Sleek.And (newPi1, newPi2) in 
       match state with 
       | (p, (None, i), e) -> 
-        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        let newPi = Sleek.And (newPi12, Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t))) in 
         (newPi, (Some (Sleek.Var newTV1), i), Sleek.Timed (e, Sleek.Var newTV2))
       | (p, (Some t', i), e) -> 
-        let newPi = Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t)) in 
+        let newPi = Sleek.And (newPi12, Sleek.And(p, Sleek.Atomic(Sleek.Eq, Sleek.Plus(Var newTV1, Var newTV2) , t))) in 
         (Sleek.And(newPi, Sleek.Atomic(Sleek.Eq, t', Var newTV1)), (Some (Sleek.Var newTV1), i), Sleek.Timed (e, Sleek.Var newTV2))
     ) temp
 
@@ -428,8 +430,8 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   List.flatten (
 
     List.fold_left (fun acc (pi, his, cur) ->
-      let newTV1 = getAnewVar_rewriting () in
-      let newPi = Sleek.And(pi, Sleek.Atomic(Sleek.Lt, Var newTV1, Var s)) in 
+      let (newTV1, newPi1) = getAnewVar_rewriting () in
+      let newPi = Sleek.And (newPi1, Sleek.And(pi, Sleek.Atomic(Sleek.Lt, Var newTV1, Var s))) in 
 
     
       List.append acc (

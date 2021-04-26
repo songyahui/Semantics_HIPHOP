@@ -22,7 +22,8 @@ let counter_rewriting = ref 0;;
 
 let getAnewVar_rewriting () = 
   counter_rewriting := ! counter_rewriting + 1; 
-  "tv" ^ string_of_int !counter_rewriting;;
+  let var = "tv" ^ string_of_int !counter_rewriting in 
+  (var , Sleek.Atomic(Sleek.Ge, Var var , Const 0)) ;;
 
 (*used to generate the free veriables, for subsititution*)
 let freeVar = ["t1"; "t2"; "t3"; "t4";"t5";"t6";"t7";"t8";"t9";"t10"
