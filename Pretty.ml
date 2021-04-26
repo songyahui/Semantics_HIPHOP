@@ -210,3 +210,19 @@ let rec zip (ls:'a list * 'b list) : ('a * 'b) list =
     | (_,[]) -> []
     | (x::xrest, y::yrest) -> (x,y)::zip (xrest,yrest)
 ;;
+
+let string_of_state (state: (Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option)) : string = 
+  let (pi, inss, cur) = state in 
+  Sleek.show_effects [(pi, inss)] ^
+  match cur with 
+  | None -> ".end."
+  | Some (None, t) -> Sleek.show_instants (Instant t)
+  | Some (Some t, s) ->  Sleek.show_instants (Timed (Instant s, t)) 
+  ;; 
+
+
+let rec string_of_states (states:prog_states) :string =
+  match states with 
+  | [] -> ""
+  | x::xs -> string_of_state x ^ "\n"^ string_of_states xs 
+  ;;

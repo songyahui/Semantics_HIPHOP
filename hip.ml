@@ -376,10 +376,13 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       | Some (Some t, cur) -> (pi1, Sleek.Sequence (his, Sleek.Timed (Sleek.Instant cur, t)), Some (None, Sleek__Signals.add_UndefSigs env (Sleek__Signals.make [(Sleek__Signals.present s)])))
       ) (forward env current p full)
 
-  | Run p -> forward env current p full 
+  | Run (FunctionCall (Variable mn, _)) -> 
+  (*forward env current p full 
 
-  (*| FunctionCall (Variable mn, _) ->
+  |  ->
+  *)
     let (_, precon, postcon) = findProg mn full in 
+
     List.flatten (
 
     List.fold_left (fun acc (pi, his, cur) ->
@@ -391,10 +394,19 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       List.append acc (  
         let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sequence (his, Sleek.Instant ins))]; rhs = (precon) })  in 
         if verbose then 
+        List.flatten (
           List.map (fun (pi1, es1) -> 
-            let (_, pae_es) = parallelES pi pi1 (Sleek.Instant ins)  es1 in 
-            splitEffects env (Sleek.normalize_es (Sleek.Sequence (his, pae_es))) (Sleek.And (pi, pi1)) 
+            let traces = concatFromTheEnd env pi pi1 (Sleek.Sequence(his, Sleek.Instant ins)) es1 in 
+            List.map (fun (pi_new, ins_new) -> 
+            let final = splitEffects env  (Sleek__Utils.fixpoint ~f: Sleek.normalize_es ins_new) pi_new  in
+            final
+            
+            
+            ) traces
+            
+           
           ) postcon
+        )
         else raise (Foo "precondiction check failed")
       )
       
@@ -403,17 +415,20 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       List.append acc (  
         let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sequence (his, Sleek.Instant ins))]; rhs = (precon) })  in 
         if verbose then 
+        List.flatten (
           List.map (fun (pi1, es1) -> 
-          let (_, pae_es) = parallelES pi pi1 (Sleek.Timed (Sleek.Instant ins, t))  es1 in 
-          splitEffects env (Sleek.normalize_es (Sleek.Sequence (his, pae_es))) (Sleek.And (pi, pi1)) 
-           ) postcon
+            let traces = concatFromTheEnd env pi pi1 (Sleek.Sequence(his, Timed(Sleek.Instant ins, t))) es1 in 
+            List.map (fun (pi_new, ins_new) -> splitEffects env  ins_new pi_new ) traces
+           
+          ) postcon
+        )
         else raise (Foo "precondiction check failed")
       )
     )
    ) [] current 
     )
 
-  *)
+  
 
   | Await (Variable s) -> 
       List.map (fun (pi1, his, cur1) -> 
@@ -454,13 +469,18 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
 
   | ForkPar (p1::p2::_) -> 
-    List.flatten (
+
+    let final = List.flatten (
     List.fold_left (fun acc (pi, his, cur) ->
   
     List.append acc (  
   
     let temp1 = forward env [(pi, Empty, cur)] p1 full in 
     let temp2 = forward env [(pi, Empty, cur)] p2 full in 
+
+    print_string (string_of_states temp1^"\n---\n");
+    print_string (string_of_states temp2^"\n===>\n");
+
     let combine = zip (temp1, temp2) in 
 
   
@@ -492,7 +512,10 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
     ) combine
     )) [] current
-    )
+    )in 
+    print_string (string_of_states final);
+    final
+
 
    
 
