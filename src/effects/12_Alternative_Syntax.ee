@@ -1,4 +1,6 @@
 
+    
+(* Sorry, current version does not support this syntax...  *) 
     {| True /\ {A, B}.{A, B}^*  |-  True /\ {A, B}^* : true |};
     {| True /\ ({A}.{B})^*      |-  True /\ {A, B}^* : false |};
     {| True /\ ({A}.{B})^*      |-  True /\ ({A} + {B})^* : true |};
