@@ -603,7 +603,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek__Utils.fixpoint ~f: Sleek.normalize a) final) ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
-    "[" ^ (if verbose then "FAIL"  else "SUCCEED") ^ "]\n" ^ 
+    "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 
     Sleek.show_history  history    ~verbose ^ "\n\n"
     
   | _ -> ""
