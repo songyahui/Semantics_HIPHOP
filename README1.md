@@ -15,8 +15,3 @@ Targeting a core language <pre xml:lang="latex">\lambda_{HH}</pre>, we establish
 
 ## The Back End
 
-
-
-
-
-
