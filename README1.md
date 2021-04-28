@@ -64,7 +64,25 @@
 
 
 
+<h2 id="tool-overview" class="intro_sub_title ">More Resources</h2>
+<ul type="disc">
+<li> <a class="example_item" href="https://dl.acm.org/doi/pdf/10.1145/3385412.3385984?casa_token=uBOpkpxkyp8AAAAA:4SfRdflatXLOwbX3n28AXF-Nwz2yT3p74oUOq-m_e35_JwZ79PgO0EgMMwHlITlpe3fOmic0Fv96aCw">
+Berry, G., & Serrano, M. (2020, June). HipHop. js:(A) Synchronous reactive web programming. In Proceedings of the 41st ACM SIGPLAN Conference on Programming Language Design and Implementation (pp. 533-545).
+</a></li>
+<li> <a class="example_item" href="http://sunfire.comp.nus.edu.sg/user/y/yahuis/public_html/timed_effects/hiphop.pdf">
+Draft Paper
+</a></li>
 
+</ul>
+
+
+<p>(Note: if the callee module is not defined in the current program, the pre/post condition will be assume as: True && emp)</p>
+
+<p>(Note: the current implementation deploys some different symbols comparing to the above AST. For example,  "&&" is used to connect the pure and the trace; "//" is the parallel operator.)</p>
+
+<li> <a class="example_item" href="https://www.comp.nus.edu.sg/~yahuis/timed_effects/code">
+Source Code and Evaluation Benchmark (Not yet available ..)
+</a></li>
 
 
 

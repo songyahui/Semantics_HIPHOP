@@ -20,7 +20,41 @@ let rec fstPar (es:Sleek.instants) :(parfst* (Sleek.term option)) list =
   | Kleene es1 -> fstPar  es1
   | Parallel (_ , _) -> 
     (raise (Foo "should not be here fstPar"))
-    (*let fst1 = fstPar es1 in
+
+    (*
+    let rec fstPar (pi:Sleek.pi) (es:Sleek.instants) :(Sleek.pi * parfst* (Sleek.term option)) list = 
+  match es with 
+    Bottom -> []
+  | Empty -> []
+  | Await s -> [(pi, W [s], None)] 
+  | Instant ins ->  [(pi, SL ins, None)]
+  | Sequence (es1 , es2) ->  if Sleek__Inference.nullable es1 then append (fstPar pi es1) (fstPar pi es2) else fstPar pi es1
+  | Union (es1, es2) -> append (fstPar pi es1) (fstPar pi es2)
+  | Timed (Instant ins, t) -> [(pi, SL ins, Some t)]
+  | Timed (Await s, t) -> [(pi, W [s], Some t)] 
+  | Timed (es1, _) -> fstPar pi es1
+  | Kleene es1 -> fstPar pi es1
+  | Parallel (es1 , es2) -> 
+       let temp1 = fstPar pi es1 in 
+    let temp2 = fstPar pi es2 in 
+    let combine = zip (temp1, temp2) in 
+    List.map (fun (a, b)->
+      match (a, b) with 
+      | ((pi1, f1, None), (pi2, f2, None)) -> 
+        (
+          match (f1, f2) with 
+          | (W ff1, W ff2) -> (Sleek.And(pi1, pi2), W (List.append ff1 ff2), None)
+          | (SL ff1, SL ff2) -> (Sleek.And(pi1, pi2), SL (Sleek__Signals.merge ff1 ff2), None)
+                | _ -> raise (Foo "fstPar error")
+
+
+        )
+      | _ -> raise (Foo "fstPar error")
+    ) combine
+
+
+    
+    let fst1 = fstPar es1 in
     let fst2 = fstPar es2 in
     let combine = zip (fst1,  fst2) in 
     List.map (fun (a, b) -> 
@@ -91,11 +125,11 @@ let rec derivativePar (fst: parfst * (Sleek.term option)) (es:Sleek.instants) (p
     let (pi1, temp1) =  derivativePar fst es1 pi  in  
     (pi1, Sleek.Sequence (temp1, es))
 
-  | Parallel (_ , _) -> 
-  print_string (Sleek.show_instants es );
-  raise (Foo "derivativePar error")
+  | Parallel (es1, es2) -> 
+      let (pi1, temp1) =  derivativePar fst es1 pi  in
+      let (pi2, temp2) =  derivativePar fst es2 pi in 
+      (Sleek.And (pi1, pi2), Parallel (temp1,temp2))
 
-  
 
   ;;
 
@@ -104,7 +138,6 @@ let rec derivativePar (fst: parfst * (Sleek.term option)) (es:Sleek.instants) (p
 (*
 prog_states = 
 (Sleek.pi * Sleek.instants * instance option * string option) list 
-*)
 
 let rec lengthOfEs (es:Sleek.instants) : int =
   match es with 
@@ -118,6 +151,9 @@ let rec lengthOfEs (es:Sleek.instants) : int =
   | Timed (es1, _) -> lengthOfEs es1 
   | Kleene es1 -> lengthOfEs es1 
   ;;
+*)
+
+
 
 let unifyOptionalTerms t1 t2 : (Sleek.term option * Sleek.pi) = 
   match (t1, t2) with 
@@ -138,25 +174,52 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
   let norES1 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es1 in 
   let norES2 = Sleek__Utils.fixpoint ~f: Sleek.normalize_es es2 in 
 
-  
-  (*print_string (Sleek.show_instants (norES1)^"\n");
-  print_string (Sleek.show_instants (norES2)^"\n\n");
+  (*
+  print_string (Sleek.show_instants (norES1)^"\n");
+  print_string (Sleek.show_instants (norES2)^"\n parallelES====> \n");
 *)
+  match (norES1, norES2) with 
+  | (_, Empty) -> (Sleek.And(pi1, pi2), norES1)
+  | (Empty, _) -> (Sleek.And(pi1, pi2), norES2)
+  | _ ->
 
 
   let fst1 = fstPar norES1 in
   let fst2 = fstPar norES2 in 
 
   let headcom = zip (fst1, fst2) in 
+
   let esLIST = List.map (
   fun (f1, f2) -> 
+    print_string (string_of_parfst f1 ^"\n" );
+    print_string (string_of_parfst f2 ^"\n" );
+
 
     let (newpi1, der1) = Sleek.normalize  (derivativePar f1 norES1 pi1) in 
     let (newpi2, der2) = Sleek.normalize  (derivativePar f2 norES2 pi2) in 
     let newPi = Sleek.And (newpi1, newpi2) in 
 
     match (f1, f2) with  
-      ((W _, _) , (W _ , _)) -> raise (Foo "there is a deadlock")
+    | ((W s1, t1) , (W s2 , t2)) ->
+      let (t_add, p_add) = unifyOptionalTerms t1 t2 in 
+
+      (match (der1, der2) with 
+      | (Empty, _) -> (Sleek.And(newPi, p_add), Sleek.Sequence (addOptionaLTerm (Parallel (Await s1, Await s2)) t_add, der2))
+      | (_, Empty) -> (Sleek.And(newPi, p_add), Sleek.Sequence (addOptionaLTerm (Parallel (Await s1, Await s2)) t_add, der1))
+      | (der1, der2) -> 
+        let (pi, es) = (parallelES pi1 pi2 der1 der2) in 
+ (*     print_string ("dsbkcjbdkj\n");
+        print_string (Sleek.show_instants (der1)^"\n");
+        print_string (Sleek.show_instants (der2)^"\n");
+        print_string (Sleek.show_instants (es)^"\n");
+*)
+
+
+        (Sleek.And(pi, p_add), Sleek.Sequence (addOptionaLTerm (Parallel (Await s1, Await s2)) t_add, es))
+   
+      )
+      
+
     | ((W s, t1), (SL ins, t2)) -> 
       let (t_add, p_add) = unifyOptionalTerms t1 t2 in 
       if Sleek__Signals.isEventExist s ins then 
@@ -190,7 +253,14 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
       let (t_add, p_add) = unifyOptionalTerms t1 t2 in 
 
       (match (der1, der2) with 
-      | (Empty, _) -> (Sleek.And(newPi, p_add), Sequence (addOptionaLTerm (Instant (Sleek__Signals.merge ins1 ins2)) t_add, der2))
+      | (Empty, _) -> 
+(*
+      print_string ("dsbkcjbdkj11111\n");
+      print_string (Sleek.show_instants (der1)^"\n");
+      print_string (Sleek.show_instants (der2)^"\n");
+*)
+
+      (Sleek.And(newPi, p_add), Sequence (addOptionaLTerm (Instant (Sleek__Signals.merge ins1 ins2)) t_add, der2))
       | (_, Empty) -> (Sleek.And(newPi, p_add), Sequence (addOptionaLTerm (Instant (Sleek__Signals.merge ins1 ins2)) t_add, der1))
       | (der1, der2) -> 
         let (pi, es) = (parallelES pi1 pi2 der1 der2) in 
@@ -202,11 +272,13 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
   ) headcom
   in 
   
-  (*
+  
   print_string ((List.fold_left (fun acc a -> acc ^ Sleek.show_effects [a] ) "" esLIST) ^"\n"); 
-*)
-  List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
 
+
+  (Sleek__Utils.fixpoint ~f: Sleek.normalize) (
+  List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
+  )
 
   
  ;;
@@ -484,6 +556,16 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
     )  current 
 
+  | Await (Access (s::_ )) -> 
+      List.map (fun (pi1, his, cur1) -> 
+        match cur1 with 
+        | None -> (pi1, his, cur1)
+        | Some (None, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Instant cur, Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
+        | Some (Some t, cur) -> (pi1, Sleek.Sequence (his, Sleek.Sequence(Sleek.Timed (Sleek.Instant cur, t), Await (Sleek__Signals.present s))), Some (None, Sleek__Signals.empty))
+      
+
+    )  current 
+
   | Abort (FunctionCall (_, (Variable s)::_), p) ->
 
   List.flatten (
@@ -509,10 +591,28 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
 
 
+  | DoEvery (p, Access (str::_ ))->
+
+    List.fold_left (fun acc (pi, his, cur) ->
+  
+      List.append acc (  
+  
+        let temp = forward env [(pi, Empty, cur)] p full in 
+
+        List.map (fun  (pi1, his1, cur1)->
+          match cur1 with 
+          | None  -> (pi1, Sleek.Sequence(his, Sleek.Sequence (Await (Sleek__Signals.present str), his1)), None)
+          | Some (None, ins)  -> (pi1, Sleek.Sequence(his, Sleek.Sequence (Await (Sleek__Signals.present str), his1)), Some(None, ins ))
+          | Some (Some t, ins)  -> (pi1, Sleek.Sequence(his, Sleek.Sequence (Await (Sleek__Signals.present str), his1)),  Some (Some t, ins))
+        ) temp
+      )
+    )[] current
 
 
 
-  | ForkPar (p1::p2::_) -> 
+
+
+  | ForkPar (p1::p2::[]) -> 
 
     let final = List.flatten (
     List.fold_left (fun acc (pi, his, cur) ->
@@ -522,11 +622,11 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let temp1 = forward env [(pi, Empty, cur)] p1 full in 
     let temp2 = forward env [(pi, Empty, cur)] p2 full in 
 
-(*
+
     print_string (string_of_states temp1^"\n---\n");
     print_string (string_of_states temp2^"\n===>\n");
 
-*)
+
     let combine = zip (temp1, temp2) in 
 
   
@@ -559,10 +659,16 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     ) combine
     )) [] current
     )in 
+
+    print_string (string_of_states final^"\n");
+
     final
 
 
-   
+  | ForkPar (p1::p2::rest) -> 
+
+    forward env current (ForkPar ((ForkPar ([p1; p2])) ::rest)) full
+
 
   
   | _ ->  current

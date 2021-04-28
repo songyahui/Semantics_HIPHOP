@@ -208,7 +208,9 @@ let rec zip (ls:'a list * 'b list) : ('a * 'b) list =
   match (xs,ys) with
       ([],_) -> []
     | (_,[]) -> []
-    | (x::xrest, y::yrest) -> (x,y)::zip (xrest,yrest)
+    | ([x],y::yrest) -> (x,y)::zip ([x],yrest)
+    | (x::xrest,[y]) -> (x,y)::zip (xrest,[y])
+    | (x::xrest, _) -> List.append (zip ([x], ys)) (zip (xrest, ys))
 ;;
 
 let string_of_state (state: (Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option)) : string = 
@@ -225,4 +227,13 @@ let rec string_of_states (states:prog_states) :string =
   match states with 
   | [] -> ""
   | x::xs -> string_of_state x ^ "\n"^ string_of_states xs 
+  ;;
+
+let string_of_parfst (parfst:(parfst*'a)): string = 
+  match parfst with 
+  | (SL t, _)  -> Sleek.show_instants (Instant t)
+  | (W ins_L, _) -> Sleek__Signals.show_event (ins_L)  ^"?" 
+  
+  (*List.fold_left (fun acc ins -> acc ^ "" ^ ) "" ins_L
+  *)
   ;;

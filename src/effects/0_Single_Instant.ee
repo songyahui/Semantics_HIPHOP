@@ -1,6 +1,9 @@
 
 (* here is some comments  *)   
     "True && {A}  |-  True && {A} : true";
+    "True && {!A}  |-  True && {A} : false";
+    "True && {!A}  |-  True && {!A} : true";
     "True && {}   |-  True && {A} : false";
     "True && {A}  |-  True && {}  : true";
+    "!(True) && {A}  |-  True && {}  : true";
     
