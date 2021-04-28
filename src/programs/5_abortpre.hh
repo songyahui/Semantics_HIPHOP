@@ -3,9 +3,11 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg(out O, out S ) {
-    /*@ requires TRUE /\ emp @*/
-    /*@ ensures TRUE /\ (S.O)^* @*/
+hiphop module prg(out O, out S ) 
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && ({S}.{O})^*" @*/
+
+{
    loop {
       abort( S.pre ) {
 	 emit S();

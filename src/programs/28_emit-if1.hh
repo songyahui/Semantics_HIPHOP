@@ -2,9 +2,13 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( A, B ) {
-    /*@ requires TRUE /\ emp @*/
-    /*@ ensures TRUE /\ (A || {})^* @*/
+hiphop module prg( A, B ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && ({A} // {})^* " @*/	
+
+{
+
    loop {
       if( B.now ) {emit A()};
       yield;

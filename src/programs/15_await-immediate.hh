@@ -2,9 +2,11 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in I, out O ) {
-    /*@ requires TRUE /\ emp @*/
-    /*@ ensures TRUE /\ (I.now?.{O})^* @*/
+hiphop module prg( in I, out O ) 
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && ({I}.{O})^*" @*/
+
+{
    loop {
       await immediate( I.now );
       emit O();

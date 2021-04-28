@@ -6,9 +6,14 @@ function sum( arg1, arg2 ) {
    return arg1 + arg2;
 };
 
-hiphop module prg( O ) {
-    /*@ requires TRUE /\ emp @*/
-   /*@ ensures TRUE /\ (S.O)^* @*/
+hiphop module prg( O ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && {S, O}^* " @*/	
+
+
+{
+
    loop {
       signal S ;//= 1;
 

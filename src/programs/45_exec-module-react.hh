@@ -1,15 +1,23 @@
 "use hopscript"
 
-hiphop module M1( a ) {
-    /*@ requires TRUE /\ emp @*/
-   /*@ ensures TRUE /\ a.a? @*/
+hiphop module M1( a ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && ({A}.A?)  " @*/	
+
+{
+
    emit a( 100 );
    async a {
       this.notify( 10 );
    }
 }
 
-hiphop module m( a, b ) {
+hiphop module m( a, b ) 
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && ({A}.A?)  " @*/	
+
+{
    run M1( a);
 }
 

@@ -2,9 +2,14 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( A, B ) {
-    /*@ requires TRUE /\ emp @*/
-    /*@ ensures TRUE /\ A.B @*/
+hiphop module prg( A, B ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && {A} . {B} " @*/	
+
+
+{
+
    emit A();
    emit B();
 }

@@ -7,16 +7,14 @@ function func() {
 }
 
 hiphop module prg() 
-   /*@ requires emp @*/
-   /*@ ensures  ({})^* @*/
-   /*@ ensures  ({A, B})^* @*/
-   /*@ ensures  ({A}.{B})^* @*/
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && ({A}.{B})^*" @*/
 {
    loop {
       yield;
-      emit A;
+      emit A ();
       yield;
-      emit B;
+      emit B ();
       hop { func() };
    }
 }

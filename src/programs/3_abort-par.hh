@@ -3,9 +3,10 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in I, out O ) {
-   /*@ requires TRUE /\ emp @*/
-   /*@ ensures TRUE /\ O^* || I.now?.L @*/
+hiphop module prg( in I, out O ) 
+   /*@ requires "True && emp" @*/
+    /*@ ensures "True && {O}^* // I?.{L}" @*/
+{
    signal L;
    
    fork {

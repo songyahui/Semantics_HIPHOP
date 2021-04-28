@@ -2,9 +2,13 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in A, T, V ) {
-   /*@ requires TRUE /\ emp @*/
-   /*@ ensures TRUE /\ (S.T.V || S.V)^* @*/
+hiphop module prg( in A, T, V ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && ({S}.{T}.{V} //  {S}.{V})^* " @*/	
+
+{
+
    abort( A.now ) {
       signal S;
 

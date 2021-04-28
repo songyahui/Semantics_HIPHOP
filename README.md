@@ -29,4 +29,3 @@ We present a Term Rewriting System (TRS), to soundly prove the inferred effects 
 The syntax of the specification language:
 
 ![](https://www.comp.nus.edu.sg/~yahuis/timed_effects/syntax_of_Timed_Eff.png)
-

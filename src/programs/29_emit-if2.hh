@@ -2,9 +2,13 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( A, B, C ) {
-    /*@ requires TRUE /\ emp @*/
-    /*@ ensures TRUE /\ ((A || {})^* || (B || {})^*) @*/
+hiphop module prg( A, B, C ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && (({A} + {})^* + ({B} + {})^*) " @*/	
+
+{
+
    fork {
       loop {
 	 if( B.nowval > 3 ) {emit A()};

@@ -3,9 +3,13 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( O ) {
-    /*@ requires TRUE /\ emp @*/
-   /*@ ensures TRUE /\ emp @*/
+hiphop module prg( O ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && emp" @*/	
+
+{
+
    async O {
       this.notify( new Promise( function( resolve, reject ) {
 	 setTimeout( () => resolve( 5 ), 1000 );

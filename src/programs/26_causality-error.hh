@@ -2,9 +2,13 @@
 
 var hh = require( "hiphop" );
 
-hiphop module example( I, O ) {
-    /*@ requires TRUE /\ emp @*/
-    /*@ ensures TRUE /\ (I.O || O)^* @*/
+hiphop module example( I, O ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && (({I}.{O})//{O})^*" @*/	
+
+{
+
    loop {
       if( now( O ) ) {emit I()};
       emit O();

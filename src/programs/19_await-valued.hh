@@ -7,9 +7,12 @@ function foo( evt ) {
    console.log( "foo called by", evt.type, "with value", evt.nowval );
 };
 
-hiphop module prg( in I, out O ) {
-    /*@ requires TRUE /\ emp @*/
-    /*@ ensures TRUE /\ (I.now?.{O(I.nowval)}) @*/
+hiphop module prg( in I, out O ) 
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && (I?).{O}" @*/
+
+{
+
    await( I.now );
    emit O( I.nowval );
 }

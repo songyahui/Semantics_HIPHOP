@@ -2,9 +2,13 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in I, O ) {
-   /*@ requires TRUE /\ emp @*/
-   /*@ ensures TRUE /\ (O)^* @*/
+hiphop module prg( in I, O ) 
+
+   /*@ requires "True && emp" @*/
+   /*@ ensures "True && {O}^* " @*/	
+
+{
+
    do {
       emit O();
    }every count( 2, I.now )
