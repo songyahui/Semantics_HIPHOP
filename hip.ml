@@ -485,6 +485,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     
   
   | Emit (s, _ ) -> 
+
       List.map (fun state ->
         match state with 
         | (pi, his, Some (SL cur, t)) -> (pi, his , Some (SL (Sleek.Signals.merge cur (Sleek.Signals.from s)), t))
@@ -493,7 +494,14 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
         | (_, _, None) -> state
       )  current
 
-  | Signal (s, p) -> forward (s::env) current p full 
+  | Signal (s, p) -> forward (s::env) (
+    List.map (
+      fun (pi, his, cur) -> 
+        match cur with 
+        | Some (SL ins, t) -> (pi, his, Some(SL (Sleek.Signals.add_UndefSigs (s::env) ins) , t))
+        | _ -> (pi, his, cur)
+    )
+    current) p full 
 
   | Seq (p1, p2) -> 
     forward env (forward env current p1 full) p2 full
@@ -591,7 +599,9 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
   | DoEvery (p, Access (str::_ ))->
 
+  (*
   print_string (string_of_states current ^ "\n");
+*)
 
 
     List.fold_left (fun acc (pi, his, cur) ->
@@ -633,8 +643,8 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let temp2 = forward env [(pi, Empty, cur)] p2 full in 
 
 
-    
-    (*print_string (string_of_states temp1^"\n---\n");
+    (*
+    print_string (string_of_states temp1^"\n---\n");
     print_string (string_of_states temp2^"\n===>\n");
     *)
 
@@ -658,19 +668,27 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, addOptionaLTermToFst cur1 t1)) (Sequence (his2, addOptionaLTermToFst cur2 t2)) in 
       List.map (fun (a, b, c) -> (a, Sleek.Sequence(his,b), c)) (splitEffects env (Sleek.normalize_es es_new) pi_new )  
 
-      (*
- in 
-    *)
    
-    | _ -> 
-      let (pi_new, es_new) = parallelES pi1 pi2 (Sequence(his,his1)) (his2) 
-      in [(pi_new, es_new, None)] 
+    | (Some (cur1, t1), None)-> 
+      let (pi_new, es_new) = parallelES pi1 pi2 (Sequence (his1, addOptionaLTermToFst cur1 t1)) his2 in 
+      [(pi_new, es_new, None)]
+    | (None, Some (cur2, t2))-> 
+      let (pi_new, es_new) = parallelES pi1 pi2 his1 (Sequence (his2, addOptionaLTermToFst cur2 t2)) in 
+      [(pi_new, es_new, None)]
+    | (None, None) ->
+      let (pi_new, es_new) = parallelES pi1 pi2 his1 his2 in 
+      [(pi_new, es_new, None)]
+
+
+
 
     ) combine
     )) [] current
     )in 
 
-    (*print_string (string_of_states final^"\n");*)
+    (*
+    print_string (string_of_states final^"\n");
+*)
 
     final
 
@@ -679,6 +697,26 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   | ForkPar (p1::p2::rest) -> 
 
     forward env current (ForkPar ((ForkPar ([p1; p2])) ::rest)) full
+
+
+
+  | Loop p ->
+    List.fold_left (fun acc (pi, his, cur) ->
+  
+    List.append acc (  
+
+      let first_round = forward env [(pi, Empty, cur)] p full in 
+      List.flatten (
+      List.map (fun (pi1, _, cur1) -> 
+        let second_round = forward env [(pi1, Empty, cur1)] p full in 
+        List.map (fun (pi2, his2, _)->
+          (pi2, Sleek.Sequence (his, Kleene (his2)), None)
+
+        ) second_round
+      ) first_round
+      )
+    ) ) [] current
+
 
 
 

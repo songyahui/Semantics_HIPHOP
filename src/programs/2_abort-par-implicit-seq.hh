@@ -5,17 +5,17 @@ var hh = require( "hiphop" );
 
 hiphop module prg( in I, out O )
     /*@ requires "True && emp" @*/
-    /*@ ensures "True && {O}^* // I?.{L}" @*/
+    /*@ ensures "True && {}.{I}.{I, L}. ({I}^*)" @*/
  {
    signal L;
 
    fork {
-      abort( L.now ) {
+      yield;
 	 loop {
-	    emit O();
+	    emit I();
 	    yield;
 	 }
-      }
+  //    }
    } par {
       await( I.now );
       emit L();
