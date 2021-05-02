@@ -192,12 +192,23 @@ let rec string_of_program (states : statement list) : string =
   | x::xs -> string_of_statement x ^ "\n\n" ^ string_of_program xs 
   ;;
 
+let string_of_parfst (parfst:(parfst*'a)): string = 
+  match parfst with 
+  | (SL t, _)  -> Sleek.show_instants (Instant t)
+  | (W ins_L, _) -> Sleek__Signals.show_event (ins_L)  ^"?" 
+  
+  (*List.fold_left (fun acc ins -> acc ^ "" ^ ) "" ins_L
+  *)
+  ;;
+
 let string_of_prog_states (ps: prog_states) : string = 
   List.fold_left  (fun acc (_, _, instance) -> 
+
     acc^  " : " ^ 
+    
     (match instance with 
     | None -> "none instance"
-    | Some (_, ins) -> Sleek__Signals.show ins  
+    | Some ins -> string_of_parfst ins
     )
 
   ) " "ps
@@ -213,13 +224,12 @@ let rec zip (ls:'a list * 'b list) : ('a * 'b) list =
     | (x::xrest, _) -> List.append (zip ([x], ys)) (zip (xrest, ys))
 ;;
 
-let string_of_state (state: (Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option)) : string = 
+let string_of_state (state: (Sleek.pi* Sleek.instants* (parfst * Sleek.term option) option)) : string = 
   let (pi, inss, cur) = state in 
   Sleek.show_effects [(pi, inss)] ^
   match cur with 
   | None -> ".end."
-  | Some (None, t) -> Sleek.show_instants (Instant t)
-  | Some (Some t, s) ->  Sleek.show_instants (Timed (Instant s, t)) 
+  | Some ins -> string_of_parfst ins
   ;; 
 
 
@@ -229,11 +239,4 @@ let rec string_of_states (states:prog_states) :string =
   | x::xs -> string_of_state x ^ "\n"^ string_of_states xs 
   ;;
 
-let string_of_parfst (parfst:(parfst*'a)): string = 
-  match parfst with 
-  | (SL t, _)  -> Sleek.show_instants (Instant t)
-  | (W ins_L, _) -> Sleek__Signals.show_event (ins_L)  ^"?" 
-  
-  (*List.fold_left (fun acc ins -> acc ^ "" ^ ) "" ins_L
-  *)
-  ;;
+

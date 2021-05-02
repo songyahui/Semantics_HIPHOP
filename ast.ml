@@ -60,7 +60,7 @@ type statement =
     | TryCatch of expression * expression * expression
 
 
-type prog_states = (Sleek.pi* Sleek.instants* (Sleek.term option * Sleek__Signals.t) option) list
-type prog_states_reverse =  (Sleek.pi * (Sleek.term option * Sleek__Signals.t) * Sleek.instants) list
 type parfst = SL of Sleek__Signals.t | W of (Sleek__Signals.event)
  
+type prog_states = (Sleek.pi* Sleek.instants* (parfst * Sleek.term option) option) list
+type prog_states_reverse =  (Sleek.pi * (parfst *  Sleek.term option) * Sleek.instants) list
