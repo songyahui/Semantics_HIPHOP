@@ -628,6 +628,20 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
     )  current 
 
+  | Await (FunctionCall (Variable "count",(Literal (INT n)) ::(Access (s::_ )) :: _)) ->
+      let rec aux num acc =
+        if num == 0  then acc 
+        else aux (num-1) (Sleek.Sequence (acc, Await (Sleek.Signals.present s)))
+      in 
+      
+      List.map (fun (pi, his, cur) -> 
+
+        match cur with 
+        | None -> (pi, aux (n-1) his, Some (W (Sleek.Signals.present s), None))
+        | Some _ -> (pi, aux (n-1) (Sequence(his, fstToInstance cur)), Some (W (Sleek.Signals.present s), None))
+
+    )  current 
+
   | Abort (FunctionCall (_, (Variable s)::_), p) ->
 
 
@@ -797,11 +811,11 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       let first_round = forward env [(pi, Empty, cur)] p full in 
 
       List.flatten (
-      List.map (fun (pi1, _, cur1) -> 
+      List.map (fun (pi1, his1, cur1) -> 
         let second_round = forward env [(pi1, Empty, cur1)] p full in 
 
-        List.map (fun (pi2, his2, cur2)->
-          (pi2, Sleek.Sequence (his, Kleene (Sequence(his2, fstToInstance cur2))), None)
+        List.map (fun (pi2, his2, _)->
+          (pi2, Sleek.Sequence (his, Sequence(his1, Kleene (his2))), None)
 
         ) second_round
       ) first_round

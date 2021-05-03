@@ -3,13 +3,13 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( in I, out O ) 
+hiphop module prg( in Tick, out O ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({I}.{O})^*" @*/
+   /*@ ensures "True && Tick?·Tick?·Tick?·({O}·Tick?·Tick?·Tick?)﹡" @*/
 {
 
    loop {
-      await count( 3, I.now );
+      await count( 3, Tick.now );
       emit O();
    }
 }

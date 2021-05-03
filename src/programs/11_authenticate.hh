@@ -5,7 +5,7 @@ hiphop module Authenticate(
   out connected) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && Connected?" @*/
+   /*@ ensures "True && {connState}.{connected}" @*/
 {
 
   emit connState("connecting");
