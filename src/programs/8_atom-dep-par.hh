@@ -3,26 +3,26 @@
 
 const hh = require("hiphop");
 
-hiphop module prg(out A ) 
+hiphop module prg(out A, out B, out C ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({A}^* //{A}^*)//{O}^*" @*/
+   /*@ ensures "True && {A, B, C}.{}" @*/
 {
 
    fork {
-      loop {
+     // loop {
 	 emit A( 0 );
 	 yield;
-      }
+    //  }
    } par {
-      loop {
-	 emit A( 1 );
+    //  loop {
+	 emit B( 1 );
 	 yield;
-      }
+    //  }
    } par {
-      loop {
-	 emit A( 2 );
+    //  loop {
+	 emit C( 2 );
 	 yield;
-      }
+    //  }
    }
 }
 
