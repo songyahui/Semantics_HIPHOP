@@ -713,10 +713,10 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let temp2 = forward env [(pi, Empty, cur)] p2 full in 
 
 
-    
+    (*
     print_string (string_of_states temp1^"\n---\n");
     print_string (string_of_states temp2^"\n===>\n");
-    
+    *)
 
 
     let combine = zip (temp1, temp2) in 
@@ -757,9 +757,9 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     )in 
 
     
+    (*
     print_string (string_of_states final^"\n");
-
-
+*)
     final
 
 
@@ -790,6 +790,81 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
 
 
+| Present (Access(str::_), p1, p2)->
+List.flatten (
+
+    List.fold_left (fun acc (pi, his, cur) ->
+    List.append acc (  
+      match cur with 
+      | None ->
+          let then_branch = forward env [(pi, Empty, (setPresent str (Sleek.Signals.initUndef env) None))] p1 full in 
+          (match p2 with 
+          | None -> 
+              List.map (fun (pi1, his1, cur1) -> 
+                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, cur) ]
+                    ) then_branch
+          | Some p2 ->
+            let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
+            let combine = zip (then_branch,  else_branch) in 
+
+            List.map (fun ((pi1, his1, cur1), (pi2, his2, cur2)) -> 
+                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi2, Sleek.Sequence(his, his2), cur2) ]
+                    ) combine
+           )
+
+      | Some (SL ins, t) -> 
+          let then_branch = forward env [(pi, Empty, (setPresent str ins t))] p1 full in 
+          (*
+          print_string (string_of_states current);
+          print_string (string_of_states [(pi, Empty, (setPresent str ins t))]);
+          print_string (string_of_states then_branch);
+          *)
+
+          (match p2 with 
+          | None -> 
+            List.map (fun (pi1, his1, cur1) -> 
+                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, setAbsent str ins t) ]
+                    ) then_branch
+          | Some p2 ->
+            let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
+            let combine = zip (then_branch,  else_branch) in 
+
+            List.map (fun ((pi1, his1, cur1), (pi2, his2, cur2)) -> 
+                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi2, Sleek.Sequence(his, his2), cur2) ]
+                    ) combine
+
+          )
+        
+      | Some (W s, t) ->  
+        let then_branch = forward env [(pi, Empty, (setPresent str (Sleek.Signals.initUndef env) None))] p1 full in 
+          (match p2 with 
+          | None -> List.map (fun (pi1, his1, cur1) -> 
+                    [(pi1, Sleek.Sequence(Sequence(his, addOptionaLTermToFst (W s) t), his1), cur1); (pi, his, cur) ]
+                    ) then_branch
+          | Some p2 ->
+            let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
+            let combine = zip (then_branch,  else_branch) in 
+
+            List.map (fun ((pi1, his1, cur1), (pi2, his2, cur2)) -> 
+                    [(pi1, Sleek.Sequence(his, Sequence(his1, addOptionaLTermToFst (W s) t)), cur1); (pi2, Sleek.Sequence(his, Sequence(his2, addOptionaLTermToFst (W s) t)), cur2) ]
+                    ) combine
+          
+          )
+
+
+      
+      
+      
+
+
+
+
+
+
+    
+    ) ) [] current
+)
+    
 
   
   | _ ->  current
@@ -807,7 +882,9 @@ let forward_verification (prog : statement) (whole: statement list): string =
     let env = List.fold_left (fun acc a ->  List.append acc 
       (match a with 
       | OUT str -> [str]
-      | _ -> []) 
+      | IN str -> [str]
+      | _ -> []
+      ) 
       ) [] p_li in 
       
     let init = (List.fold_left (fun acc (pre_pi, pre_es) ->

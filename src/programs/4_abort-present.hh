@@ -7,7 +7,7 @@ hiphop module prg
      out K, out V ) 
      
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({J}.{V} // {K})^*" @*/
+   /*@ ensures "True && ({!I, J, K}.{!I, V})^* + ({!I, J}.{!I, V})^*" @*/
 {
 
    loop {
