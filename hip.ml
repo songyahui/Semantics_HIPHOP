@@ -171,6 +171,8 @@ let addOptionaLTerm ins t =
   | None -> ins
   | Some t -> Sleek.Timed (ins, t)
   ;;
+
+
   
 let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek.instants) : (Sleek.pi * Sleek.instants) =
   let norES1 = Sleek.fixpoint ~f: Sleek.normalize_es es1 in 
@@ -253,15 +255,14 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
         (Sleek.And(p, p_add), Sequence (addOptionaLTerm (Instant ins) t_add, es))
 
     | ((SL ins1, t1), (SL ins2, t2)) -> 
+      if Sleek.Signals.controdicts (Sleek.Signals.merge ins1 ins2) then
+      (Sleek.And(pi1, pi2), Empty)
+      else 
+
       let (t_add, p_add) = unifyOptionalTerms t1 t2 in 
 
       (match (der1, der2) with 
       | (Empty, _) -> 
-(*
-      print_string ("dsbkcjbdkj11111\n");
-      print_string (Sleek.show_instants (der1)^"\n");
-      print_string (Sleek.show_instants (der2)^"\n");
-*)
 
       (Sleek.And(newPi, p_add), Sequence (addOptionaLTerm (Instant (Sleek.Signals.merge ins1 ins2)) t_add, der2))
       | (_, Empty) -> (Sleek.And(newPi, p_add), Sequence (addOptionaLTerm (Instant (Sleek.Signals.merge ins1 ins2)) t_add, der1))
@@ -297,7 +298,7 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
 let rec splitEffects (env: string list) (es:Sleek.instants) (pi:Sleek.pi) :prog_states= 
   match es with 
   | Bottom -> []
-  | Empty -> [(pi, Empty, Some (SL (Sleek.Signals.initUndef env), None))]
+  | Empty -> [(pi, Empty, None)]
   | Await s -> [(pi, Empty, Some (W (s), None))]
   | Instant ins -> [(pi, Empty, Some (SL (Sleek.Signals.add_UndefSigs env ins), None))]
   | Sequence (es1, es2) -> 
@@ -456,6 +457,48 @@ let tAdd_None (t:Sleek.Signals.t option  ): (Sleek.term option * Sleek.Signals.t
   | Some ins -> Some (None, ins)
   ;;
 
+let setPresent (s:string) (cur) t =
+  match (Sleek.Signals.setPresent s cur) with 
+  | None -> None
+  | Some cur -> Some (SL cur, t)
+  ;; 
+
+let setAbsent (s:string) (cur) t =
+  match (Sleek.Signals.setAbsent s cur) with 
+  | None -> None
+  | Some cur -> Some (SL cur, t)
+  ;; 
+  
+
+let enforceAbortCur s cur t : (parfst * Sleek.term option) option = 
+  match cur with 
+  | SL ins -> setAbsent s ins t 
+  | W _ -> Some (cur, t)
+
+  ;;
+
+let rec enforceAbortTrace (s:string) (his1:Sleek.instants) :  Sleek.instants = 
+  match his1 with 
+  | Bottom -> Bottom
+  | Empty -> Empty 
+  | Instant ins -> 
+    (match enforceAbortCur s (SL ins) None with 
+    | None -> Bottom
+    | Some (SL cur, None) -> Instant cur
+    | _ -> raise (Foo "enforceAbortTrace error ") )
+  | Await   s -> Await   s
+  | Sequence (es1, es2) -> 
+    let tail = enforceAbortTrace s es2 in 
+    if tail == Bottom 
+    then enforceAbortTrace s es1 
+    else Sequence (enforceAbortTrace s es1 , tail) 
+
+  | Union (es1, es2) -> Union (enforceAbortTrace s es1 , enforceAbortTrace s es2) 
+  | Parallel (es1, es2) -> Parallel (enforceAbortTrace s es1 , enforceAbortTrace s es2) 
+  | Kleene  es -> Kleene (enforceAbortTrace s es)
+  | Timed   (es, t) -> Timed (enforceAbortTrace s es, t)
+  ;;
+
 
 
 let addOptionaLTermToFst fst t:(Sleek.instants) = 
@@ -488,10 +531,10 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
       List.map (fun state ->
         match state with 
-        | (pi, his, Some (SL cur, t)) -> (pi, his , Some (SL (Sleek.Signals.merge cur (Sleek.Signals.from s)), t))
+        | (pi, his, Some (SL cur, t)) -> (pi, his , setPresent s cur t)
         | (pi, his, Some (W cur, t)) -> (pi, Sleek.Sequence (his, addOptionaLTermToFst (W cur) t) , Some (SL (Sleek.Signals.add_UndefSigs env (Sleek.Signals.from s))  , None))
-
-        | (_, _, None) -> state
+        | (pi, his, None) -> (pi, his, setPresent s ( (Sleek.Signals.initUndef env)) None )
+        
       )  current
 
   | Signal (s, p) -> forward (s::env) (
@@ -559,8 +602,8 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   | Await (Variable s) -> 
       List.map (fun (pi1, his, cur1) -> 
         match cur1 with 
-        | None -> (pi1, his, cur1)
-        | Some (cur, t) -> (pi1, Sleek.Sequence (his, addOptionaLTermToFst cur t), Some (W (Sleek__Signals.present s), None))
+        | None -> (pi1, his, Some (W (Sleek.Signals.present s), None))
+        | Some (cur, t) -> (pi1, Sleek.Sequence (his, addOptionaLTermToFst cur t), Some (W (Sleek.Signals.present s), None))
       
 
     )  current 
@@ -568,12 +611,13 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   | Await (Access (s::_ )) -> 
       List.map (fun (pi1, his, cur1) -> 
         match cur1 with 
-        | None -> (pi1, his, cur1)
-        | Some (cur, t) -> (pi1, Sleek.Sequence (his, addOptionaLTermToFst cur t), Some (W (Sleek__Signals.present s), None))
+        | None -> (pi1, his, Some (W (Sleek.Signals.present s), None))
+        | Some (cur, t) -> (pi1, Sleek.Sequence (his, addOptionaLTermToFst cur t), Some (W (Sleek.Signals.present s), None))
 
     )  current 
 
   | Abort (FunctionCall (_, (Variable s)::_), p) ->
+
 
   List.flatten (
 
@@ -595,6 +639,24 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   )
 
 
+  | Abort (Access (s::_ ), p) ->
+  
+  List.flatten (
+    List.fold_left (fun acc (pi, his, cur) ->
+
+    
+      List.append acc (
+        List.map (fun (pi1, his1, cur1) ->
+        match cur1 with 
+        | None -> [(pi1, Sleek.Sequence(his, enforceAbortTrace s his1 ), None)]
+        | Some (cur, t) -> [(pi1, Sleek.Sequence(his, enforceAbortTrace s his1), enforceAbortCur s cur t)]
+      
+        ) (forward env [(pi, Empty, cur)] p full)
+
+      )) [] current
+  )
+    
+
 
 
   | DoEvery (p, Access (str::_ ))->
@@ -612,7 +674,15 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
         List.map (fun  (pi1, his1, cur1)->
           match cur with 
-          | None -> (pi, his, cur) 
+          | None -> 
+            (match cur1 with
+            | None -> 
+              (pi1, Sleek.Sequence(his, Sleek.Sequence (Await (Sleek.Signals.present str), his1)), cur1)
+          
+            | Some (ins1, t1) -> 
+              let repeat  = Sleek.Sequence (Await (Sleek.Signals.present str), Sleek.Sequence(his1, addOptionaLTermToFst ins1 t1)) in 
+              (pi1, Sleek.Sequence(his, Sleek.Sequence(Kleene repeat, Sleek.Sequence (Await (Sleek.Signals.present str), his1))), cur1)
+            )
           | Some (ins, t) -> 
 
 
@@ -643,10 +713,10 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let temp2 = forward env [(pi, Empty, cur)] p2 full in 
 
 
-    (*
+    
     print_string (string_of_states temp1^"\n---\n");
     print_string (string_of_states temp2^"\n===>\n");
-    *)
+    
 
 
     let combine = zip (temp1, temp2) in 
@@ -686,9 +756,9 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     )) [] current
     )in 
 
-    (*
+    
     print_string (string_of_states final^"\n");
-*)
+
 
     final
 
