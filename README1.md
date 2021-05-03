@@ -95,9 +95,16 @@ brew link --overwrite gmp
 sudo chown www-data:www-data trs
 
 
-SLEEK_COLOR=off dune exec ./trs.exe src/effects/0_Single_Instant.ee
+SLEEK_COLOR=off 
 
+dune exec ./trs.exe src/effects/0_Single_Instant.ee
 dune exec ./hip.exe src/programs/paper_example.hh
+cd ..
+cp Semantics_HIPHOP/_build/default/hip.exe cgi-bin/hip
+cp Semantics_HIPHOP/_build/default/trs.exe cgi-bin/trs
+cd src/hip/
+rm -R *.hh
+cp -R ../../Semantics_HIPHOP/src/programs/*.hh ./
 
 
 

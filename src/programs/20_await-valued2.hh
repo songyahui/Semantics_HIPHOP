@@ -17,7 +17,7 @@ function foo3( evt ) {
 
 hiphop module prg( in I, out O ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && I?·({O}·I?)﹡" @*/
+   /*@ ensures "True && I?.({O}.I?)^*" @*/
 {
 
    loop {
