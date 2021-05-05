@@ -8,7 +8,7 @@ hiphop module prg()
    /*@ ensures "True && emp" @*/	
 
 {
-
+// currently trap has not fully implemented. 
    t: {
       t2: {
 	 break t2;
