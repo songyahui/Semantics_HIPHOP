@@ -5,10 +5,10 @@ const hh = require( "hiphop" );
 
 var glob = 5;
 
-hiphop module prg( in R, O, OT, in T ) 
+hiphop module prg( in R, in O, in OT, in T ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({OT}.{O})^* " @*/	
+   /*@ ensures "t>1 && (R?.({!R} # t).{T, !R})^* " @*/	
 
 {
 

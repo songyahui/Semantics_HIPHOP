@@ -5,7 +5,7 @@ const hh = require( "hiphop" );
 hiphop module prg( O, OT ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {}// {O} " @*/	
+   /*@ ensures "True && ({}^*.{T, !R, OT})^* " @*/	
 
 {
 

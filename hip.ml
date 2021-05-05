@@ -581,11 +581,28 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     List.fold_left (fun acc (pi, his, cur) ->
 
     (match cur with 
-    | None -> [current]
+    | None -> 
+      List.append acc (  
+        let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sleek.Sequence (his, Empty))]; rhs = (precon) })  in 
+        if verbose then 
+
+          List.map (fun (pi1, es1) -> 
+
+            let final = splitEffects env  (Sleek.fixpoint ~f: Sleek.normalize_es es1) pi1  in
+            final
+
+          ) postcon
+
+        else 
+        (print_string (Sleek.History.show history    ~verbose ^ "\n\n");
+ 
+        raise (Foo "precondiction check failed"))
+      )
+
     | Some (ins, t) -> 
 
       List.append acc (  
-        let (verbose, _) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sleek.Sequence (his, addOptionaLTermToFst ins t))]; rhs = (precon) })  in 
+        let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sleek.Sequence (his, addOptionaLTermToFst ins t))]; rhs = (precon) })  in 
         if verbose then 
         List.flatten (
           List.map (fun (pi1, es1) -> 
@@ -601,7 +618,12 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
            
           ) postcon
         )
-        else raise (Foo "precondiction check failed")
+
+        else 
+        (print_string (Sleek.History.show history    ~verbose ^ "\n\n");
+        
+        
+        raise (Foo "precondiction check failed"))
       )
       
 

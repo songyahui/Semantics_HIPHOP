@@ -1,13 +1,13 @@
 "use hopscript"
 
-hiphop module M1( a ) 
+hiphop module M1( in A , out B) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {A}.({}^* // {B}.{A})  " @*/	
+   /*@ ensures "True && {A, B}.{A}  " @*/	
 
 {
-   emit a( 100 );
-   async a {
+   emit A( 100 );
+   async A {
       emit B (); this.notify( 10 );
    }
 }
@@ -15,14 +15,16 @@ hiphop module M1( a )
 hiphop module m( a, b ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({A}.({}^* // {B}.{A})). ({A}.({}^* // {B}.{A}))  " @*/	
+   /*@ ensures "True && {A, B}.{A}.{}  " @*/	
 
 
 {
    run M1( a  );
    yield;
-   run M1( a );
+   // run M1( a ); // adding this line will couse failure on precondition check. 
 }
+
+
 
 m.addEventListener( "a", e => console.log( "a=", e.nowval ) );
 m.addEventListener( "b", e => console.log( "b=", e.nowval ) );
