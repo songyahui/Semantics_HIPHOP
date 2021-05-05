@@ -2,10 +2,10 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( J ) 
+hiphop module prg( out J ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({J} // {} // {I}) " @*/	
+   /*@ ensures "True && ({I, J} ) " @*/	
 
 {
 

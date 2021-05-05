@@ -276,12 +276,18 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
   ) headcom
   in 
   
-  (*
+  
   print_string ("Here" ^ (List.fold_left (fun acc a -> acc ^ Sleek.show_effects [a] ) "" esLIST) ^"\n"); 
-*)
+
 
   (Sleek.fixpoint ~f: Sleek.normalize) (
-  List.fold_left (fun (pacc, esacc) (p, e) -> (Sleek.And(pacc, p), Sleek.Union(esacc, e)))  (Sleek.And(pi1, pi2), Bottom) esLIST
+  List.fold_left (fun (pacc, esacc) (p, e) -> 
+    if e == Sleek.Empty then (pacc, esacc)
+    else 
+  
+    (Sleek.And(pacc, p), Sleek.Union(esacc, e))
+
+    )  (Sleek.And(pi1, pi2), Bottom) esLIST
   )
 
   
@@ -858,7 +864,11 @@ List.flatten (
           (match p2 with 
           | None -> 
               List.map (fun (pi1, his1, cur1) -> 
-                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, cur) ]
+              let temp = setAbsent str (Sleek.Signals.initUndef env) None in 
+              match temp with 
+              | None -> [(pi1, Sleek.Sequence(his, his1), cur1)]
+              | Some _ -> 
+                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, temp) ]
                     ) then_branch
           | Some p2 ->
             let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
