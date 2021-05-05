@@ -880,13 +880,24 @@ List.flatten (
           (match p2 with 
           | None -> 
             List.map (fun (pi1, his1, cur1) -> 
-                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, setAbsent str ins t) ]
+              let temp = setAbsent str ins t in 
+              match temp with 
+              | None -> [(pi1, Sleek.Sequence(his, his1), cur1)]
+              | Some _ -> 
+                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, temp) ]
                     ) then_branch
           | Some p2 ->
             let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
+
+
             let combine = zip (then_branch,  else_branch) in 
 
             List.map (fun ((pi1, his1, cur1), (pi2, his2, cur2)) -> 
+              match (cur1, cur2) with 
+              | (None, None) -> [(pi1, his, cur1)]
+              | (Some _, None) -> [(pi1, Sleek.Sequence(his, his1), cur1)]
+              | (None, Some _ ) -> [(pi2, Sleek.Sequence(his, his2), cur2) ]
+              | _ -> 
                     [(pi1, Sleek.Sequence(his, his1), cur1); (pi2, Sleek.Sequence(his, his2), cur2) ]
                     ) combine
 
