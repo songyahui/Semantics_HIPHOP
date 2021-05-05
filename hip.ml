@@ -889,7 +889,49 @@ List.flatten (
     
     ) ) [] current
 )
+  | Lambda (_, p) -> 
+
+    forward env current p full  
     
+  | NewExpr p -> 
+
+    forward env current p full
+
+  | FunctionCall (Variable "setTimeout", li) ->
+  (*
+      print_string (string_of_int time);
+    raise (Foo "setTimeout");
+    *)
+
+    (match List.hd (List.tl li) with 
+    | (Literal (INT n)) -> let time = n/1000 in 
+
+        List.map (fun (pi, his, cur) -> 
+          let (newTV1, newPi1) = getAnewVar_rewriting () in
+          let newPi = Sleek.And(pi, Sleek.And(newPi1, Sleek.Atomic(Sleek.Gt, Var newTV1, Const time))) in 
+          match cur with 
+          | None -> (newPi, his, Some( SL (Sleek.Signals.initUndef env), Some(Sleek.Var newTV1)))
+          | Some (ins, None) -> (newPi, his, Some( ins, Some(Sleek.Var newTV1)))
+          | Some (ins, Some t) -> (Sleek.And(newPi, Sleek.Atomic(Sleek.Eq, t, Var  newTV1)), his, Some( ins, Some t))
+          
+          
+        )
+        current
+       
+
+    | _ -> current
+    )
+
+
+  | FunctionExpr (_, p) -> 
+
+  
+  forward env current p full
+
+  | FunctionCall (_, p::_) -> 
+
+  
+  forward env current p full
 
   
   | _ ->  current
