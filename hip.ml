@@ -185,6 +185,10 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
   match (norES1, norES2) with 
   | (_, Empty) -> (Sleek.And(pi1, pi2), norES1)
   | (Empty, _) -> (Sleek.And(pi1, pi2), norES2)
+  | (Kleene es1, Kleene es2) -> 
+    let (pi_new, es_new) = parallelES pi1 pi2 es1 es2 in 
+    (pi_new , Kleene (es_new))
+
   | _ ->
 
 
@@ -277,18 +281,23 @@ let rec parallelES (pi1:Sleek.pi) (pi2:Sleek.pi) (es1:Sleek.instants) (es2:Sleek
   in 
   
   
-  print_string ("Here" ^ (List.fold_left (fun acc a -> acc ^ Sleek.show_effects [a] ) "" esLIST) ^"\n"); 
-
-
-  (Sleek.fixpoint ~f: Sleek.normalize) (
-  List.fold_left (fun (pacc, esacc) (p, e) -> 
-    if e == Sleek.Empty then (pacc, esacc)
-    else 
+  let result = 
+    (Sleek.fixpoint ~f: Sleek.normalize)
+    (
+    List.fold_left (fun (pacc, esacc) (p, e) -> 
+      if e == Sleek.Empty then (pacc, esacc)
+      else 
+    
+      (Sleek.And(pacc, p), Sleek.Union(esacc, e))
   
-    (Sleek.And(pacc, p), Sleek.Union(esacc, e))
+      )  (Sleek.And(pi1, pi2), Bottom) esLIST
+    )in 
 
-    )  (Sleek.And(pi1, pi2), Bottom) esLIST
-  )
+  (
+    (*print_string ("Here" ^ Sleek.show_effects [result] ^"\n"); 
+*)
+
+  result)
 
   
  ;;
@@ -865,6 +874,7 @@ List.flatten (
           | None -> 
               List.map (fun (pi1, his1, cur1) -> 
               let temp = setAbsent str (Sleek.Signals.initUndef env) None in 
+             
               match temp with 
               | None -> [(pi1, Sleek.Sequence(his, his1), cur1)]
               | Some _ -> 
@@ -982,7 +992,16 @@ List.flatten (
   ;;
 
 
-
+let normalize_effs effs = 
+  List.filter (fun (pi, es) ->
+    match (pi, es) with 
+    | (Sleek.False, Sleek.Bottom) -> false 
+    | _ -> true 
+  )
+  (List.map (
+    fun eff -> Sleek.fixpoint ~f: Sleek.normalize eff 
+  ) effs)
+  
 
 
 let forward_verification (prog : statement) (whole: statement list): string = 
@@ -1013,7 +1032,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^
-    "[Final  Effects] " ^ show_effects_list (List.map (fun a -> Sleek.fixpoint ~f: Sleek.normalize a) final) ^"\n\n"^
+    "[Final  Effects] " ^ show_effects_list (normalize_effs final) ^"\n\n"^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
     "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 

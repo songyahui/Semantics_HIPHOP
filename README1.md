@@ -97,6 +97,8 @@ sudo chown www-data:www-data trs
 
 SLEEK_COLOR=off 
 
+cd ../project/public_html/MixedSyncAsync/Semantics_HIPHOP/
+git pull
 dune exec ./trs.exe src/effects/0_Single_Instant.ee
 dune exec ./hip.exe src/programs/paper_example.hh
 cd ..

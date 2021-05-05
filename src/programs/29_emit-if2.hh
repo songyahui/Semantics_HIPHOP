@@ -5,13 +5,13 @@ const hh = require( "hiphop" );
 hiphop module prg( out A, out B, out C ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && (({A} + {})^* + ({B} + {})^*) " @*/	
+   /*@ ensures "True && (({!A} + {B})^* // ({!C} + {B})^*) " @*/	
 
 {
 
    fork {
       loop {
-	 if( B.nowval > 3 ) {emit A()};
+	 if( B.now) {emit A()};
 	 yield;
       }
    } par {
