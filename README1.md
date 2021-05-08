@@ -84,6 +84,9 @@ Draft Paper
 Source Code and Evaluation Benchmark (Not yet available ..)
 </a></li>
 
+"True && A? // B?  |-  True && A?.B? + ({!A, !B}^*.{A, B}) +  B?.A? : true";
+
+"True && A?.B? + ({!A, !B}^*.{A, B}) +  B?.A?    |-  True &&  A? // B? : true";
 
 
 sudo -s -H
