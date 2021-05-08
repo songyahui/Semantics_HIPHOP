@@ -6,7 +6,7 @@ const hh = require( "hiphop" );
 hiphop module prg( O ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && emp" @*/	
+   /*@ ensures "t>3 && ({} # t).{O}" @*/	
 
 {
    async O {

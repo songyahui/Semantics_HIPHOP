@@ -2,20 +2,21 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( A, B, END1, END2 ) 
+hiphop module prg( out A, in B, out END1, out END2 ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {A}.B?.{END1} // {B}.B?.{END2}" @*/	
+   /*@ ensures "True && {A}.B?.{} // A?.{B}.{END2}" @*/	
 
 {
 
-   fork {
+   fork { // {A}.B?.{End1}
       emit A();
-      await immediate( B );
+      await ( B );
       emit END1();
-   } par {
+   } par { // A?.{B}.{End2}
+      await ( A );
       emit B();
-      await immediate( B );
+      yield;
       emit END2();
    }
 }

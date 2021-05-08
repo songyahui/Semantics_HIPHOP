@@ -192,10 +192,10 @@ let rec string_of_program (states : statement list) : string =
   | x::xs -> string_of_statement x ^ "\n\n" ^ string_of_program xs 
   ;;
 
-let string_of_parfst (parfst:(parfst*'a)): string = 
+let string_of_parfst (parfst:(Sleek.pi* parfst*'a)): string = 
   match parfst with 
-  | (SL t, _)  -> Sleek.show_instants (Instant t)
-  | (W ins_L, _) -> Sleek__Signals.show_event (ins_L)  ^"?" 
+  | (pi, SL t, _)  -> Sleek.show_pi pi ^ Sleek.show_instants (Instant t) 
+  | (pi, W ins_L, _) -> Sleek.show_pi pi ^ Sleek__Signals.show_event (ins_L)  ^"?" 
   
   (*List.fold_left (fun acc ins -> acc ^ "" ^ ) "" ins_L
   *)
@@ -208,7 +208,7 @@ let string_of_prog_states (ps: prog_states) : string =
     
     (match instance with 
     | None -> "none instance"
-    | Some ins -> string_of_parfst ins
+    | Some (ins, t) -> string_of_parfst (Sleek.True, ins, t)
     )
 
   ) " "ps
@@ -229,7 +229,7 @@ let string_of_state (state: (Sleek.pi* Sleek.instants* (parfst * Sleek.term opti
   Sleek.show_effects [(pi, inss)] ^
   match cur with 
   | None -> ".end."
-  | Some ins -> string_of_parfst ins
+  | Some (ins, t) -> string_of_parfst (pi, ins, t)
   ;; 
 
 

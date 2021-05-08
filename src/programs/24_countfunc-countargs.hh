@@ -6,7 +6,7 @@ const hh = require( "hiphop" );
 hiphop module prg( in X, Y, Z ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && X?.({Y}.{X})^*.{Z}" @*/	
+   /*@ ensures "True && X?.{Z}" @*/	
 
 {
 
@@ -14,7 +14,7 @@ hiphop module prg( in X, Y, Z )
 
    do {
       emit Y();
-   } every count( X.nowval + 5, true );
+   } every (X);
    
    emit Z();
 }
