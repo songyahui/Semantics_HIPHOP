@@ -10,7 +10,7 @@ hiphop module prg( out T )
 
 {
 
-   yield;
+
    
       signal S;
 
