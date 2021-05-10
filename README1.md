@@ -113,5 +113,6 @@ cp -R ../../Semantics_HIPHOP/src/programs/*.hh ./
 
 
 
+    "True && {A, !B}.{B}.{C} // B?.{E} |- True && {A}.{B}.{C, E} : true ";
 
 

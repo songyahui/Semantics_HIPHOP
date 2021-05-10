@@ -3,20 +3,21 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( in X, Y, Z ) 
+hiphop module prg( in X, out Y, out Z ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && X?.{Z}" @*/	
+   /*@ ensures "True && X?.(Z?.X?.{Y})^*" @*/	
 
 {
 
    await( X.now );
 
+
    do {
       emit Y();
-   } every (X);
+   } every (Z.now);
    
-   emit Z();
+
 }
 
 var m = new hh.ReactiveMachine( prg );
