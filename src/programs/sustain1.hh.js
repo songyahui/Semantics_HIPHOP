@@ -9,6 +9,8 @@ hiphop module prg( in I, J, K ) {
 	 sustain J();
       }
       emit K();
+      {K(1)}. {K(2)}
+       
    }
 }
 
