@@ -24,7 +24,8 @@ cd Semantics_HIPHOP
 opam switch create 4.10.0
 eval $(opam env)
 sudo apt-get install menhir
-sudo apt-get install z3
+sudo apt-get install libgmp-dev
+opam install z3
 ```
 
 ### Examples:
