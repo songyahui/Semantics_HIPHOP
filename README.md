@@ -21,7 +21,7 @@ cd Semantics_HIPHOP
 ### Dependencies:
 
 ```
-opam switch create 4.07.1
+opam switch create 4.10.0
 eval $(opam env)
 sudo apt-get install menhir
 sudo apt-get install z3
