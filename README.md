@@ -10,7 +10,12 @@ To make reactive programming more concise and flexible, it is promising to deplo
 The easiest way to try the code is to use the [Web UI](http://loris-5.d2.comp.nus.edu.sg/MixedSyncAsync/introduction.html) written
 by [Yahui Song](https://www.comp.nus.edu.sg/~yahuis/).
 
-### Dependencies:
+## Getting started
+
+This tool consists of i) <em> a Front End: Forward Verifier</em>; and ii) <em> a Back End: the term rewriting system</em>. 
+Below, we provide guidance to build the tool on your local linux machine. 
+
+### 1. Dependencies:
 
 ```
 opam switch create 4.10.0
@@ -20,7 +25,7 @@ sudo apt-get install libgmp-dev
 opam install z3
 ```
 
-### To Compile:
+### 2. To Compile:
 
 ```
 git clone https://github.com/songyahui/Semantics_HIPHOP.git
@@ -34,7 +39,7 @@ dune build
 
 
 
-### Test fro running:
+### 3. Test fro running:
 
 - Program Verification, test files in folder src/programs/*.hh
 
@@ -48,7 +53,7 @@ dune exec ./hip.exe src/programs/41_example1.hh
 dune exec ./trs.exe src/effects/0_Single_Instant.ee
 ```
 
-### To Clean:
+### 4. To Clean:
 
 ``` 
 dune clean
