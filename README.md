@@ -5,27 +5,51 @@
 To make reactive programming more concise and flexible, it is promising to deploy a mixed concurrency paradigm that integrates Esterel's synchrony and preemption with JavaScript's asynchrony. Existing temporal verification techniques haven't been designed to handle such a blending of two concurrency models. We propose a novel solution via a compositional Hoare-style forward verifier and a term rewriting system (TRS) on Timed Synchronous Effects (TSE). Firstly, we introduce TSE, a new effects logic, that extends Kleene Algebra with value-dependent constraints, providing real-time bounds for logical-time synchronous traces. Secondly, we establish an (the first) abstract denotational semantics for HipHop.js, generalising the mixed paradigm. Thirdly, we present a purely algebraic TRS, to efficiently check language inclusions between expressive timed effects. To demonstrate the feasibility of our proposals, we prototype the verification system; prove its correctness; investigate how it can help to debug errors related to both synchronous and asynchronous programs.
 
 
-## Online Demo 
+## Online demo
 
-Example programs (on the left panel) can be run ONLINE.
+The easiest way to try the code is to use the [Web UI](http://loris-5.d2.comp.nus.edu.sg/MixedSyncAsync/introduction.html) written
+by [Yahui Song](https://www.comp.nus.edu.sg/~yahuis/).
 
+### To Compile:
 
-## The Front End: Forward Verifier
+```
+git clone https://github.com/songyahui/Semantics_HIPHOP.git
+cd Semantics_HIPHOP
+./compile
+```
 
-Targeting a core language \lambda_{HH}, we establish an abstract semantics model via a set of inductive transition rules, enabling a compositional verifier to infer the program's effects. 
+### Dependencies:
 
-The syntax of the target language:
+```
+opam switch create 4.07.1
+eval $(opam env)
+sudo apt-get install menhir
+sudo apt-get install z3
+```
 
-![](https://www.comp.nus.edu.sg/~yahuis/timed_effects/syntax_of_HH.png)
+### Examples:
 
+Entailments Checking 
 
-The verifier triggers the back-end solver TRS.
+```
+./trs src/effect/ex1.ee src/effect/output.txt 
+```
 
-## The Back End: A TRS
+Program Verification
 
+```
+./verify src/program/send.c src/program/output.txt
+```
 
-We present a Term Rewriting System (TRS), to soundly prove the inferred effects against given temporal properties, both expressed by timed synchronous effects.
+### To Clean:
 
-The syntax of the specification language:
+``` 
+./clean
+```
 
-![](https://www.comp.nus.edu.sg/~yahuis/timed_effects/syntax_of_Timed_Eff.png)
+### Benchmark:
+
+We provide a [Miroc-Benchmark](http://loris-5.d2.comp.nus.edu.sg/Effect/BenchMark.zip) for experiemnts on checking inclusions among regular expressions.
+
+[Arduino]https://create.arduino.cc/projecthub/projects/tags/control
+
