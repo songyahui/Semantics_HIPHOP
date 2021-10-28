@@ -10,14 +10,6 @@ To make reactive programming more concise and flexible, it is promising to deplo
 The easiest way to try the code is to use the [Web UI](http://loris-5.d2.comp.nus.edu.sg/MixedSyncAsync/introduction.html) written
 by [Yahui Song](https://www.comp.nus.edu.sg/~yahuis/).
 
-### To Compile:
-
-```
-git clone https://github.com/songyahui/Semantics_HIPHOP.git
-cd Semantics_HIPHOP
-./compile
-```
-
 ### Dependencies:
 
 ```
@@ -28,29 +20,39 @@ sudo apt-get install libgmp-dev
 opam install z3
 ```
 
-### Examples:
-
-Entailments Checking 
+### To Compile:
 
 ```
-./trs src/effect/ex1.ee src/effect/output.txt 
+git clone https://github.com/songyahui/Semantics_HIPHOP.git
+cd Semantics_HIPHOP
+cd sleek 
+git submodule update --init 
+cd ..
+dune build
 ```
 
-Program Verification
+
+
+
+### Test fro running:
+
+- Program Verification, test files in folder src/programs/*.hh
 
 ```
-./verify src/program/send.c src/program/output.txt
+dune exec ./hip.exe src/programs/41_example1.hh
+```
+
+- Entailments Checking, test files in folder src/effects/*.ee
+
+```
+dune exec ./trs.exe src/effects/0_Single_Instant.ee
 ```
 
 ### To Clean:
 
 ``` 
-./clean
+dune clean
 ```
 
-### Benchmark:
 
-We provide a [Miroc-Benchmark](http://loris-5.d2.comp.nus.edu.sg/Effect/BenchMark.zip) for experiemnts on checking inclusions among regular expressions.
-
-[Arduino]https://create.arduino.cc/projecthub/projects/tags/control
 
