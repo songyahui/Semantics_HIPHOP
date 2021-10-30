@@ -24,17 +24,14 @@ Below, we provide guidance for both approaches.
 
 <h3>Using the Virtual Machine</h3>
 <p>You need to get a <a href="https://www.virtualbox.org/">VirtualBox</a> (tested w/ version 6.1.26) on your system and import the VM
-<code class="language-plaintext highlighter-rouge">pwt.ova</code>. Please, note the following:</p>
+<code>TempAS.ova</code>. Please, note that:</p>
 <ul>
-  <li>The VM should be provided with at least 4GB of RAM.</li>
-  <li>The VM is better to be provided with 4 CPUs (but 2 CPUs should be enough).</li>
-  <li>The VM is a Ubuntu 18.04 with <code class="language-plaintext highlighter-rouge">OCaml</code>, <code class="language-plaintext highlighter-rouge">vim</code> and <code class="language-plaintext highlighter-rouge">emacs</code> being set-up.</li>
   <li>Username and password are both <code>tacas2022</code>.</li>
 </ul>
 
-<p>The source code can be found in the folder <code class="language-plaintext highlighter-rouge">/home/tacas2022/Semantics_HIPHOP</code>. 
+<p>The source code can be found in the folder <code>/home/tacas2022/Semantics_HIPHOP</code>. 
   <br>To compile it,
-you need to run <code class="language-plaintext highlighter-rouge">cd /home/tacas2022/Semantics_HIPHOP &amp;&amp; dune build</code> in a terminal. 
+you need to run <code>cd /home/tacas2022/Semantics_HIPHOP &amp;&amp; dune build</code> in a terminal. 
 
 
 <h3 id="using-your-own-coq-setup-with-opam">Using your local machine</h3>
@@ -42,16 +39,17 @@ you need to run <code class="language-plaintext highlighter-rouge">cd /home/taca
   
 
 <h2 id="checking-the-artifacts-code">Checking the artifact’s Functionality</h2>
-<p>After the project is compiled, you may want to check how the main definitions and results in Coq are related to the ones in the paper.</p>
+<p>After the project is compiled, you may start to test the exmaples demostrated in the <a href="https://github.com/songyahui/Semantics_HIPHOP/blob/master/paper.pdf">paper</a>.</p>
+
 
 <table>
   <thead>
     <tr>
-      <th>Paper</th>
-      <th>Description</th>
-      <th>Source file</th>
-      <th>Testing command</th>
-      <th>Expected result</th>
+      <th>Paper &nbsp &nbsp &nbsp</th>
+      <th>Description &nbsp &nbsp &nbsp</th>
+      <th>Source file &nbsp &nbsp &nbsp</th>
+      <th>Testing command &nbsp &nbsp &nbsp</th>
+      <th>Expected result &nbsp &nbsp &nbsp</th>
     </tr>
   </thead>
   <tbody>
@@ -85,9 +83,12 @@ you need to run <code class="language-plaintext highlighter-rouge">cd /home/taca
       <td><code>src/programs/52_Constructiveness.hh</code> &nbsp &nbsp &nbsp</td>
       <td><code>dune exec ./hip.exe src/programs/52_Constructiveness.hh</code> &nbsp &nbsp &nbsp </td>
       <td>Correct</td>
+      
     </tr>
 
-
+    <tr>
+      <td>--------------</td>
+    </tr>
 
     <tr>
       <td>§6 &nbsp Table 1 &nbsp &nbsp &nbsp</td>
@@ -112,31 +113,36 @@ you need to run <code class="language-plaintext highlighter-rouge">cd /home/taca
       <td><code>dune exec ./trs.exe src/effects/Wait_1.ee</code> &nbsp &nbsp &nbsp </td>
       <td>Correct</td>
     </tr>
-    
-
-
-    
   
   </tbody>
 </table>
+
+<p>More test files for the Front End are in <code>src/programs/*.hh</code>; and more test files for the Back End are in <code>src/effects/*.ee</code>.</p>
 
 
 <h2 id="checking-the-artifacts-code">Checking the artifact’s Reusability</h2>
 
 <h3 id="description-of-the-projects-files">Description of the project’s files</h3>
 
+<p>The project needs to be built together with a submodule <a href="https://github.com/dyzsr/sleek/tree/82168c7c568db05e4fcbe4d289d8798f172061da"><code>sleek</code></a>, which is included in the main <a href="https://github.com/songyahui/Semantics_HIPHOP"><code>Semantics_HIPHOP</code></a> repository. 
+<br>
+The <code>sleek</code> submodule implements the back-end, supporting the front-end developed in <code>Semantics_HIPHOP</code>. 
+  </p>
+
 
 <h3 id="tool-structure">Tool structure</h3>
 
-<p>Most of the source is boiler plate to tie together parsers, the two interesting files are:</p>
+<p>Most of the source is boiler plate to tie together parsers, the interesting files are:</p>
 
 <ul>
-  <li><code class="language-plaintext highlighter-rouge">src/Preliminaries.ml</code> contains the interface to Z3</li>
-  <li><code class="language-plaintext highlighter-rouge">src/PomsetPTSeq.ml</code> implements the semantics as presented in Figure 1, with register recycling. The paper’s rules are referenced in comments like <code class="language-plaintext highlighter-rouge">(* M6 *)</code> and <code class="language-plaintext highlighter-rouge">(* R4a *)</code>.</li>
+  <li><code>ast.ml</code> contains the AST for parsing HipHop.js source file.</li>
+  <li><code>sleek/ast.mli</code> contains the AST for parsing Timed Effects Specification.</li>
+  <li><code>sleek/checker.ml</code> contains the interface to Z3</li>
+  <br>
+  <li><code>hip.ml</code> is the main entrance of the front-end. </li>
+  <li><code>trs.ml</code> is the main entrance of the back-end. </li>
+
+
 </ul>
 
-<p>The tool has been written to be faithful to the mathematics without too much deviation for efficiency’s sake. The
-majority of the complexity is in the implementation of <code class="language-plaintext highlighter-rouge">seq_rule</code> and <code class="language-plaintext highlighter-rouge">if_rule</code>, as these have to implement merging. In
-PwTer, all events have globally unique identifiers, so possible valid merges have to be calculated at these compositions
-and new labellings must be produced. This yields quite a lot of fiddly maps which have to be applied carefully to
-preserve the semantics.</p>
+<p>Thanks for your efforts reviewing our artifact submission! Please let us know if anything causes confusions.</p>
