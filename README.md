@@ -53,6 +53,9 @@ dune exec ./hip.exe src/programs/41_example1.hh
 dune exec ./trs.exe src/effects/0_Single_Instant.ee
 ```
 
+More test files for the Front End are placed in ```src/programs/*.hh```; and more test files for the Back End are placed in ```src/effects/*.ee```.
+
+
 ### 4. To Clean:
 
 ``` 
