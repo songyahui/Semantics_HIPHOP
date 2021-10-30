@@ -11,7 +11,7 @@
 </ul>
 
 
-<h3>Getting started</h3>
+<h2>Getting started</h2>
 <p>The artifact consists of i) <em> a Front End: Forward Verifier</em>; and ii) <em> a Back End: the term rewriting system</em>.<br>
 There are two ways to evaluate the artifact:</p>
 <ul>
@@ -38,10 +38,10 @@ you need to run <code class="language-plaintext highlighter-rouge">cd /home/taca
 
 
 <h3 id="using-your-own-coq-setup-with-opam">Using your local machine</h3>
-<li>Check out the instructions on GitHub: <a href="https://github.com/songyahui/Semantics_HIPHOP">online</a></li>
+<li>Check out the instructions on GitHub: <a href="https://github.com/songyahui/Semantics_HIPHOP#readme">readme</a></li>
   
 
-<h2 id="checking-the-artifacts-code">Checking the artifact’s code</h2>
+<h2 id="checking-the-artifacts-code">Checking the artifact’s Functionality</h2>
 <p>After the project is compiled, you may want to check how the main definitions and results in Coq are related to the ones in the paper.</p>
 
 <table>
@@ -49,113 +49,82 @@ you need to run <code class="language-plaintext highlighter-rouge">cd /home/taca
     <tr>
       <th>Paper</th>
       <th>Description</th>
-      <th>Coq file</th>
-      <th>Coq statements</th>
+      <th>Source file</th>
+      <th>Testing command</th>
+      <th>Expected result</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td>§4.1</td>
-      <td>definitions of statements <em>S</em> and expressions <em>M</em></td>
-      <td><code class="language-plaintext highlighter-rouge">Language.v</code></td>
-      <td><code class="language-plaintext highlighter-rouge">Expr.t</code> and <code class="language-plaintext highlighter-rouge">Stmt.t</code></td>
+      <td>§4.3 Fig. 7 &nbsp &nbsp &nbsp</td>
+      <td>Mixed Async and Sync Concurrency with Function Calls. &nbsp &nbsp &nbsp</td>
+      <td><code>src/programs/paper_example1.hh</code> &nbsp &nbsp &nbsp</td>
+      <td><code>dune exec ./hip.exe src/programs/paper_example1.hh</code> &nbsp &nbsp &nbsp </td>
+      <td>Correct</td>
     </tr>
+
     <tr>
-      <td>§4.3, Def. 4.2</td>
-      <td>a definition of predicate transformers</td>
-      <td><code class="language-plaintext highlighter-rouge">PredTransformer.v</code></td>
-      <td><code class="language-plaintext highlighter-rouge">Record predTransformer</code></td>
+      <td>§5.1 Fig. 9 &nbsp &nbsp &nbsp</td>
+      <td>Interference Among Threads. &nbsp &nbsp &nbsp</td>
+      <td><code>src/programs/54_Interference.hh</code> &nbsp &nbsp &nbsp</td>
+      <td><code>dune exec ./hip.exe src/programs/54_Interference.hh</code> &nbsp &nbsp &nbsp </td>
+      <td>Correct</td>
     </tr>
+
     <tr>
-      <td>§4.3, Def. 4.4; §A.3, Def. A.2</td>
-      <td>a definition of pomsets with predicate transformers; a definition of complete pomsets</td>
-      <td><code class="language-plaintext highlighter-rouge">Pomset.v</code></td>
-      <td><code class="language-plaintext highlighter-rouge">Record pomset</code>, <code class="language-plaintext highlighter-rouge">Record wf</code> <br /> (well-formedness predicate), and <code class="language-plaintext highlighter-rouge">Record complete</code></td>
+      <td>§7.3 Fig. 10 &nbsp &nbsp &nbsp</td>
+      <td>Causality in a Loop. &nbsp &nbsp &nbsp</td>
+      <td><code>src/programs/25_causality.hh</code> &nbsp &nbsp &nbsp</td>
+      <td><code>dune exec ./hip.exe src/programs/25_causality.hh</code> &nbsp &nbsp &nbsp </td>
+      <td>Correct</td>
     </tr>
+
     <tr>
-      <td>§4.3, Fig. 1 and <br /> §9.4, Def. 9.6</td>
-      <td>the PwT semantics extended to allow if-closure</td>
-      <td><code class="language-plaintext highlighter-rouge">Semantics.v</code></td>
-      <td><code class="language-plaintext highlighter-rouge">Inductive Semantics</code></td>
+      <td>§7.4 Fig. 11 &nbsp &nbsp &nbsp</td>
+      <td>A bug found. &nbsp &nbsp &nbsp</td>
+      <td><code>src/programs/52_Constructiveness.hh</code> &nbsp &nbsp &nbsp</td>
+      <td><code>dune exec ./hip.exe src/programs/52_Constructiveness.hh</code> &nbsp &nbsp &nbsp </td>
+      <td>Correct</td>
     </tr>
-  </tbody>
-  <tbody>
+
+
+
     <tr>
-      <td>§4.3, Lemma 4.5a</td>
-      <td><code class="language-plaintext highlighter-rouge">skip</code> as an identity element for the semicolon operator</td>
-      <td><code class="language-plaintext highlighter-rouge">SeqSkipId.v</code></td>
-      <td>lemmas  <code class="language-plaintext highlighter-rouge">skip_seq_id_left</code> <br /> and <code class="language-plaintext highlighter-rouge">skip_seq_id_right</code></td>
+      <td>§6 &nbsp Table 1 &nbsp &nbsp &nbsp</td>
+      <td>The post condition proving process for Fig. 8. &nbsp &nbsp &nbsp</td>
+      <td><code>src/effects/Mixed_1.ee</code> &nbsp &nbsp &nbsp</td>
+      <td><code>dune exec ./trs.exe src/effects/Mixed_1.ee</code> &nbsp &nbsp &nbsp </td>
+      <td>Correct</td>
     </tr>
+
     <tr>
-      <td>§4.3, Lemma 4.5b</td>
-      <td>associativity of the semicolon operator</td>
-      <td><code class="language-plaintext highlighter-rouge">SeqAssoc.v</code></td>
-      <td>lemma <code class="language-plaintext highlighter-rouge">seq_assoc</code></td>
+      <td>§6.1 Table 2 &nbsp &nbsp &nbsp</td>
+      <td>The reoccurrence proving example. &nbsp &nbsp &nbsp</td>
+      <td><code>src/effects/reoccur1.ee</code> &nbsp &nbsp &nbsp</td>
+      <td><code>dune exec ./trs.exe src/effects/reoccur1.ee</code> &nbsp &nbsp &nbsp </td>
+      <td>Correct</td>
     </tr>
+
     <tr>
-      <td>§4.3, Lemma 4.6e</td>
-      <td>distribution of the if operator over semicolon</td>
-      <td><code class="language-plaintext highlighter-rouge">IfClosure.v</code></td>
-      <td>lemma <code class="language-plaintext highlighter-rouge">if_closure</code></td>
+      <td>§6.2 Table 3 &nbsp &nbsp &nbsp</td>
+      <td>The example for Await. &nbsp &nbsp &nbsp</td>
+      <td><code>src/effects/Wait_1.ee</code> &nbsp &nbsp &nbsp</td>
+      <td><code>dune exec ./trs.exe src/effects/Wait_1.ee</code> &nbsp &nbsp &nbsp </td>
+      <td>Correct</td>
     </tr>
+    
+
+
+    
+  
   </tbody>
 </table>
 
-<p>Our proofs of the main lemmas use the following axioms (and no other assumptions):</p>
-<ul>
-  <li>Excluded middle, XM (<code class="language-plaintext highlighter-rouge">classic</code> from <code class="language-plaintext highlighter-rouge">Coq.Logic.Classical_Prop</code>);</li>
-  <li>(Dependent) Functional Extensionality, (D)FE (<code class="language-plaintext highlighter-rouge">functional_extensionality_dep</code> from <code class="language-plaintext highlighter-rouge">Coq.Logic.FunctionalExtensionality</code>);</li>
-  <li>Constructive Definite Description, CDD (<code class="language-plaintext highlighter-rouge">constructive_definite_description</code> from <code class="language-plaintext highlighter-rouge">Coq.Logic.Description</code>).</li>
-</ul>
 
-<p>You may check that by taking a look at files</p>
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">skip_seq_id_left.axioms.out</code>, <code class="language-plaintext highlighter-rouge">skip_seq_id_right.axioms.out</code>, <code class="language-plaintext highlighter-rouge">seq_assoc.axioms.out</code>, and <code class="language-plaintext highlighter-rouge">if_closure.axioms.out</code>.</li>
-</ul>
-
-<p>They are generated during the project compilation by <code class="language-plaintext highlighter-rouge">Print Assumptions</code> instructions at the end of <code class="language-plaintext highlighter-rouge">SeqSkipId.v</code>, <code class="language-plaintext highlighter-rouge">SeqAssoc.v</code>, and <code class="language-plaintext highlighter-rouge">IfClosure.v</code> files.</p>
-
-<p>To check that the project does not contain admitted facts, you may want to run the following script from the project’s root folder:</p>
-
-<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">grep </span>dmit src/<span class="k">*</span>.v
-
-</code></pre></div></div>
+<h2 id="checking-the-artifacts-code">Checking the artifact’s Reusability</h2>
 
 <h3 id="description-of-the-projects-files">Description of the project’s files</h3>
 
-<h4 id="basic-definitions-of-the-semantics">Basic definitions of the semantics</h4>
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">Events.v</code> – a definition of events (§4.1)</li>
-  <li><code class="language-plaintext highlighter-rouge">Language.v</code> – definitions of statements <em>S</em> and expressions <em>M</em> (§4.1)</li>
-  <li><code class="language-plaintext highlighter-rouge">Formula.v</code> – a language of formulas Φ (§4.1)</li>
-  <li><code class="language-plaintext highlighter-rouge">Action.v</code> — a definition of actions and related notions (§4.2)</li>
-  <li><code class="language-plaintext highlighter-rouge">PredTransformer.v</code> — a definition of predicate transformers (§4.3, Def. 4.2)</li>
-  <li><code class="language-plaintext highlighter-rouge">Pomset.v</code> — a definition of pomsets with predicate transformers (§4.3, Def. 4.4)</li>
-  <li><code class="language-plaintext highlighter-rouge">Semantics.v</code> — the PwT semantics extended to allow if-closure (§4.3, Fig. 1 and §9.4, Def. 9.6)</li>
-</ul>
-
-<h4 id="properties-of-the-semantics">Properties of the semantics</h4>
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">SeqSkipId.v</code> — <code class="language-plaintext highlighter-rouge">skip</code> as an identity element for the semicolon operator (§4.3, Lemma 4.5a)</li>
-  <li><code class="language-plaintext highlighter-rouge">SeqAssoc.v</code> — associativity of the semicolon operator (§4.3, Lemma 4.5b)</li>
-  <li><code class="language-plaintext highlighter-rouge">IfClosure.v</code> — distribution of the if operator over semicolon (§4.3, Lemma 4.6e)</li>
-</ul>
-
-<h4 id="auxiliary-definitions-and-lemmas">Auxiliary definitions and lemmas</h4>
-<ul>
-  <li><code class="language-plaintext highlighter-rouge">AuxDef.v</code>, <code class="language-plaintext highlighter-rouge">AuxRel.v</code>, <code class="language-plaintext highlighter-rouge">SeqBuilder.v</code></li>
-</ul>
-
-<h2 id="pwter">PwTer</h2>
-
-<p>PwTer can be found on the desktop of the virtual machine described above, by following the <code class="language-plaintext highlighter-rouge">PwTer</code> shortcut on the
-desktop.</p>
-
-<p>Alternatively, it can be built on your own machine by following the instructions in <a href="https://github.com/graymalkin/pomsets-with-predicate-transformers">the
-project</a>’s README.</p>
-
-<p>Once the tool is built, to replicate the results presented in the paper, navigate to the <code class="language-plaintext highlighter-rouge">data</code> directory of the PwTer
-sources and run <code class="language-plaintext highlighter-rouge">make check</code>. This will evaluate the Java Causality Test Cases.</p>
 
 <h3 id="tool-structure">Tool structure</h3>
 

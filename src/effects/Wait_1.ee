@@ -1,4 +1,2 @@
-
-TRUE /\ {?B} \/ {B} |- TRUE /\ {?B} : true;
-
+"True && {A}.{C}.B? .{D} |-  True && {A}.B? .{D} : true ";
 

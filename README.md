@@ -41,13 +41,13 @@ dune build
 
 ### 3. Test fro running:
 
-- Program Verification, test files in folder src/programs/*.hh
+- (Front End) Program Verification, test files in folder src/programs/*.hh
 
 ```
 dune exec ./hip.exe src/programs/41_example1.hh
 ```
 
-- Entailments Checking, test files in folder src/effects/*.ee
+- (Back End) Entailments Checking, test files in folder src/effects/*.ee
 
 ```
 dune exec ./trs.exe src/effects/0_Single_Instant.ee
