@@ -23,6 +23,7 @@ eval $(opam env)
 sudo apt-get install menhir
 sudo apt-get install libgmp-dev
 opam install z3
+opam install dune
 ```
 
 ### 2. To Compile:
