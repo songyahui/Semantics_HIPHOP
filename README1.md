@@ -110,9 +110,15 @@ cp Semantics_HIPHOP/_build/default/trs.exe cgi-bin/trs
 cd src/hip/
 rm -R *.hh
 cp -R ../../Semantics_HIPHOP/src/programs/*.hh ./
+cd ../sleek/
+rm -R *.ee
+cp -R ../../Semantics_HIPHOP/src/effects/*.ee ./
 
 
 
     "True && {A, !B}.{B}.{C} // B?.{E} |- True && {A}.{B}.{C, E} : true ";
 
 
+1. setup repo for APLAS. 
+2. related work 
+3. introduction 

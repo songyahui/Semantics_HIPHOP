@@ -10,7 +10,7 @@ hiphop module a_loop( out A, out B, out C )
 
 {
 
-   emit A ();
+  emit A ();
   loop {
   	   emit B(); 
      yield; 
