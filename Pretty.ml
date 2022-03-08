@@ -142,7 +142,7 @@ let rec string_of_expression (expr: expression): string =
   | Abort (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
   | Loop ex -> "loop " ^ string_of_expression ex
   | Hop ex -> "Hop " ^ string_of_expression ex
-  | Async (str, ex) -> "async " ^ str ^" = "^ string_of_expression ex 
+  | Async (str, ex1, es2) -> "async " ^ str ^"{ "^ string_of_expression ex1  ^"}\n" ^ string_of_expression es2 
   | Lambda (ex1, ex) -> "lamdba " ^ string_of_expression ex1 ^" => "^ string_of_expression ex 
   | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
   | Return ex -> "return " ^ string_of_expression ex
@@ -192,24 +192,17 @@ let rec string_of_program (states : statement list) : string =
   | x::xs -> string_of_statement x ^ "\n\n" ^ string_of_program xs 
   ;;
 
-let string_of_parfst (parfst:(Sleek.pi* parfst*'a)): string = 
-  match parfst with 
-  | (pi, SL t, _)  -> Sleek.show_pi pi ^ Sleek.show_instants (Instant t) 
-  | (pi, W ins_L, _) -> Sleek.show_pi pi ^ Sleek__Signals.show_event (ins_L)  ^"?" 
-  
-  (*List.fold_left (fun acc ins -> acc ^ "" ^ ) "" ins_L
-  *)
-  ;;
+
 
 let string_of_prog_states (ps: prog_states) : string = 
-  List.fold_left  (fun acc (_, _, instance) -> 
+  List.fold_left  (fun acc (his, instance, k) -> 
 
-    acc^  " : " ^ 
+    acc^  " : " ^  Sleek.show_instants his ^ ", "^
     
     (match instance with 
     | None -> "none instance"
-    | Some (ins, t) -> string_of_parfst (Sleek.True, ins, t)
-    )
+    | Some (t) -> Sleek.show_instants (Instant t)
+    ) ^ ", " ^ string_of_int k 
 
   ) " "ps
   ;;
@@ -224,19 +217,5 @@ let rec zip (ls:'a list * 'b list) : ('a * 'b) list =
     | (x::xrest, _) -> List.append (zip ([x], ys)) (zip (xrest, ys))
 ;;
 
-let string_of_state (state: (Sleek.pi* Sleek.instants* (parfst * Sleek.term option) option)) : string = 
-  let (pi, inss, cur) = state in 
-  Sleek.show_effects [(pi, inss)] ^
-  match cur with 
-  | None -> ".end."
-  | Some (ins, t) -> string_of_parfst (pi, ins, t)
-  ;; 
-
-
-let rec string_of_states (states:prog_states) :string =
-  match states with 
-  | [] -> ""
-  | x::xs -> string_of_state x ^ "\n"^ string_of_states xs 
-  ;;
 
 

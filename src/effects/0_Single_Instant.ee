@@ -6,4 +6,5 @@
     "True && {}   |-  True && {A} : false";
     "True && {A}  |-  True && {}  : true";
     "~(True) && {A}  |-  True && {}  : true";
-    
+    "True && {A}.{C}.B?.{D}  |-  True && {A}.B?.{D} : true";
+    "True && A?.B?.C?  |-  True && A?.B?.C? : true";

@@ -8,7 +8,7 @@
 
 (executables
  (names hip trs)
- (modules parser Askz3 lexer Pretty hip trs Ast)
+ (modules parser lexer Pretty hip trs Ast)
  (libraries sleek))
 
 

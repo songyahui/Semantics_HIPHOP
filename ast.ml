@@ -36,7 +36,7 @@ type expression =
     | Halt
     | Signal of string * expression
     | Present of expression * expression * expression option
-    | Async of string * expression 
+    | Async of string * expression * expression
     | Lambda of expression * expression
     | Continue of expression * expression 
     | Return of expression 
@@ -60,7 +60,5 @@ type statement =
     | TryCatch of expression * expression * expression
 
 
-type parfst = SL of Sleek__Signals.t | W of (Sleek__Signals.event)
- 
-type prog_states = (Sleek.pi* Sleek.instants* (parfst * Sleek.term option) option) list
-type prog_states_reverse =  (Sleek.pi * (parfst *  Sleek.term option) * Sleek.instants) list
+
+type prog_states = (Sleek.instants* (Sleek.Signals.t) option * int) list
