@@ -9,14 +9,15 @@ hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done )
 {
    emit Start();
    yield;
-   emit B ();
-   //async Done {
+   
+   async Done {
       emit A();
       if (B.now) {yield; emit C()}
       else {yield; emit D()};
       
       
-   //};
+   };
+   emit O ();
    
 }
 

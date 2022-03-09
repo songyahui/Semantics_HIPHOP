@@ -356,9 +356,10 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   | ForkPar (p1::p2::[]) -> 
     let temp1 = forward env current p1 full in 
     let temp2 = forward env current p2 full in 
+    (*
     print_string (string_of_prog_states temp1 ^"\n");
     print_string (string_of_prog_states temp2 ^"\n");
-
+    *)
     paralleMerge temp1 temp2 
 
 
@@ -389,7 +390,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     ) ) [] current
 
   | Present (Access(str::_), p1, p2)-> 
-    print_string (string_of_expression p2);
     List.flatten (
       List.map (fun (his, cur, k) -> 
         let b1 = forward env [(his, addEventToCur env (Sleek.Signals.present str) cur, k)] p1 full in  
@@ -729,6 +729,8 @@ let forward_verification (prog : statement) (whole: statement list): string =
         | (his, Some (cur), _) ->Sleek.normalize (True, Sleek.Sequence (his, fstToInstance ( Some (cur))))
         | (his, None, _) -> (True, his)
       ) raw_final in 
+    let final = normalize_effs final in 
+
     let startTimeStamp1 = Sys.time() in
     let (verbose, history) = Sleek.verify_entailment (Sleek.Entail {lhs = final; rhs = (post) })  in 
     let startTimeStamp2 = Sys.time() in
@@ -736,7 +738,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^
-    "[Final  Effects] " ^ show_effects_list (normalize_effs final) ^"\n"^
+    "[Final  Effects] " ^ show_effects_list ( final) ^"\n"^
     "[Inferring Time] " ^ string_of_float ((startTimeStamp1 -. startTimeStamp) *.1000.0)^ " ms" ^"\n" ^
     "[Proving   Time] " ^ string_of_float ((startTimeStamp2 -. startTimeStamp1) *.1000.0)^ " ms" ^"\n\n" ^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)

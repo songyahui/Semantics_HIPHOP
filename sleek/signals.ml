@@ -136,7 +136,21 @@ let rec add_UndefSigs env ins =
     
 
 (* Merge signals `a` and `b` into a new one *)
-let merge a b = List.sort_uniq compare (a @ b)
+let merge a b = 
+  let rec helper left list = 
+    match left with 
+    | [] -> []
+    | x :: xs -> (
+      match x with 
+      | Undef str -> if (isEventExist (Absent str) list || isEventExist (Present str) list ) then helper xs list else x :: (helper xs list)
+      | _ -> x :: (helper xs list)
+    )
+  in 
+  let aa = helper a b in 
+  let bb = helper b a in 
+  
+  List.sort_uniq compare (aa @ bb)
+
 
 (* Is `b` included in `a`? *)
 let ( |- ) a b = b |> List.fold_left (fun res y -> res && a |> List.exists (( = ) y)) true
