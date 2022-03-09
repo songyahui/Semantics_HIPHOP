@@ -15,9 +15,8 @@ hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done )
       if (B.now) {yield; emit C()}
       else {yield; emit D()};
       
-      
    };
-   emit O ();
+   emit B (); await O
    
 }
 

@@ -11,6 +11,8 @@ val absent : string -> event
 
 val is_present : event -> bool
 
+
+
 (* Type of signals *)
 type t = event list 
 
@@ -31,6 +33,10 @@ val setAbsent: string -> t -> t option
 val setPresent: string -> t -> t option 
 
 val controdicts: t -> bool 
+
+val controdicts_final: t -> bool 
+
+val fstHelper : event -> t
 
 val add_UndefSigs: string list -> t -> t 
 

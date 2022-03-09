@@ -22,11 +22,25 @@ let rec isEventExist ev ins : bool =
 let rec controdicts ins = 
   match ins with 
   | [] -> false 
-  | Present s :: xs -> if (isEventExist (Absent s) xs || isEventExist (Undef s) xs) then true else controdicts xs
+  | Present s :: xs -> if (isEventExist (Absent s) xs (*|| isEventExist (Undef s) xs*)) then true else controdicts xs
   | Absent s :: xs -> if isEventExist (Present s) xs then true else controdicts xs
-  | Undef s :: xs -> if isEventExist (Present s) xs then true else controdicts xs
+  | Undef _ :: xs -> (*if isEventExist (Present s) xs then true else*) controdicts xs
   ;;
 
+let rec controdicts_final ins = 
+  match ins with 
+  | [] -> false 
+  | Present s :: xs -> if (isEventExist (Absent s) xs || isEventExist (Undef s) xs) then true else controdicts_final xs
+  | Absent s :: xs -> if isEventExist (Present s) xs then true else controdicts_final xs
+  | Undef s :: xs -> if isEventExist (Present s) xs then true else controdicts_final xs
+  ;;
+
+let fstHelper ev = 
+  match ev with 
+  | Present str -> [(Present str); (Undef str)]
+  | Absent str -> [(Absent str); (Undef str)]
+  | x -> [(x)]
+;;
 
 let present name = Present name
 
@@ -62,6 +76,17 @@ let make lst = List.sort_uniq compare lst
 
 let initUndef lst = List.map (fun a -> undefine a) lst
 
+
+let setPresent str lst= 
+  let rec helper li = 
+  match li with 
+  | [] -> []
+  | (Undef s):: xs -> if String.compare s str == 0 then (Present str) :: xs else (Undef s)::helper xs
+  | x :: xs -> x::helper xs in 
+  Some (helper lst)
+;;
+
+(*
 let rec setPresent str lst= 
   match lst with 
   | [] -> Some []
@@ -86,9 +111,17 @@ let rec setPresent str lst=
     match setPresent str xs with 
     | None -> None 
     | Some rest -> Some (x :: rest)  (* signal status controdiction *)
-   
+   *)
 
-let rec setAbsent str lst= 
+let setAbsent str lst= 
+  let rec helper li = 
+  match li with 
+  | [] -> []
+  | (Undef s):: xs -> if String.compare s str == 0 then (Absent str) :: xs else (Undef s)::helper xs
+  | x :: xs -> x::helper xs in 
+  Some (helper lst)
+;;
+  (*
   match lst with 
   | [] -> Some []
   | (Present s):: xs -> 
@@ -112,7 +145,7 @@ let rec setAbsent str lst=
     match setAbsent str xs with 
     | None -> None 
     | Some rest -> Some (x :: rest)  (* signal status controdiction *)
-   
+   *)
 
 let rec delete_shown_sig  env _sig=
   match env with 
@@ -153,8 +186,13 @@ let merge a b =
 
 
 (* Is `b` included in `a`? *)
-let ( |- ) a b = b |> List.fold_left (fun res y -> res && a |> List.exists (( = ) y)) true
-
+let ( |- ) a b = (*b |> List.fold_left (fun res y -> res && a |> List.exists (( = ) y)) true*)
+  List.fold_left (fun acc ev -> acc && (
+    match ev with 
+    | Present _ 
+    | Absent _ -> isEventExist ev a 
+    | _ -> true 
+  )) true b
 (* tests *)
 let () =
   assert ([] |- []);

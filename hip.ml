@@ -10,7 +10,7 @@ let rec fstPar (es:Sleek.instants) :(Sleek.Signals.t) list =
   match es with 
   | Bottom -> []
   | Empty -> []
-  | Await s -> [[s]]
+  | Await _ -> [[]] (*[Sleek.Signals.fstHelper ev ]*)
   | Instant ins -> [ins]
   | Sequence (es1 , es2) -> if Sleek.Inference.nullable es1 then append (fstPar  es1) (fstPar  es2) else fstPar  es1
   | Union (es1, es2) -> append (fstPar  es1) (fstPar  es2)
@@ -18,6 +18,7 @@ let rec fstPar (es:Sleek.instants) :(Sleek.Signals.t) list =
   | Parallel (es1 , _) -> fstPar  es1
   | _ -> raise (Foo "fstPar later")
     
+
   
 (*
   [(True, SL ins, None)]
@@ -31,7 +32,7 @@ let rec derivativePar (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants
   match es with 
   | Bottom ->  Bottom
   | Empty ->  Bottom
-  | Await s -> if Sleek.Signals.isEventExist s fst then Empty else Bottom
+  | Await s -> if Sleek.Signals.isEventExist s fst then Empty else Await s
   | Instant ins -> if Sleek.Signals.(|-) fst ins then Empty else Bottom
     
   | Sequence (es1 , es2) -> 
@@ -80,10 +81,18 @@ let rec normalizeES (trace:Sleek.instants):Sleek.instants =
     | (Union (es11, es12), es3) -> Union (es11, Union (es12, es3))
     | _ -> normalizeES (Union (normalizeES es1, normalizeES es2))
     )
-  | Sequence (Empty, es) -> es
-  | Sequence (es, Empty) -> es
-  | Sequence (Bottom, _) -> Bottom
-  | Sequence (_, Bottom) -> Bottom
+  | Sequence (es1, es2) -> 
+    let es1 = normalizeES es1 in 
+    let es2 = normalizeES es2 in 
+    (match (es1, es2) with 
+    | (Empty, _) -> normalizeES es2
+    | (_, Empty) -> normalizeES es1
+    | (Bottom, _) -> Bottom
+    | (_, Bottom) -> Bottom
+    (*| (Sequence (es11, es12), es3) -> (Sequence (es11, Sequence (es12, es3)))*)
+    | _ -> (Sequence (es1, es2))
+    )
+
   | Parallel (es, Empty) -> es
   | Parallel (Empty, es) -> es
   | Parallel (_, Bottom) -> Bottom
@@ -93,14 +102,6 @@ let rec normalizeES (trace:Sleek.instants):Sleek.instants =
   | Kleene Bottom -> Empty
   | Kleene Empty -> Empty
   | Kleene (Union (Empty, es)) -> Kleene es
-  | Sequence (Sequence (es1, es2), es3) -> Sequence (es1, Sequence (es2, es3))
-  (* normalize recursively *)
-  | Sequence (es1, es2) ->
-      let es1' = normalizeES es1 in
-      if es1' <> es1 then
-        Sequence (es1', es2)
-      else
-        Sequence (es1, normalizeES es2)
 
   | Parallel (es1, es2) ->
       let es1' = normalizeES es1 in
@@ -202,11 +203,11 @@ let parrallHisAndCurAbsorb  (his:Sleek.instants ) (cur:Sleek.Signals.t option) :
   match cur with 
   | None -> his 
   | Some cur1 -> 
-    let fst = fstPar his in 
-    let list = List.map (fun f -> 
-      let der = derivativePar f his in 
-      Sleek.Sequence (Sleek.Instant (Sleek.Signals.merge cur1 (List.hd fst)), der)) 
-    fst
+    let fst = List.hd (fstPar his) in 
+    let head = (Sleek.Signals.merge cur1 fst) in 
+    let der = derivativePar head his in
+    let list = [(Sleek.Sequence (Sleek.Instant head, der)) ] 
+    
     in let rec helper li = 
       match li with 
       | [] -> Sleek.Bottom 
@@ -217,17 +218,24 @@ let parrallHisAndCurAbsorb  (his:Sleek.instants ) (cur:Sleek.Signals.t option) :
 
 
 let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states = 
+  let state1 = List.filter (fun (his, _, _) -> match normalizeES his with |Sleek.Bottom -> false | _ -> true )state1 in 
+  let state2 = List.filter (fun (his, _, _) -> match normalizeES his with |Sleek.Bottom -> false | _ -> true )state2 in 
+
   let combine = zip (state1, state2) in 
   List.flatten (List.map (fun ((his1, cur1, k1), (his2, cur2, k2)) ->
-    (*
-    print_string ("\n==================\n");
+    
+    (*print_string ("\n==================\n");
     print_string (string_of_prog_states [(normalizeES his1, cur1, k1)] ^"\n");
     print_string (string_of_prog_states [(normalizeES his2, cur2, k2)] ^"\n");
     *)
-    match (normalizeES his1, normalizeES his2) with 
+    let his1 = normalizeES his1 in
+    let his2 = normalizeES his2 in 
+    match (his1, his2) with 
+    | (Sleek.Bottom, _) -> []
+    | (_, Sleek.Bottom) -> []
     | (Sleek.Empty, Sleek.Empty) -> [(Sleek.Empty, unionCur cur1 cur2, max k1 k2)]
     | (Sleek.Empty, _ ) -> if k1 > 1 then [(Sleek.Empty, parrallHisAndCur his2 cur1, k1)] 
-      else [(parrallHisAndCurAbsorb his2 cur1, cur2, k2)]
+      else [(parrallHisAndCurAbsorb (his2) cur1, cur2, k2)]
     | (_, Sleek.Empty) -> if k2 > 1 then [(Sleek.Empty, parrallHisAndCur his1 cur2, k2) ]
       else [(parrallHisAndCurAbsorb his1 cur2, cur1, k1)]
     | (_, _) -> 
@@ -345,12 +353,13 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   | Await (Access (s::_ )) 
   | Await (Variable s) -> 
       let waitSig = Sleek.Await (Sleek.Signals.present s) in 
-      List.map (fun (his, cur1, _) ->  
+      let final = List.map (fun (his, cur1, _) ->  
         match cur1 with 
         | None -> (Sleek.Sequence(his, waitSig), None, 0)
         | Some (_) -> 
           (Sleek.Sequence (his, Sleek.Sequence(fstToInstance cur1,  waitSig)), None, 0 )
-      )  current 
+      )  current in 
+      final 
 
 
   | ForkPar (p1::p2::[]) -> 
