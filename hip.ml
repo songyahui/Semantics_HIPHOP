@@ -64,7 +64,49 @@ let rec derivativePar (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants
   ;;
 
 
+let rec normalizeES (trace:Sleek.instants):Sleek.instants =
+  match trace with 
+  (* reduction *)
+  | Bottom -> Bottom
+  | Empty -> Empty
+  | Union(es1, es2) -> 
+    (match (es1, es2) with 
+    | (Bottom, es) -> normalizeES es 
+    | (es, Bottom) -> normalizeES es 
+    | (Union (es11, es12), es3) -> Union (es11, Union (es12, es3))
+    | _ -> normalizeES (Union (normalizeES es1, normalizeES es2))
+    )
+  | Sequence (Empty, es) -> es
+  | Sequence (es, Empty) -> es
+  | Sequence (Bottom, _) -> Bottom
+  | Sequence (_, Bottom) -> Bottom
+  | Parallel (es, Empty) -> es
+  | Parallel (Empty, es) -> es
+  | Parallel (_, Bottom) -> Bottom
+  | Parallel (Bottom, _) -> Bottom
+  | Parallel (es, es') when es = es' -> es
+  | Kleene (Kleene esin) -> normalizeES (Kleene esin)
+  | Kleene Bottom -> Empty
+  | Kleene Empty -> Empty
+  | Kleene (Union (Empty, es)) -> Kleene es
+  | Sequence (Sequence (es1, es2), es3) -> Sequence (es1, Sequence (es2, es3))
+  (* normalize recursively *)
+  | Sequence (es1, es2) ->
+      let es1' = normalizeES es1 in
+      if es1' <> es1 then
+        Sequence (es1', es2)
+      else
+        Sequence (es1, normalizeES es2)
 
+  | Parallel (es1, es2) ->
+      let es1' = normalizeES es1 in
+      if es1' <> es1 then
+        Parallel (es1', es2)
+      else
+        Parallel (es1, normalizeES es2)
+  | Kleene es -> Kleene (normalizeES es)
+  | Timed (es, t) -> Timed (normalizeES es, t)
+  | es -> es
 (*
 prog_states = 
 (Sleek.pi * Sleek.instants * instance option * string option) list 
@@ -173,7 +215,11 @@ let parrallHisAndCurAbsorb  (his:Sleek.instants ) (cur:Sleek.Signals.t option) :
 let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states = 
   let combine = zip (state1, state2) in 
   List.flatten (List.map (fun ((his1, cur1, k1), (his2, cur2, k2)) ->
-    match (Sleek.normalize_es his1, Sleek.normalize_es his2) with 
+    print_string ("\n==================\n");
+    print_string (string_of_prog_states [(normalizeES his1, cur1, k1)] ^"\n");
+    print_string (string_of_prog_states [(normalizeES his2, cur2, k2)] ^"\n");
+    
+    match (normalizeES his1, normalizeES his2) with 
     | (Sleek.Empty, Sleek.Empty) -> [(Sleek.Empty, unionCur cur1 cur2, max k1 k2)]
     | (Sleek.Empty, _ ) -> if k1 > 1 then [(Sleek.Empty, parrallHisAndCur his2 cur1, k1)] 
       else [(parrallHisAndCurAbsorb his2 cur1, cur2, k2)]
@@ -197,7 +243,7 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
   
 
 let rec splitEffects (env: string list) (es:Sleek.instants) :(Sleek.instants* (Sleek.Signals.t) option) list= 
-  let es = Sleek.normalize_es es  in 
+  let es = normalizeES es  in 
   match es with 
   | Bottom -> []
   | Empty -> [(Empty, None)]
@@ -280,7 +326,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     
   
   | Async (s, p, q) -> 
-    (*print_string (string_of_prog_states current ^"\n");*)
+    print_string (string_of_prog_states current ^"\n");
     let branch1 = Seq (p, Emit(s, None)) in 
     let desugar = ForkPar [branch1; q] in 
     forward env current desugar full
@@ -300,6 +346,9 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   | ForkPar (p1::p2::[]) -> 
     let temp1 = forward env current p1 full in 
     let temp2 = forward env current p2 full in 
+    print_string (string_of_prog_states temp1 ^"\n");
+    print_string (string_of_prog_states temp2 ^"\n");
+
     paralleMerge temp1 temp2 
 
 
@@ -349,7 +398,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
           List.map (fun (pi1, es1) -> 
             let pi_enforcePre = Sleek.And(pi_pre, pi1) in 
-            let final = splitEffects env  (Sleek.fixpoint ~f: Sleek.normalize_es es1) pi_enforcePre  in
+            let final = splitEffects env  (Sleek.fixpoint ~f: normalizeES es1) pi_enforcePre  in
             final
 
           ) postcon
@@ -374,7 +423,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
             List.map (fun (pi_new, ins_new) -> 
             let pi_enforcePre = Sleek.And(pi_pre, pi_new) in 
 
-            let final = splitEffects env  (Sleek.fixpoint ~f: Sleek.normalize_es ins_new) pi_enforcePre  in
+            let final = splitEffects env  (Sleek.fixpoint ~f: normalizeES ins_new) pi_enforcePre  in
             final
             
             

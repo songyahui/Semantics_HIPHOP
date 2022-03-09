@@ -83,7 +83,7 @@ expression:
 | SIGNAL ex = VAR SIMI ex1 = expression_shell {Signal (ex, ex1)}
 | IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
 | HALT {Halt}
-| ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK COMMA   ex2 = expression_shell {Async (str, ex1, ex2)}
+| ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK SIMI   ex2 = expression_shell {Async (str, ex1, ex2)}
 | RETURN ex =  expression {Return ex}
 | BREAK ex =  expression {Break ex}
 | RUN ex = expression {Run ex}
