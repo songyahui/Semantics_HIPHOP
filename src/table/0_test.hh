@@ -3,22 +3,21 @@
 
 var hh = require("hiphop");
 
-hiphop module prg(out Start, in A, in B, in C, in R, out O, out Done ) 
+hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done ) 
    /*@ requires "True && emp "@*/
    /*@ ensures  "True && ({})^*.{A}" @*/
 {
    emit Start();
-   pause;
-   async Done {
+   yield;
+   emit B ();
+   //async Done {
       emit A();
+      if (B.now) {yield; emit C()}
+      else {yield; emit D()};
       
-      if (B.now) {
-          emit C();
-      }
-      else {emit D()};
-      pause;
-   };
-   emit B ()
+      
+   //};
+   
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "ABCRO" );

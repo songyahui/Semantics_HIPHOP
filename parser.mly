@@ -91,8 +91,7 @@ expression:
 
 
 maybeElse:
-| {None}
-|  ELSE LBRACK ex = expression_shell RBRACK {Some ex}
+|  ELSE LBRACK ex = expression_shell RBRACK { ex}
 
 maybeExpr:
 | {None}

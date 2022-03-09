@@ -63,12 +63,16 @@ let rec derivativePar (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants
   | _ -> raise (Foo "derivativePar later")
   ;;
 
+  
+
+
 
 let rec normalizeES (trace:Sleek.instants):Sleek.instants =
   match trace with 
   (* reduction *)
   | Bottom -> Bottom
   | Empty -> Empty
+  | Instant ins -> if Sleek.Signals.controdicts ins then Bottom else Instant ins 
   | Union(es1, es2) -> 
     (match (es1, es2) with 
     | (Bottom, es) -> normalizeES es 
@@ -215,10 +219,11 @@ let parrallHisAndCurAbsorb  (his:Sleek.instants ) (cur:Sleek.Signals.t option) :
 let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states = 
   let combine = zip (state1, state2) in 
   List.flatten (List.map (fun ((his1, cur1, k1), (his2, cur2, k2)) ->
+    (*
     print_string ("\n==================\n");
     print_string (string_of_prog_states [(normalizeES his1, cur1, k1)] ^"\n");
     print_string (string_of_prog_states [(normalizeES his2, cur2, k2)] ^"\n");
-    
+    *)
     match (normalizeES his1, normalizeES his2) with 
     | (Sleek.Empty, Sleek.Empty) -> [(Sleek.Empty, unionCur cur1 cur2, max k1 k2)]
     | (Sleek.Empty, _ ) -> if k1 > 1 then [(Sleek.Empty, parrallHisAndCur his2 cur1, k1)] 
@@ -285,6 +290,12 @@ let fstToInstance cur =
   | Some ins ->  Sleek.Instant ins 
 ;;
 
+let addEventToCur (env:string list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.t option):Sleek.Signals.t option=
+  match cur with 
+  | None ->  Some (ev :: (Sleek.Signals.initUndef env))
+  | Some ins ->  Some (ev :: ins )
+;;
+
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
   match prog with 
@@ -326,7 +337,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     
   
   | Async (s, p, q) -> 
-    print_string (string_of_prog_states current ^"\n");
     let branch1 = Seq (p, Emit(s, None)) in 
     let desugar = ForkPar [branch1; q] in 
     forward env current desugar full
@@ -377,6 +387,18 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       ) first_round
       )
     ) ) [] current
+
+  | Present (Access(str::_), p1, p2)-> 
+    print_string (string_of_expression p2);
+    List.flatten (
+      List.map (fun (his, cur, k) -> 
+        let b1 = forward env [(his, addEventToCur env (Sleek.Signals.present str) cur, k)] p1 full in  
+        let b2 = forward env [(his, addEventToCur env (Sleek.Signals.absent str) cur, k)] p2 full in 
+        List.append b1 b2  
+
+      ) current
+    )
+
 
   | _ ->  current
  
@@ -675,11 +697,11 @@ List.flatten (
 let normalize_effs effs = 
   List.filter (fun (pi, es) ->
     match (pi, es) with 
-    | (Sleek.False, Sleek.Bottom) -> false 
+    | (_,  Sleek.Bottom) -> false 
     | _ -> true 
   )
   (List.map (
-    fun eff -> Sleek.fixpoint ~f: Sleek.normalize eff 
+    fun (pi, es) -> (pi, Sleek.fixpoint ~f: normalizeES es)
   ) effs)
   
 

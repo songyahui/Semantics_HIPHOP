@@ -153,9 +153,9 @@ let rec string_of_expression (expr: expression): string =
   | Run ex -> " run " ^ string_of_expression ex
   | Signal (str, p) -> "signal: "^ str ^ string_of_expression p
   | Present (ex1, ex2, ex3) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2 ^ (
-    match ex3 with 
+    (*match ex3 with 
     | None -> ""
-    | Some ex -> "else " ^ string_of_expression ex
+    | Some ex ->*) "else " ^ string_of_expression ex3
   )
   | FunctionExpr (p_li, ex) -> "function " ^ "("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
 

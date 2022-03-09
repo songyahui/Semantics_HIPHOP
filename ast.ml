@@ -35,7 +35,7 @@ type expression =
     | Yield
     | Halt
     | Signal of string * expression
-    | Present of expression * expression * expression option
+    | Present of expression * expression * expression
     | Async of string * expression * expression
     | Lambda of expression * expression
     | Continue of expression * expression 
