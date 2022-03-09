@@ -40,7 +40,7 @@ type expression =
     | Lambda of expression * expression
     | Continue of expression * expression 
     | Return of expression 
-    | Break of expression 
+    | Raise of int 
     | Trap of expression * expression
     | Run of expression
     | FunctionExpr of param list * expression

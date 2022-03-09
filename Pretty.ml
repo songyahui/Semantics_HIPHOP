@@ -146,7 +146,7 @@ let rec string_of_expression (expr: expression): string =
   | Lambda (ex1, ex) -> "lamdba " ^ string_of_expression ex1 ^" => "^ string_of_expression ex 
   | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
   | Return ex -> "return " ^ string_of_expression ex
-  | Break ex -> "Break " ^ string_of_expression ex
+  | Raise d -> "raise " ^ string_of_int d
   | Trap (ex1, ex) -> "trap " ^ string_of_expression ex1 ^" : "^ string_of_expression ex 
   | Yield -> "yield"
   | Halt -> "Halt"

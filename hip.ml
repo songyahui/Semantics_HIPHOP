@@ -65,7 +65,50 @@ let rec derivativePar (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants
   ;;
 
   
+let rec normalizeES_final (trace:Sleek.instants):Sleek.instants =
+  match trace with 
+  (* reduction *)
+  | Bottom -> Bottom
+  | Empty -> Empty
+  | Instant ins -> if Sleek.Signals.controdicts_final ins then Bottom else Instant ins 
+  | Union(es1, es2) -> 
+    (match (es1, es2) with 
+    | (Bottom, es) -> normalizeES_final es 
+    | (es, Bottom) -> normalizeES_final es 
+    | (Union (es11, es12), es3) -> Union (es11, Union (es12, es3))
+    | _ -> normalizeES_final (Union (normalizeES_final es1, normalizeES_final es2))
+    )
+  | Sequence (es1, es2) -> 
+    let es1 = normalizeES_final es1 in 
+    let es2 = normalizeES_final es2 in 
+    (match (es1, es2) with 
+    | (Empty, _) -> normalizeES_final es2
+    | (_, Empty) -> normalizeES_final es1
+    | (Bottom, _) -> Bottom
+    | (_, Bottom) -> Bottom
+    (*| (Sequence (es11, es12), es3) -> (Sequence (es11, Sequence (es12, es3)))*)
+    | _ -> (Sequence (es1, es2))
+    )
 
+  | Parallel (es, Empty) -> es
+  | Parallel (Empty, es) -> es
+  | Parallel (_, Bottom) -> Bottom
+  | Parallel (Bottom, _) -> Bottom
+  | Parallel (es, es') when es = es' -> es
+  | Kleene (Kleene esin) -> normalizeES_final (Kleene esin)
+  | Kleene Bottom -> Empty
+  | Kleene Empty -> Empty
+  | Kleene (Union (Empty, es)) -> Kleene es
+
+  | Parallel (es1, es2) ->
+      let es1' = normalizeES_final es1 in
+      if es1' <> es1 then
+        Parallel (es1', es2)
+      else
+        Parallel (es1, normalizeES_final es2)
+  | Kleene es -> Kleene (normalizeES_final es)
+  | Timed (es, t) -> Timed (normalizeES_final es, t)
+  | es -> es
 
 
 let rec normalizeES (trace:Sleek.instants):Sleek.instants =
@@ -361,6 +404,20 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       )  current in 
       final 
 
+  | Raise d -> 
+    List.map (fun (a, b, _) -> (a, b, d+2) ) current
+
+  | Trap (p, q) -> 
+    let state1 = forward env current p full in 
+    List.flatten (
+      List.map (fun (his, cur, k) ->
+        if k =2 then forward env [((his, cur, 0))] q full
+        else if k > 2 then [(his, cur, k-1)]
+        else [(his, cur, k)]
+
+      ) state1
+    )
+    
 
   | ForkPar (p1::p2::[]) -> 
     let temp1 = forward env current p1 full in 
@@ -713,7 +770,16 @@ let normalize_effs effs =
     fun (pi, es) -> (pi, Sleek.fixpoint ~f: normalizeES es)
   ) effs)
   
-
+let normalize_effs_final effs = 
+  List.filter (fun (pi, es) ->
+    match (pi, es) with 
+    | (_,  Sleek.Bottom) -> false 
+    | _ -> true 
+  )
+  (List.map (
+    fun (pi, es) -> (pi, Sleek.fixpoint ~f: normalizeES_final es)
+  ) effs)
+  
 
 let forward_verification (prog : statement) (whole: statement list): string = 
   match prog with 
@@ -738,22 +804,25 @@ let forward_verification (prog : statement) (whole: statement list): string =
         | (his, Some (cur), _) ->Sleek.normalize (True, Sleek.Sequence (his, fstToInstance ( Some (cur))))
         | (his, None, _) -> (True, his)
       ) raw_final in 
-    let final = normalize_effs final in 
+
+    let startTimeStamp01 = Sys.time() in
+
+    let final = normalize_effs_final final in 
 
     let startTimeStamp1 = Sys.time() in
-    let (verbose, history) = Sleek.verify_entailment (Sleek.Entail {lhs = final; rhs = (post) })  in 
+    let (verbose, _) = Sleek.verify_entailment (Sleek.Entail {lhs = final; rhs = (post) })  in 
     let startTimeStamp2 = Sys.time() in
 
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list post ^"\n"^
     "[Final  Effects] " ^ show_effects_list ( final) ^"\n"^
-    "[Inferring Time] " ^ string_of_float ((startTimeStamp1 -. startTimeStamp) *.1000.0)^ " ms" ^"\n" ^
+    "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms" ^"\n" ^
     "[Proving   Time] " ^ string_of_float ((startTimeStamp2 -. startTimeStamp1) *.1000.0)^ " ms" ^"\n\n" ^
     (*(string_of_inclusion final_effects post) ^ "\n" ^*)
     "[TRS: Verification for Post Condition]\n" ^ 
     "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 
-    Sleek.History.show history    ~verbose ^ "\n\n"
+    (*Sleek.History.show history    ~verbose ^*) "\n\n"
     
   | _ -> ""
   ;;

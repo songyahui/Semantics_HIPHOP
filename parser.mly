@@ -10,7 +10,7 @@
 %token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
-%token RETURN BREAK COLON ELSE TRY CATCH RUN
+%token RETURN RAISE COLON ELSE TRY CATCH RUN
 %token REQUIRE ENSURE  LSPEC RSPEC
 
 
@@ -85,10 +85,10 @@ expression:
 | HALT {Halt}
 | ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK SIMI   ex2 = expression_shell {Async (str, ex1, ex2)}
 | RETURN ex =  expression {Return ex}
-| BREAK ex =  expression {Break ex}
+| RAISE ex =  INTE {Raise ex}
 | RUN ex = expression {Run ex}
 | FUNCTION LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK simiOrnot{FunctionExpr (parm, ex)}
-
+| TRY LBRACK  ex1 = expression_shell RBRACK CATCH LBRACK  ex2 = expression_shell RBRACK {Trap(ex1, ex2)}
 
 maybeElse:
 |  ELSE LBRACK ex = expression_shell RBRACK { ex}

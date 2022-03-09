@@ -63,7 +63,7 @@ rule token = parse
 | "async" {ASYNC}
 | "function" {FUNCTION}
 | "return" {RETURN}
-| "break" {BREAK}
+| "raise" {RAISE}
 | "else" {ELSE}
 | "try" {TRY}
 | "catch" {CATCH}
