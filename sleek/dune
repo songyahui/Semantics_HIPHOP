@@ -1,0 +1,35 @@
+(ocamllex
+ (modules lexer))
+
+(menhir
+ (modules parser)
+ (flags --explain --dump))
+
+(library
+ (public_name sleek)
+ (name sleek)
+ (modules
+  lexer
+  parser
+  syntax
+  ast
+  ast_helper
+  signals
+  inference
+  proofctx
+  checker
+  history
+  verifier
+  colors
+  utils
+  sleek)
+ (libraries z3))
+
+(executable
+ (name main)
+ (modules main)
+ (libraries sleek))
+
+(env
+ (dev
+  (flags (:standard))))
