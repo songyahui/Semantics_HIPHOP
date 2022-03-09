@@ -1,4 +1,0 @@
-[submodule "sleek"]
-	path = sleek
-	url = https://github.com/dyzsr/sleek.git
-	branch = main
