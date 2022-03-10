@@ -203,7 +203,7 @@ let rec findProg name full:(param list* Sleek.effects * Sleek.effects) =
   | x::xs -> 
     match x with 
     | ModduleDeclear (str, p_li, _, pre, post) -> 
-      if String.compare str name == 0 then (p_li, pre, post)
+      if String.compare str name == 0 then (p_li, pre, List.hd post)
       else findProg name xs
     | _ -> findProg name xs
 ;;
@@ -781,9 +781,20 @@ let normalize_effs_final effs =
   ) effs)
   
 
+let entailmentShell lhs rhs = 
+  let startTimeStamp1 = Sys.time() in
+  let (verbose, tree) = Sleek.verify_entailment (Sleek.Entail {lhs = lhs; rhs = (rhs) })  in 
+  let startTimeStamp2 = Sys.time() in
+  let msg =  (*(string_of_inclusion final_effects post) ^ "\n" ^*)
+  "[TRS: Verification for Post Condition]\n" ^ 
+  "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 
+  (*Sleek.History.show history    ~verbose ^*) "\n\n" in 
+  print_string (msg);
+  ((startTimeStamp2 -. startTimeStamp1) *.1000.0, verbose, tree)
+
 let forward_verification (prog : statement) (whole: statement list): string = 
   match prog with 
-  | ModduleDeclear (mn, p_li , ex, pre, post) -> 
+  | ModduleDeclear (mn, p_li , ex, pre, posts) -> 
     let startTimeStamp = Sys.time() in 
     let env = List.fold_left (fun acc a ->  List.append acc 
       (match a with 
@@ -809,20 +820,24 @@ let forward_verification (prog : statement) (whole: statement list): string =
 
     let final = normalize_effs_final final in 
 
-    let startTimeStamp1 = Sys.time() in
-    let (verbose, _) = Sleek.verify_entailment (Sleek.Entail {lhs = final; rhs = (post) })  in 
-    let startTimeStamp2 = Sys.time() in
+    let results = List.map (fun rhs -> entailmentShell final rhs) posts in 
+
+    let proves = List.filter (fun (_, b, _) -> b ==true ) results in 
+    let disproves = List.filter (fun (_, b, _) -> b==false ) results in 
+    let totol li = List.fold_left (fun acc (a, _, _) -> acc +. a) 0.0 li in  
+    let printing li = string_of_int (List.length li) ^ " cases with avg time " ^  string_of_float ((totol li)/.(float_of_int(List.length li))) ^ " ms\n" in 
+
 
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
-    "[Post Condition] " ^ show_effects_list post ^"\n"^
+    "[Post Condition] " ^ show_effects_list_list posts ^"\n"^
     "[Final  Effects] " ^ show_effects_list ( final) ^"\n"^
     "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms" ^"\n" ^
-    "[Proving   Time] " ^ string_of_float ((startTimeStamp2 -. startTimeStamp1) *.1000.0)^ " ms" ^"\n\n" ^
-    (*(string_of_inclusion final_effects post) ^ "\n" ^*)
-    "[TRS: Verification for Post Condition]\n" ^ 
-    "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 
-    (*Sleek.History.show history    ~verbose ^*) "\n\n"
+
+    "[Proving   Time] " ^ printing proves ^
+    "[Disprove  Time] " ^ printing disproves ^"\n" 
+
+    
     
   | _ -> ""
   ;;

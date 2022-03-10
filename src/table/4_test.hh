@@ -1,16 +1,16 @@
 hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done ) 
    /*@ requires "True && emp "@*/
-// /*@ ensures  "True && ({}^*.{Done})^*" @*/
-// /*@ ensures  "True && ({}.{})^*.{Start}^*" @*/
-// /*@ ensures  "True && ({})^*.{Done}" @*/
-// /*@ ensures  "True && ({})^*.{A}.({}^*)" @*/
-// /*@ ensures  "True && ({}.{A}).{C}.({}^*)" @*/
+/*@ ensures  "True && ({}^*.{Done})^*" @*/
+/*@ ensures  "True && ({}.{})^*.{Start}^*" @*/
+/*@ ensures  "True && ({})^*.{Done}" @*/
+/*@ ensures  "True && ({})^*.{A}.({}^*)" @*/
+/*@ ensures  "True && ({}.{A}).{C}.({}^*)" @*/
 
-// /*@ ensures  "True && ({}.{A})^*.{C}.({})" @*/
-// /*@ ensures  "True && ({}.{C}).{Start}" @*/
-// /*@ ensures  "True && ({}.{}).A?" @*/
-// /*@ ensures  "True && ({}.{A})^*.{C}^*" @*/
-// /*@ ensures  "True && ({}.{}).{Done}.({}^*)" @*/
+/*@ ensures  "True && ({}.{A})^*.{C}.({})" @*/
+/*@ ensures  "True && ({}.{C}).{Start}" @*/
+/*@ ensures  "True && ({}.{}).A?" @*/
+/*@ ensures  "True && ({}.{A})^*.{C}^*" @*/
+/*@ ensures  "True && ({}.{}).{Done}.({}^*)" @*/
 
 {
    yield;
@@ -94,3 +94,5 @@ hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done )
    emit Done ();}
    }
 }
+
+// 

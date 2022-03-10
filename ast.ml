@@ -52,7 +52,7 @@ type statement =
     | ImportStatement of string
     | VarDeclear of string * expression 
     | ConsDeclear of string * expression 
-    | ModduleDeclear of string * param list * expression * Sleek.effects * Sleek.effects
+    | ModduleDeclear of string * param list * expression * Sleek.effects * (Sleek.effects list)
     | Let of expression * expression
     | FunctionDeclear of string * param list * expression
     | Call of string list * expression list 
