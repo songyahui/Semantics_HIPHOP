@@ -123,6 +123,7 @@ let string_of_literal (l:literal) : string =
 
 let string_of_value (v:value) : string = 
   match v with 
+  | Unit -> "()"
   | Variable mn -> mn
   | Literal lit -> string_of_literal lit
   | Access mn_li -> List.fold_left (fun acc a -> acc ^"."^a) "." mn_li   
@@ -138,7 +139,6 @@ let string_of_event ((str, vopt):event) : string =
 
 let rec string_of_expression (expr: expression): string =
   match expr with 
-  | Unit -> "()"
   | Value v -> string_of_value v 
   | BinOp (str, e2, e3) -> string_of_expression e2 ^ " "^ str ^ " " ^ string_of_expression e3
   | FunctionCall (ex, ex_li) -> string_of_value ex ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"

@@ -9,7 +9,7 @@
 %token EOF GT LT EQ  GTEQ LTEQ   CONCAT 
 %token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
-%token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
+%token HALT CONST LET HOP FUNCTION ASYNC IMPLY 
 %token RETURN EXIT COLON ELSE TRAP RUN
 %token REQUIRE ENSURE  LSPEC RSPEC PRESENT COUNT
 
@@ -43,7 +43,7 @@ literal:
 
 
 expression_shell:
-| {Unit}
+| {Value Unit}
 | ex1 = expression_continuation obj = maybeSeq {
   match obj with 
   | None -> ex1 
@@ -82,7 +82,7 @@ events:
 | ev = auxEvent  {Count ev}
 
 expression:
-| {Unit}
+| {Value Unit}
 | LPAR ex = expression RPAR {ex}
 | LBRACK ex = expression_shell RBRACK {ex}
 | NEW ex = expression {NewExpr ex}
@@ -106,7 +106,7 @@ expression:
 | TRAP LBRACK  ex = expression_shell RBRACK {Trap ex}
 
 maybeElse:
-| {Unit}
+| {Value Unit}
 |  ELSE LBRACK ex = expression_shell RBRACK { ex}
 
 maybeValue:
@@ -120,6 +120,7 @@ maybePar:
 
 
 expr_aux:
+| LPAR RPAR {Unit}
 | LPAR ex = expr_aux RPAR {ex}
 | l = literal {Literal l }
 | str = VAR ex = varOraccess 

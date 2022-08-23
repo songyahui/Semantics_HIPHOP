@@ -9,10 +9,10 @@ hiphop module prg( in I, O )
 
 {
    do{
-   await (I.now) ;
+   await (I) ;
       emit O();
   
-   } every (I.now )
+   } every (I )
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "everydelay" );

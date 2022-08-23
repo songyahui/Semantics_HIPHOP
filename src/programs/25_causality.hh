@@ -10,7 +10,7 @@ hiphop module example( out I, out O )
 {
 
    loop {
-      if( O.now ) {emit I()};
+      present( O ) {emit I()};
       yield;
       emit O();
    }

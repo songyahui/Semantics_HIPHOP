@@ -8,9 +8,9 @@ hiphop module M1( in A )
 {
 
    emit A( 100 );
-   async A {
+   async (A) {
       this.notify( 10 );
-   }
+   };
 }
 
 hiphop module m( a, b ) 

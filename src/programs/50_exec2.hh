@@ -11,7 +11,7 @@ hiphop module prg(out O )
 {
    async O {
       setTimeout( () => this.notify( 5 ), 3000 );
-   }
+   };
 }
 
 var machine = new hh.ReactiveMachine( prg, "exec" );

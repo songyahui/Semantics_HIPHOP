@@ -9,13 +9,13 @@ hiphop module prg( in A, T, V )
 
 {
 
-   abort( A.now ) {
+   abort( A ) {
       signal S;
 
       loop {
 	 emit S();
 
-	 if( S.now ) {emit T()};
+	 present( S ) {emit T()};
 	 
 	 yield;
 	 emit V();

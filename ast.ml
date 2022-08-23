@@ -17,6 +17,7 @@ type param =
     | Data of string
 
 type value = 
+    | Unit
     | Variable of string
     | Literal of literal
     | Access of string list 
@@ -27,7 +28,6 @@ type count_Event = int * event
 type events = Ev of event | Count of count_Event
 
 type expression = 
-    | Unit
     | Value of value
     | BinOp of string * expression * expression
     | FunctionCall of value * expression list  

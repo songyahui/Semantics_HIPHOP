@@ -13,7 +13,7 @@ hiphop module prg( T, V )
 
    loop {
       emit S();
-      if( S.now ) {emit T()};
+      present( S ) {emit T()};
       yield;
       emit V();
    }

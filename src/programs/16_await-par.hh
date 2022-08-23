@@ -10,11 +10,11 @@ hiphop module prg( in A, in B, out O )
 {
 
    fork {
-      await( A.now );
+      await( A );
    } par {
-      await( B.now );
+      await( B );
    };
-   emit O();
+   emit O;
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "awaitpar" );

@@ -13,9 +13,9 @@ hiphop module prg( in A, out T, out V )
    signal S;
 
    loop {
-      abort( A.now ) {
+      abort( A ) {
 	 emit S();
-	 if( S.now ) {emit T()};
+	 present( S ) {emit T()} else{};
 	 yield;
 	 emit V();
       }

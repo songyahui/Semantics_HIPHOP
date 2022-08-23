@@ -16,7 +16,7 @@ hiphop module prg( O, OT )
 	    console.log( "Oi timeout." );
 	    this.notify( 5, false );
 	 }, 3000 );
-      }
+      };
    } par {
       emit O();
    }

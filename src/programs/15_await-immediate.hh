@@ -8,8 +8,8 @@ hiphop module prg( in I, out O )
 
 {
    loop {
-      await ( I.now );
-      emit O();
+      await ( I );
+      emit O;
       yield;
    }
 }

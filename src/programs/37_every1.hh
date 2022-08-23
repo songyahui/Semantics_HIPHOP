@@ -12,7 +12,7 @@ hiphop module prg( in I, out O )
 
     do {
       emit O();
-   }every( I.now )
+   }every( I )
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "every1" );

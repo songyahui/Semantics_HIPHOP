@@ -34,10 +34,9 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 	 
 	 loop {
 	    // watch mode
-	    abort( UL.now ) {
+	    abort( UL ) {
 	       fork {
 		  emit LL();
-		  break WATCH_AND_SET_WATCH_MODE;
 	       } par {
 		  loop {
 		     emit LR( );
@@ -48,7 +47,7 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 	    
 	    // set watch-mode
 	    emit ENTER_SET_WATCH_MODE_COMMAND();
-	    abort( UL.now ) {
+	    abort( UL ) {
 	       fork {
 		  loop {
 		     emit LL ();
@@ -66,7 +65,7 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 	 
 	 // stopwatch mode
 	 emit STOPWATCH_MODE_COMMAND();
-	 abort( LL.now ) {
+	 abort( LL ) {
 	    fork {
 	       loop {
 		  emit LR (  );
@@ -84,11 +83,10 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 	 emit ALARM_MODE_COMMAND();
 	 loop {
 	    // alarm mode
-	    abort( UL.now ) {
+	    abort( UL ) {
 	       fork {
 		  fork {
 		     emit LL (  );
-		     break ALARM_AND_SET_ALARM_MODE;
 		  } par {
 		     loop {
 			emit LR( );
@@ -97,7 +95,7 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 		  }
 	       } par {
 		  loop {
-		     emit UR( UR.now );
+		     emit UR( UR );
 		     emit TOGGLE_ALARM_COMMAND();
 		  }
 	       }
@@ -105,15 +103,15 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 	    
 	    // set-alarm mode
 	    emit ENTER_SET_ALARM_MODE_COMMAND();
-	    abort( UL.now ) {
+	    abort( UL ) {
 	       fork {
 		  loop {
-		     emit LL( LL.now );
+		     emit LL( LL );
 		     emit NEXT_ALARM_TIME_POSITION_COMMAND();
 		  }
 	       } par {
 		  loop {
-		     emit LR ( LR.now );
+		     emit LR ( LR );
 		     emit SET_ALARM_COMMAND();
 		  }
 	       }
@@ -122,7 +120,7 @@ hiphop module BUTTON( in UL, in UR, in LL, in LR,
 	 }
       }
    } par {
-     if (UR.now){
+     present (UR){
 	 emit STOP_ALARM_BEEP_COMMAND();
       }
    }

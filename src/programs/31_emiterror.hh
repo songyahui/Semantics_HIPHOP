@@ -18,8 +18,3 @@ hiphop module prg( out O )
 
 const machine = new hh.ReactiveMachine( prg, "emiterror" );
 
-try {
-   machine.react();
-} catch( e ) {
-   console.log( e.message );
-}

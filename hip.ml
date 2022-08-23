@@ -350,7 +350,6 @@ let addEventToCur (env:string list) (ev:Sleek.Signals.event) (cur: Sleek.Signals
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
   match prog with 
-  | Unit -> current
   | Yield -> 
       List.map (fun state -> 
       let (his, cur, _) = state in 

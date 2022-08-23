@@ -6,7 +6,7 @@ hiphop module a_bug( out S )
 {
 
    signal S;
-   if (S.now) {emit S ();}
+   present (S) {emit S ();}
    else {emit S ();}
 }
 

@@ -16,7 +16,7 @@ hiphop module prg( out T )
 
       emit S();
 
-      if( S.now ) {emit T()};
+      present( S ) {emit T()};
    
 }
 

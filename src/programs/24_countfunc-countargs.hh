@@ -10,12 +10,12 @@ hiphop module prg( in X, out Y, out Z )
 
 {
 
-   await( X.now );
+   await( X );
 
 
    do {
       emit Y();
-   } every (Z.now);
+   } every (Z);
    
 
 }

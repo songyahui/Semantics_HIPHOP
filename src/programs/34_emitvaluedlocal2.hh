@@ -17,7 +17,7 @@ hiphop module prg( out O )
    loop {
       signal S ;//= 1;
 
-      emit S( S.preval + 1 );
+      emit S( S.preval );
       emit O( S.nowval );
 
       yield;

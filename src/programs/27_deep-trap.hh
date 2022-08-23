@@ -9,9 +9,9 @@ hiphop module prg()
 
 {
 // currently trap has not fully implemented. 
-   t: {
-      t2: {
-	 break t2;
+   trap {
+      trap {
+	 exit 2;
       };
       hop { console.log( "first level" ) };
    };

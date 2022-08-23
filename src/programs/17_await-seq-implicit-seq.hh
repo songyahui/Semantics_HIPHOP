@@ -7,9 +7,9 @@ hiphop module prg( in A, in B, out O )
    /*@ ensures "True && (A?. B?).{O}" @*/
 {
 
-   await( A.now );
-   await( B.now );
-   emit O();
+   await( A );
+   await( B );
+   emit O;
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "awaitseq" );

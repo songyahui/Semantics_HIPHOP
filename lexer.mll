@@ -56,7 +56,6 @@ rule token = parse
 | "abort" {ABORT}
 | "yield" {YIELD}
 | "signal" {SIGNAL}
-| "if" {IF}
 | "present" {PRESENT}
 | "halt" {HALT}
 | "const" {CONST}

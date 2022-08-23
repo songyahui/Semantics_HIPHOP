@@ -10,7 +10,7 @@ hiphop module prg( in I, out S )
 {
 
    loop {
-      await( I.now );
+      await( I );
       yield;
       emit S();
    }

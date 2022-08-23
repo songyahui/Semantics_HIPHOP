@@ -14,7 +14,7 @@ hiphop module prg( out O )
       this.notify( new Promise( function( resolve, reject ) {
 	 setTimeout( () => resolve( 5 ), 1000 );
       } ) );
-   }
+   };
 }
 
 var machine = new hh.ReactiveMachine( prg, "exec" );

@@ -11,12 +11,12 @@ hiphop module prg( out A, out B, out C )
 
    fork {
       loop {
-	 if( B.now) {emit A()};
+	 present( B) {emit A()};
 	 yield;
       }
    } par {
       loop {
-	 if( C.now ) {
+	 present( C ) {
 	    emit B( 4 );
 	 } else {
 	    emit B( 3 );

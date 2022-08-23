@@ -14,20 +14,20 @@ hiphop module prg( in R, in O, in OT, in T )
 
    do {
       fork {
-	 abort( R.now ) {
+	 abort( R ) {
 	    async T {
 	       console.log( "Oi." );
-	       setTimeout( function( self ) {
+	       setTimeout( () => {
 		  console.log( "Oi timeout." );
-		  self.notify( glob++ , false );
+		  self.notify( glob , false );
 		 }, 1000, this);
-	    }
+	    };
 	 };
 	 emit OT( T.nowval);
       } par {
 	 emit O();
       }
-   } every( R.now )
+   } every( R )
 }
 
 var machine = new hh.ReactiveMachine( prg, "exec" );

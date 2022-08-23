@@ -10,7 +10,7 @@ hiphop module prg( out A, in B )
 {
 
    loop {
-      if( B.now ) {emit A()};
+      present( B ) {emit A()};
       yield;
    }
 }

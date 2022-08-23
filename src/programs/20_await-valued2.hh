@@ -21,7 +21,7 @@ hiphop module prg( in I, out O )
 {
 
    loop {
-      await( I.now );
+      await( I );
       emit O( I.nowval );
    }
 }

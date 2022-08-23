@@ -9,7 +9,7 @@ hiphop module M1( in A , out B)
    emit A( 100 );
    async A {
       emit B (); this.notify( 10 );
-   }
+   };
 }
 
 hiphop module m( a, b ) 

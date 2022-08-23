@@ -12,7 +12,7 @@ hiphop module prg( out J )
    signal I;
    
    fork {
-      if( I.now ) {emit J()};
+      present ( I ) {emit J()};
    } par {
       emit I();
    }
