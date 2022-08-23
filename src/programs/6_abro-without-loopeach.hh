@@ -8,13 +8,13 @@ hiphop module prg( in A, in B, in R, out O )
 {
 
    loop {
-      abort( R.now ) {
+      abort( R ) {
 	 fork {
-	    await( A.now );
+	    await( A );
 	 } par {
-	    await( B.now );
+	    await( B );
 	 };
-	 emit O();
+	 emit O;
 	 halt;
       }
    }

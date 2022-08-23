@@ -11,14 +11,14 @@ hiphop module prg
 {
 
    loop {
-      abort( I.now ) {
-	 emit J();
+      abort( I ) {
+	 emit J;
 	 yield;
-	 emit V();
+	 emit V;
 	 yield;
       };
-      if( I.now ) {
-	 emit K();
+      present( I ) {
+	 emit K;
       }
    }
 }

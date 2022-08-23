@@ -9,7 +9,7 @@ hiphop module prg( in Tick, out O )
 {
 
    loop {
-      await count( 3, Tick.now );
+      await count( 3, Tick );
       emit O();
    }
 }

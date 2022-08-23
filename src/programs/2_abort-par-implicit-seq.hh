@@ -10,14 +10,14 @@ hiphop module prg( in I, out O )
    signal L;
 
    fork {
-      abort( L.now ) {
+      abort( L ) {
 	 loop {
-	    emit O();
+	    emit O;
 	    yield;
 	 }
       }
    } par {
-      await( O.now );
+      await( O );
       emit L();
    }
 }

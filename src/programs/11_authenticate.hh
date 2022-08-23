@@ -11,5 +11,5 @@ hiphop module Authenticate(
   emit connState("connecting");
   async connected {
     authenticateSvc(name.nowval, passwd.nowval).post().then(v => this.notify(v));
-  }
+  };
 }

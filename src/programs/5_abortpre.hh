@@ -9,10 +9,10 @@ hiphop module prg(out O, out S )
 
 {
    loop {
-      abort( S.now ) {
-	 emit S();
+      abort( S ) {
+	 emit S;
 	 yield;
-	 emit O();
+	 emit O;
       };
       yield;
    }

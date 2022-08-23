@@ -144,8 +144,9 @@ let rec string_of_expression (expr: expression): string =
   | FunctionCall (ex, ex_li) -> string_of_value ex ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
   | NewExpr ex -> "new " ^ string_of_expression ex
   | Emit ex -> "emit " ^ string_of_event ex
-  | Await ex -> "await " ^ string_of_event ex
-  | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_expression ex2
+  | Await (Ev ex) -> "await " ^ string_of_event ex
+  | Await (Count (i, ex)) -> "await count(" ^ string_of_int i ^ "," ^  string_of_event ex ^ ")"
+  | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_event ex2
   | ForkPar (e_li) -> "PAR:\n " ^ List.fold_left (fun acc a -> acc ^"\n||\n"^string_of_expression a) "" e_li
   | Seq (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
   | Abort (ex1, ex2) -> "Abort\n " ^ string_of_event ex1 ^ "; " ^ string_of_expression ex2

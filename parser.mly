@@ -11,7 +11,7 @@
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
 %token RETURN EXIT COLON ELSE TRAP RUN
-%token REQUIRE ENSURE  LSPEC RSPEC PRESENT
+%token REQUIRE ENSURE  LSPEC RSPEC PRESENT COUNT
 
 
 
@@ -65,8 +65,21 @@ maybeContinue:
 | {None}
 | CONCAT obj = expression_continuation {Some obj}
 
+maybeArgument:
+| {None} 
+| LPAR obj = maybeValue RPAR {obj}
+
 event: 
-| ex = VAR LPAR obj = maybeValue RPAR {(ex, obj)}
+| ex = VAR ar = maybeArgument { (ex, ar)}
+| LPAR ev =event RPAR {ev}
+
+
+auxEvent:
+| COUNT LPAR i=INTE COMMA ev=event RPAR {(i, ev)}
+
+events:
+| ev = event {Ev ev}
+| ev = auxEvent  {Count ev}
 
 expression:
 | {Unit}
@@ -75,17 +88,17 @@ expression:
 | NEW ex = expression {NewExpr ex}
 | b = binary_continuation {b}
 | EMIT  ev=event {Emit ev }
-| AWAIT ev=event {Await ev}
-| DO LBRACK ex1 = expression_shell RBRACK EVERY ex2 = expression {DoEvery (ex1, ex2)}
+| AWAIT ev=events {Await ev}
+| DO LBRACK ex1 = expression_shell RBRACK EVERY ex2 = event {DoEvery (ex1, ex2)}
 | FORK LBRACK ex1 = expression_shell RBRACK PAR LBRACK ex2 = expression_shell RBRACK obj = maybePar {ForkPar (ex1::ex2::obj)}
 | LOOP LBRACK ex1 = expression_shell RBRACK {Loop ex1}
 | HOP LBRACK ex1 = expression_shell RBRACK {Hop ex1}
 | ABORT ev = event LBRACK ex1 = expression_shell RBRACK {Abort (ev, ex1)}
 | YIELD {Yield}
 | SIGNAL ex = VAR SIMI ex1 = expression_shell {Signal (ex, ex1)}
-| PRESENT LPAR ex = event RPAR LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
+| PRESENT ex = event LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
 | HALT {Halt}
-| ASYNC ev=event LBRACK ex1 = expression_shell RBRACK SIMI   ex2 = expression_shell {Async (ev, ex1, ex2)}
+| ASYNC ev=event LBRACK ex1 = expression_shell RBRACK SIMI  ex2 = expression_shell {Async (ev, ex1, ex2)}
 | RETURN ex =  expression {Return ex}
 | EXIT ex = INTE {Exit ex}
 | RUN ex = expression {Run ex}
@@ -93,6 +106,7 @@ expression:
 | TRAP LBRACK  ex = expression_shell RBRACK {Trap ex}
 
 maybeElse:
+| {Unit}
 |  ELSE LBRACK ex = expression_shell RBRACK { ex}
 
 maybeValue:

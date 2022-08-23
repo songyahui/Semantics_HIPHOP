@@ -46,6 +46,7 @@ rule token = parse
 | "in" {IN}
 | "out" {OUT}
 | "emit" {EMIT}
+| "count" { COUNT }
 | "await" {AWAIT}
 | "do" {DO}
 | "every" {EVERY}
@@ -168,7 +169,6 @@ and read_string buf = parse
 
 | "when" {WHEN}
 
-| "count" { COUNT }
 | "abort" {ABORT} 
 | "halt" { NOTHING }
 | "yield" {PAUSE}  
