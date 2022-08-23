@@ -121,45 +121,56 @@ let string_of_literal (l:literal) : string =
   | BOOL f -> string_of_bool f
   ;;
 
-let rec string_of_expression (expr: expression): string =
-  match expr with 
-  | Unit -> "()"
+let string_of_value (v:value) : string = 
+  match v with 
   | Variable mn -> mn
   | Literal lit -> string_of_literal lit
   | Access mn_li -> List.fold_left (fun acc a -> acc ^"."^a) "." mn_li   
-  | BinOp (str, e2, e3) -> string_of_expression e2 ^ " "^ str ^ " " ^ string_of_expression e3
-  | FunctionCall (ex, ex_li) -> string_of_expression ex ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
-  | NewExpr ex -> "new " ^ string_of_expression ex
-  | Emit (str, ex) -> "emit " ^ str ^ "(" ^ 
-    (match ex with 
+;;
+
+let string_of_event ((str, vopt):event) : string = 
+  str ^ "(" ^ 
+    (match vopt with 
     | None -> ")"
-    | Some ex -> string_of_expression ex ^")"
+    | Some ex -> string_of_value ex ^")"
     )
-  | Await ex -> "await " ^ string_of_expression ex
+;;
+
+let rec string_of_expression (expr: expression): string =
+  match expr with 
+  | Unit -> "()"
+  | Value v -> string_of_value v 
+  | BinOp (str, e2, e3) -> string_of_expression e2 ^ " "^ str ^ " " ^ string_of_expression e3
+  | FunctionCall (ex, ex_li) -> string_of_value ex ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
+  | NewExpr ex -> "new " ^ string_of_expression ex
+  | Emit ex -> "emit " ^ string_of_event ex
+  | Await ex -> "await " ^ string_of_event ex
   | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_expression ex2
   | ForkPar (e_li) -> "PAR:\n " ^ List.fold_left (fun acc a -> acc ^"\n||\n"^string_of_expression a) "" e_li
   | Seq (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
-  | Abort (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
+  | Abort (ex1, ex2) -> "Abort\n " ^ string_of_event ex1 ^ "; " ^ string_of_expression ex2
   | Loop ex -> "loop " ^ string_of_expression ex
   | Hop ex -> "Hop " ^ string_of_expression ex
-  | Async (str, ex1, es2) -> "async " ^ str ^"{ "^ string_of_expression ex1  ^"}\n" ^ string_of_expression es2 
+  | Async (str, ex1, es2) -> "async " ^ string_of_event str ^"{ "^ string_of_expression ex1  ^"}\n" ^ string_of_expression es2 
   | Lambda (ex1, ex) -> "lamdba " ^ string_of_expression ex1 ^" => "^ string_of_expression ex 
   | Continue (ex1, con) -> "continue " ^ string_of_expression ex1 ^" => "^ string_of_expression con
   | Return ex -> "return " ^ string_of_expression ex
-  | Raise d -> "raise " ^ string_of_int d
-  | Trap (ex1, ex) -> "trap " ^ string_of_expression ex1 ^" : "^ string_of_expression ex 
+  | Exit d -> "raise " ^ string_of_int d
+  | Trap ex -> "trap :" ^ string_of_expression ex 
   | Yield -> "yield"
   | Halt -> "Halt"
   | Run ex -> " run " ^ string_of_expression ex
   | Signal (str, p) -> "signal: "^ str ^ string_of_expression p
-  | Present (ex1, ex2, ex3) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2 ^ (
+  | Present (ex1, ex2, ex3) -> "Present:\n " ^ string_of_event ex1 ^ "; " ^ string_of_expression ex2 ^ (
     (*match ex3 with 
     | None -> ""
     | Some ex ->*) "else " ^ string_of_expression ex3
   )
   | FunctionExpr (p_li, ex) -> "function " ^ "("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
+  | Interrupt (p1, p2) -> "interrupt " ^ string_of_expression p1 ^ "\n" ^ string_of_expression p2
+  | Suspend (ev, expr) -> "suspend "^ string_of_event ev ^ "\n" ^ string_of_expression expr
+  | Every (ev, expr) -> "suspend "^ string_of_event ev ^ "\n" ^ string_of_expression expr
 
-  
 
   ;;
 
@@ -188,8 +199,8 @@ let string_of_statement (state) : string =
   | FunctionDeclear (mn, p_li, ex) -> "function " ^ mn ^"("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
   | Call (str_li, ex_li) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li    ^ "(" ^List.fold_left (fun acc a -> acc ^","^string_of_expression a) "." ex_li    ^")"
   | Assign (str_li, ex) -> List.fold_left (fun acc a -> acc ^"."^a) "." str_li   ^ " = " ^ string_of_expression ex
-  | TryCatch (ex1, e, ex) -> "try " ^ string_of_expression ex1 ^"\n catch (" ^ string_of_expression e ^ ")" ^ string_of_expression ex 
-
+  (*| TryCatch (ex1, e, ex) -> "try " ^ string_of_expression ex1 ^"\n catch (" ^ string_of_expression e ^ ")" ^ string_of_expression ex 
+*)
   ;;
 
 let rec string_of_program (states : statement list) : string =

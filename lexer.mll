@@ -56,6 +56,7 @@ rule token = parse
 | "yield" {YIELD}
 | "signal" {SIGNAL}
 | "if" {IF}
+| "present" {PRESENT}
 | "halt" {HALT}
 | "const" {CONST}
 | "let" {LET}
@@ -63,10 +64,9 @@ rule token = parse
 | "async" {ASYNC}
 | "function" {FUNCTION}
 | "return" {RETURN}
-| "raise" {RAISE}
+| "exit" {EXIT}
 | "else" {ELSE}
-| "try" {TRY}
-| "catch" {CATCH}
+| "trap" {TRAP}
 | "run" {RUN}
 | "/*@" {LSPEC} 
 | "@*/" {RSPEC}

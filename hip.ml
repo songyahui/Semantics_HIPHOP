@@ -387,31 +387,22 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     
     
   
-  | Async (s, p, q) -> 
-    let branch1 = Seq (p, Emit(s, None)) in 
+  | Async (ev, p, q) -> 
+    let branch1 = Seq (p, Emit ev) in 
     let desugar = ForkPar [branch1; q] in 
     forward env current desugar full
 
   
-  | Await (Access (s::_ )) 
-  | Await (Variable s) -> 
-      let waitSig = Sleek.Await (Sleek.Signals.present s) in 
-      let final = List.map (fun (his, cur1, _) ->  
-        match cur1 with 
-        | None -> (Sleek.Sequence(his, waitSig), None, 0)
-        | Some (_) -> 
-          (Sleek.Sequence (his, Sleek.Sequence(fstToInstance cur1,  waitSig)), None, 0 )
-      )  current in 
-      final 
 
-  | Raise d -> 
+
+  | Exit d -> 
     List.map (fun (a, b, _) -> (a, b, d+2) ) current
 
-  | Trap (p, q) -> 
+  | Trap p  -> 
     let state1 = forward env current p full in 
     List.flatten (
       List.map (fun (his, cur, k) ->
-        if k =2 then forward env [((his, cur, 0))] q full
+        if k =2 then [((his, cur, 0))]
         else if k > 2 then [(his, cur, k-1)]
         else [(his, cur, k)]
 
@@ -455,307 +446,12 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       )
     ) ) [] current
 
-  | Present (Access(str::_), p1, p2)-> 
-    List.flatten (
-      List.map (fun (his, cur, k) -> 
-        let b1 = forward env [(his, addEventToCur env (Sleek.Signals.present str) cur, k)] p1 full in  
-        let b2 = forward env [(his, addEventToCur env (Sleek.Signals.absent str) cur, k)] p2 full in 
-        List.append b1 b2  
 
-      ) current
-    )
 
 
   | _ ->  current
  
     ;;
-(*
-  | Run (FunctionCall (Variable mn, param_real)) -> 
-
-    let (param_formal, precon, postcon) = findProg mn full in 
-    
-    List.flatten (
-
-    List.fold_left (fun acc (pi, his, cur) ->
-
-    (match cur with 
-    | None -> 
-      List.append acc (  
-        let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sleek.Sequence (his, Empty))]; rhs = (precon) })  in 
-        if verbose then 
-
-          List.map (fun (pi1, es1) -> 
-            let pi_enforcePre = Sleek.And(pi_pre, pi1) in 
-            let final = splitEffects env  (Sleek.fixpoint ~f: normalizeES es1) pi_enforcePre  in
-            final
-
-          ) postcon
-
-        else 
-        (print_string (Sleek.History.show history    ~verbose ^ "\n\n");
- 
-        raise (Foo "precondiction check failed"))
-      )
-
-    | Some (ins, t) -> 
-
-      List.append acc (  
-        let (verbose, history) = Sleek.verify_entailment (Sleek.Entail { lhs = [(pi, Sleek.Sequence (his, addOptionaLTermToFst ins t))]; rhs = (precon) })  in 
-        if verbose then 
-        List.flatten (
-          List.map (fun (pi1, es1) -> 
-            let trace = parallelES pi pi1 (addOptionaLTermToFst ins t) es1 in 
-
-
-
-            List.map (fun (pi_new, ins_new) -> 
-            let pi_enforcePre = Sleek.And(pi_pre, pi_new) in 
-
-            let final = splitEffects env  (Sleek.fixpoint ~f: normalizeES ins_new) pi_enforcePre  in
-            final
-            
-            
-            ) [trace]
-            
-           
-          ) postcon
-        )
-
-        else 
-        (print_string (Sleek.History.show history    ~verbose ^ "\n\n");
-        
-        
-        raise (Foo "precondiction check failed"))
-      )
-      
-
-    )
-   ) [] current 
-    )
-
-  
-
-
-  | Abort (FunctionCall (_, (Variable s)::_), p) ->
-
-
-  List.flatten (
-
-    List.fold_left (fun acc (pi, his, cur) ->
-      let (newTV1, newPi1) = getAnewVar_rewriting () in
-      let newPi = Sleek.And (newPi1, Sleek.And(pi, Sleek.Atomic(Sleek.Lt, Var newTV1, Var s))) in 
-
-    
-      List.append acc (
-        List.map (fun (pi1, his1, cur1) ->
-        match cur1 with 
-        | None -> [(pi1, Sleek.Sequence(his, Timed(his1, Var newTV1)), cur1)]
-        | Some (cur, t) -> splitEffects env (Sleek.Sequence(his, Timed (Sleek.Sequence (his1, addOptionaLTermToFst cur t), Var newTV1))) newPi
-      
-        ) (forward env [(newPi, Empty, cur)] p full)
-
-      )) [] current
-
-  )
-
-
-  | Abort (Access (s::_ ), p) ->
-  
-  List.flatten (
-    List.fold_left (fun acc (pi, his, cur) ->
-
-      List.append acc (
-
-
-        List.map (fun (pi1, his1, cur1) ->
-        match cur1 with 
-        | None -> 
-          [(pi1, Sleek.Sequence(his, enforceAbortTrace s his1 ), None)]
-        | Some (cur, t) -> 
-
-          match enforceAbortCur s cur t with 
-          | None -> [(pi1, Sleek.Sequence(his, enforceAbortTrace s his1 ), None)]        
-          | Some (cur', t') ->
-          splitEffects env  (Sleek.Sequence(his, enforceAbortTrace s (Sleek.Sequence(his1, addOptionaLTermToFst cur' t'))))  pi1
-
-        ) (forward env [(pi, Empty, cur)] p full)
-
-      )) [] current
-  )
-    
-
-
-
-  | DoEvery (p, Access (str::_ ))->
-
-  (*
-  print_string (string_of_states current ^ "\n");
-*)
-
-
-    List.fold_left (fun acc (pi, his, cur) ->
-  
-      List.append acc (  
-  
-        let temp = forward env [(pi, Empty, cur)] p full in 
-
-        List.map (fun  (pi1, his1, cur1)->
-          match cur with 
-          | None -> 
-            (match cur1 with
-            | None -> 
-              (pi1, Sleek.Sequence(his, Sleek.Sequence (Await (Sleek.Signals.present str), his1)), cur1)
-          
-            | Some (ins1, t1) -> 
-              let repeat  = Sleek.Sequence (Await (Sleek.Signals.present str), Sleek.Sequence(his1, addOptionaLTermToFst ins1 t1)) in 
-              (pi1, Sleek.Sequence(his, Sleek.Sequence(Kleene repeat, Sleek.Sequence (Await (Sleek.Signals.present str), his1))), cur1)
-            )
-          | Some (ins, t) -> 
-
-
-            (match cur1 with
-            | None -> 
-              (pi1, Sleek.Sequence(Sleek.Sequence(his, addOptionaLTermToFst ins t), Sleek.Sequence (Await (Sleek.Signals.present str), his1)), cur1)
-          
-            | Some (ins1, t1) -> 
-              let repeat  = Sleek.Sequence (Await (Sleek.Signals.present str), Sleek.Sequence(his1, addOptionaLTermToFst ins1 t1)) in 
-              (pi1, Sleek.Sequence(Sleek.Sequence(his, addOptionaLTermToFst ins t), Sleek.Sequence(Kleene repeat, Sleek.Sequence (Await (Sleek.Signals.present str), his1))), cur1)
-            )
-       ) temp
-      )
-    )[] current
-
-
-
-
-
-
-
-
-| Present (Access(str::_), p1, p2)->
-List.flatten (
-
-    List.fold_left (fun acc (pi, his, cur) ->
-    List.append acc (  
-      match cur with 
-      | None ->
-          let then_branch = forward env [(pi, Empty, (setPresent str (Sleek.Signals.initUndef env) None))] p1 full in 
-          (match p2 with 
-          | None -> 
-              List.map (fun (pi1, his1, cur1) -> 
-              let temp = setAbsent str (Sleek.Signals.initUndef env) None in 
-             
-              match temp with 
-              | None -> [(pi1, Sleek.Sequence(his, his1), cur1)]
-              | Some _ -> 
-                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, temp) ]
-                    ) then_branch
-          | Some p2 ->
-            let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
-            let combine = zip (then_branch,  else_branch) in 
-
-            List.map (fun ((pi1, his1, cur1), (pi2, his2, cur2)) -> 
-                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi2, Sleek.Sequence(his, his2), cur2) ]
-                    ) combine
-           )
-
-      | Some (SL ins, t) -> 
-          let then_branch = forward env [(pi, Empty, (setPresent str ins t))] p1 full in 
-          (*
-          print_string (string_of_states current);
-          print_string (string_of_states [(pi, Empty, (setPresent str ins t))]);
-          print_string (string_of_states then_branch);
-          *)
-
-          (match p2 with 
-          | None -> 
-            List.map (fun (pi1, his1, cur1) -> 
-              let temp = setAbsent str ins t in 
-              match temp with 
-              | None -> [(pi1, Sleek.Sequence(his, his1), cur1)]
-              | Some _ -> 
-                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi, his, temp) ]
-                    ) then_branch
-          | Some p2 ->
-            let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
-
-
-            let combine = zip (then_branch,  else_branch) in 
-
-            List.map (fun ((pi1, his1, cur1), (pi2, his2, cur2)) -> 
-              match (cur1, cur2) with 
-              | (None, None) -> [(pi1, his, cur1)]
-              | (Some _, None) -> [(pi1, Sleek.Sequence(his, his1), cur1)]
-              | (None, Some _ ) -> [(pi2, Sleek.Sequence(his, his2), cur2) ]
-              | _ -> 
-                    [(pi1, Sleek.Sequence(his, his1), cur1); (pi2, Sleek.Sequence(his, his2), cur2) ]
-                    ) combine
-
-          )
-        
-      | Some (W s, t) ->  
-        let then_branch = forward env [(pi, Empty, (setPresent str (Sleek.Signals.initUndef env) None))] p1 full in 
-          (match p2 with 
-          | None -> List.map (fun (pi1, his1, cur1) -> 
-                    [(pi1, Sleek.Sequence(Sequence(his, addOptionaLTermToFst (W s) t), his1), cur1); (pi, his, cur) ]
-                    ) then_branch
-          | Some p2 ->
-            let else_branch = forward env [(pi, Empty, (setAbsent str (Sleek.Signals.initUndef env) None))] p2 full in 
-            let combine = zip (then_branch,  else_branch) in 
-
-            List.map (fun ((pi1, his1, cur1), (pi2, his2, cur2)) -> 
-                    [(pi1, Sleek.Sequence(his, Sequence(his1, addOptionaLTermToFst (W s) t)), cur1); (pi2, Sleek.Sequence(his, Sequence(his2, addOptionaLTermToFst (W s) t)), cur2) ]
-                    ) combine
-          
-          )
-
-    
-    ) ) [] current
-)
-  | Lambda (_, p) -> 
-
-    forward env current p full  
-    
-  | NewExpr p -> 
-
-    forward env current p full
-
-  | FunctionCall (Variable "setTimeout", li) ->
-  (*
-      print_string (string_of_int time);
-    raise (Foo "setTimeout");
-    *)
-
-    (match List.hd (List.tl li) with 
-    | (Literal (INT n)) -> let time = n/1000 in 
-
-        List.map (fun (pi, his, cur) -> 
-          let (newTV1, newPi1) = getAnewVar_rewriting () in
-          let newPi = Sleek.And(pi, Sleek.And(newPi1, Sleek.Atomic(Sleek.Gt, Var newTV1, Const time))) in 
-          match cur with 
-          | None -> (newPi, his, Some( SL (Sleek.Signals.initUndef env), Some(Sleek.Var newTV1)))
-          | Some (ins, None) -> (newPi, his, Some( ins, Some(Sleek.Var newTV1)))
-          | Some (ins, Some t) -> (Sleek.And(newPi, Sleek.Atomic(Sleek.Eq, t, Var  newTV1)), his, Some( ins, Some t))
-          
-          
-        )
-        current
-       
-
-    | _ -> current
-    )
-
-
-  | FunctionExpr (_, p) -> 
-
-  
-  forward env current p full
-
-  | FunctionCall (_, p::_) -> 
-
-  
-  forward env current p full
-*)
   
 
 

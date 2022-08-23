@@ -10,8 +10,8 @@
 %token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
 %token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
 %token IF HALT CONST LET HOP FUNCTION ASYNC IMPLY 
-%token RETURN RAISE COLON ELSE TRY CATCH RUN
-%token REQUIRE ENSURE  LSPEC RSPEC
+%token RETURN EXIT COLON ELSE TRAP RUN
+%token REQUIRE ENSURE  LSPEC RSPEC PRESENT
 
 
 
@@ -65,37 +65,39 @@ maybeContinue:
 | {None}
 | CONCAT obj = expression_continuation {Some obj}
 
-
+event: 
+| ex = VAR LPAR obj = maybeValue RPAR {(ex, obj)}
 
 expression:
+| {Unit}
 | LPAR ex = expression RPAR {ex}
 | LBRACK ex = expression_shell RBRACK {ex}
 | NEW ex = expression {NewExpr ex}
 | b = binary_continuation {b}
-| EMIT  ex = VAR LPAR obj = maybeExpr RPAR {Emit (ex,obj) }
-| AWAIT ex = expression {Await ex}
+| EMIT  ev=event {Emit ev }
+| AWAIT ev=event {Await ev}
 | DO LBRACK ex1 = expression_shell RBRACK EVERY ex2 = expression {DoEvery (ex1, ex2)}
 | FORK LBRACK ex1 = expression_shell RBRACK PAR LBRACK ex2 = expression_shell RBRACK obj = maybePar {ForkPar (ex1::ex2::obj)}
 | LOOP LBRACK ex1 = expression_shell RBRACK {Loop ex1}
 | HOP LBRACK ex1 = expression_shell RBRACK {Hop ex1}
-| ABORT ex = expression LBRACK ex1 = expression_shell RBRACK {Abort (ex, ex1)}
+| ABORT ev = event LBRACK ex1 = expression_shell RBRACK {Abort (ev, ex1)}
 | YIELD {Yield}
 | SIGNAL ex = VAR SIMI ex1 = expression_shell {Signal (ex, ex1)}
-| IF LPAR ex = expression RPAR LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
+| PRESENT LPAR ex = event RPAR LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}
 | HALT {Halt}
-| ASYNC str = VAR LBRACK ex1 = expression_shell RBRACK SIMI   ex2 = expression_shell {Async (str, ex1, ex2)}
+| ASYNC ev=event LBRACK ex1 = expression_shell RBRACK SIMI   ex2 = expression_shell {Async (ev, ex1, ex2)}
 | RETURN ex =  expression {Return ex}
-| RAISE ex =  INTE {Raise ex}
+| EXIT ex = INTE {Exit ex}
 | RUN ex = expression {Run ex}
 | FUNCTION LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK simiOrnot{FunctionExpr (parm, ex)}
-| TRY LBRACK  ex1 = expression_shell RBRACK CATCH LBRACK  ex2 = expression_shell RBRACK {Trap(ex1, ex2)}
+| TRAP LBRACK  ex = expression_shell RBRACK {Trap ex}
 
 maybeElse:
 |  ELSE LBRACK ex = expression_shell RBRACK { ex}
 
-maybeExpr:
+maybeValue:
 | {None}
-|  ex = expression {Some ex}
+|  ex = expr_aux {Some ex}
 
 maybePar:
 | {[]}
@@ -104,7 +106,6 @@ maybePar:
 
 
 expr_aux:
-| {Unit}
 | LPAR ex = expr_aux RPAR {ex}
 | l = literal {Literal l }
 | str = VAR ex = varOraccess 
@@ -142,11 +143,10 @@ binaryContinue:
 binary :
 | ex1 = expr_aux v = maybebinary_aux {
   match v with 
-  | None -> ex1 
+  | None -> Value ex1 
   | Some (Left (str, ex2)) -> 
-    if String.compare str "=>" == 0 then Lambda (ex1, ex2)
-    else if String.compare str ":" == 0 then Trap (ex1, ex2)
-    else BinOp (str, ex1, ex2)
+    if String.compare str "=>" == 0 then Lambda (Value ex1, ex2)
+    else BinOp (str, Value ex1, ex2)
   | Some (Right (obj)) -> FunctionCall (ex1, obj)
 }
 
@@ -185,14 +185,13 @@ statement:
 LSPEC REQUIRE pre = STRING RSPEC posts = maybemorePosts
 LBRACK   ex = expression_shell RBRACK {ModduleDeclear (mn, parm, ex, Sleek.parse_effects pre, List.map (fun a -> Sleek.parse_effects a) posts)}
 | CONST str = VAR EQ ex = expression SIMI {ConsDeclear (str, ex) }
-| LET  ex = VAR EQ ex2 = expression  SIMI{Let (Variable ex,ex2)}
+| LET  ex = VAR EQ ex2 = expression  SIMI{Let (Value (Variable ex),ex2)}
 | FUNCTION mn = VAR LPAR parm = parameter RPAR LBRACK  ex = expression_shell RBRACK simiOrnot{FunctionDeclear (mn, parm, ex)}
 | s = separated_list (CONCAT, VAR) obj = callOrAssign {
   match obj with 
   | Left exl -> Call (s, exl)
   | Right ex -> Assign (s, ex)
 }
-| TRY LBRACK  ex1 = expression_shell RBRACK CATCH LPAR e = expression RPAR LBRACK  ex2 = expression_shell RBRACK simiOrnot{TryCatch(ex1, e, ex2)}
 
 callOrAssign:
 | LPAR obj  = call_aux RPAR SIMI {Left obj}
