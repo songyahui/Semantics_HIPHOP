@@ -1,16 +1,31 @@
 (* Type of events *)
+
+type literal
+type value
+type _signal
 type event
 
 val show_event : event -> string
 
 val compare_event : event -> event -> bool
 
-val present : string -> event
+val present : _signal -> event
 
-val absent : string -> event
+val absent : _signal -> event
 
 val is_present : event -> bool
 
+
+val constructINT: int -> literal
+val constructSTRING: string -> literal
+val constructBOOL: bool -> literal
+val makeSignal : string -> value option -> _signal
+
+
+val constructUnit : value 
+val constructVariable : string -> value 
+val constructLiteral : literal -> value 
+val constructAccess : string list -> value 
 
 
 (* Type of signals *)
@@ -24,13 +39,13 @@ val empty : t
 
 val is_empty : t -> bool
 
-val from : string -> t
+val from : _signal -> t
 
-val initUndef : string list -> t
+val initUndef : _signal list -> t
 
-val setAbsent: string -> t -> t option 
+val setAbsent: _signal -> t -> t option 
 
-val setPresent: string -> t -> t option 
+val setPresent: _signal -> t -> t option 
 
 val controdicts: t -> bool 
 
@@ -38,7 +53,7 @@ val controdicts_final: t -> bool
 
 val fstHelper : event -> t
 
-val add_UndefSigs: string list -> t -> t 
+val add_UndefSigs: _signal list -> t -> t 
 
 val make : event list -> t
 

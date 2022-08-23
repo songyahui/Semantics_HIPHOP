@@ -37,7 +37,7 @@ module Set = struct
 
 
   let () =
-    let open Signals in
+    (*let open Signals in
     assert (
       let ctx = Proofctx.make () in
       zip ctx [ (from "A", None) ] [ (from "B", None) ]
@@ -54,7 +54,7 @@ module Set = struct
           (from "A", None);
           (make [ present "A"; present "B" ], None);
           (from "B", None);
-        ]);
+        ]);*)
     ()
 end
 

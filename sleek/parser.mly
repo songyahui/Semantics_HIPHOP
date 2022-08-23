@@ -1,4 +1,6 @@
-%token UNKNOWN
+
+
+(*%token UNKNOWN*)
 %token EOF "eof"
 %token TRUE "True" FALSE "False"
 %token TRUTH "true" FALSENESS "false"
@@ -13,6 +15,8 @@
 %token QUESTION "?" SHARP "#"
 %token <string> IDENT "ident"
 %token <int> INT "int"
+%token <string> STRING
+
 
 %start specification only_entailment
 %start only_effects only_instants
@@ -108,13 +112,39 @@ instant:
   | "{" l=event_list "}"              { Signals.make l  }
 
 event_list:
-  | e="ident"                         { [ Signals.present e ] }
-  | "!" e="ident"                     { [ Signals.absent e ] }
-  | e="ident" "," l=event_list        { Signals.present e :: l }
-  | "!" e="ident" "," l=event_list    { Signals.absent e :: l }
+  | e=event                     { [ Signals.present e ] }
+  | "!" e=event                   { [ Signals.absent e ] }
+  | e=event "," l=event_list        { Signals.present e :: l }
+  | "!" e=event "," l=event_list    { Signals.absent e :: l }
+
+literal: 
+| n = "int" {Signals.constructINT n}
+| str = STRING {Signals.constructSTRING str}
+
+value:
+| "(" ")" {Signals.constructUnit}
+| "(" ex = value ")" {ex}
+| l = literal {Signals.constructLiteral l }
+| str = "ident"  {Signals.constructVariable str}
+
+
+maybeValue:
+| {None}
+|  ex = value {Some ex}
+
+
+maybeArgument:
+| {None} 
+| "(" obj = maybeValue ")" {obj}
+
+
+event: 
+| ex = "ident"  ar = maybeArgument { Signals.makeSignal   ex ar }
+| "(" ev =event ")" {ev}
+
 
 
 waiting:
-    e="ident" "?"                     { Signals.present e }
+    e= event "?"                     { Signals.present e }
 
 %%

@@ -223,9 +223,9 @@ let tAdd_None (t:(Sleek.Signals.event list) option  ): (Sleek.term option * Slee
   | Some ins -> Some (None, ins)
   ;;
 
-let setPresent (s:string) (cur) = (Sleek.Signals.setPresent s cur);; 
+let setPresent str v (cur) = (Sleek.Signals.setPresent (Sleek.Signals.makeSignal str v) cur);; 
 
-let setAbsent (s:string) (cur)  = (Sleek.Signals.setAbsent s cur);;
+let setAbsent str v  (cur)  = (Sleek.Signals.setAbsent (Sleek.Signals.makeSignal str v) cur);;
 
 let max k1 k2 = if k1 >= k2 then k1 else k2 
 
@@ -297,6 +297,31 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
   )
   combine)
   
+let literalToSigLiteral (l:literal) :Sleek.Signals.literal = 
+  match l with 
+  | INT i -> Sleek.Signals.constructINT i 
+  | STRING str -> Sleek.Signals.constructSTRING str
+  | BOOL b -> Sleek.Signals.constructBOOL b
+
+;;literalToSigLiteral
+
+let valueToSigValue (v:value) : Sleek.Signals.value = 
+  match v with 
+| Unit -> Sleek.Signals.constructUnit
+| Variable str -> Sleek.Signals.constructVariable str
+| Literal lit -> Sleek.Signals.constructLiteral (literalToSigLiteral lit) 
+| Access acc -> Sleek.Signals.constructAccess acc
+;;
+
+let rec makeEnv (env:event list): Sleek.Signals._signal list =
+  match env with 
+  | [] -> [] 
+  | (str, None) :: xs -> Sleek.Signals.makeSignal str (None) :: makeEnv xs 
+  | (str, Some v) :: xs -> 
+    Sleek.Signals.makeSignal str (Some (valueToSigValue v)) :: makeEnv xs 
+
+;;
+  
 
 let rec splitEffects (env: string list) (es:Sleek.instants) :(Sleek.instants* (Sleek.Signals.t) option) list= 
   let es = normalizeES es  in 
@@ -304,7 +329,7 @@ let rec splitEffects (env: string list) (es:Sleek.instants) :(Sleek.instants* (S
   | Bottom -> []
   | Empty -> [(Empty, None)]
   | Await s -> [(Await s,None)]
-  | Instant ins -> [(Empty, Some (Sleek.Signals.add_UndefSigs env ins))]
+  | Instant ins -> [(Empty, Some (ins))]
   | Sequence (es1, es2) -> 
     let temp = splitEffects env es2 in 
     List.map (fun state ->
@@ -341,38 +366,41 @@ let fstToInstance cur =
   | Some ins ->  Sleek.Instant ins 
 ;;
 
-let addEventToCur (env:string list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.t option):Sleek.Signals.t option=
+let addEventToCur (env:event list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.t option):Sleek.Signals.t option=
   match cur with 
-  | None ->  Some (ev :: (Sleek.Signals.initUndef env))
+  | None ->  Some (ev :: (Sleek.Signals.initUndef (makeEnv env)))
   | Some ins ->  Some (ev :: ins )
 ;;
+
+let vOptToSigvOpt (v:value option) : Sleek.Signals.value option = 
+  match v with 
+  | None -> None 
+  | Some v -> Some (valueToSigValue v)
 
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
   match prog with 
+  | Value _ -> current
   | Yield -> 
       List.map (fun state -> 
       let (his, cur, _) = state in 
-      (Sleek.Sequence (his, fstToInstance cur), Some (Sleek.Signals.initUndef env), 0)) current
+      (Sleek.Sequence (his, fstToInstance cur), Some (Sleek.Signals.empty), 0)) current
+
+  | Await (Ev (str, v )) -> 
+    List.map (fun (his, cur, _) -> (Sleek.Sequence(Sleek.Sequence (his, fstToInstance cur), Await (Sleek.Signals.present (Sleek.Signals.makeSignal str (vOptToSigvOpt v)))), None, 0))
+    current
 
   
-  | Emit (s, _ ) -> 
+  | Emit (str, v) -> 
 
       List.map (fun state ->
         match state with 
-        | (his, Some (cur), _) -> (his , setPresent s cur, 0)
-        | (his, None, _ ) -> (his, setPresent s (Sleek.Signals.initUndef env), 0)
+        | (his, Some (cur), _) -> (his , setPresent str (vOptToSigvOpt v) cur, 0)
+        | (his, None, _ ) -> (his, None, 0)
         
       )  current
 
-  | Signal (s, p) -> forward (s::env) (
-    List.map (
-      fun (his, cur, _) -> 
-        match cur with 
-        | Some (ins) -> (his, Some(Sleek.Signals.add_UndefSigs (s::env) ins), 0)
-        | _ -> (his, cur, 0)
-    )
-    current) p full 
+  | Signal (s, p) -> forward (s::env) current p full 
 
   | Seq (p1, p2) -> 
     let states1 =  (forward env current p1 full) in 
@@ -448,7 +476,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
 
 
-  | _ ->  current
+  | _ ->  raise (Foo "not yet covered!")
  
     ;;
   
