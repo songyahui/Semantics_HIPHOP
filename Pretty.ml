@@ -130,10 +130,10 @@ let string_of_value (v:value) : string =
 ;;
 
 let string_of_event ((str, vopt):event) : string = 
-  str ^ "(" ^ 
+  str ^ 
     (match vopt with 
-    | None -> ")"
-    | Some ex -> string_of_value ex ^")"
+    | None -> ""
+    | Some ex ->"(" ^  string_of_value ex ^")"
     )
 ;;
 

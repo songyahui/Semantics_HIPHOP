@@ -43,10 +43,10 @@ let string_of_value (v:value) : string =
 ;;
 
 let string_of_signals ((str, vopt):_signal) : string = 
-  str ^ "(" ^ 
+  str ^ 
     (match vopt with 
-    | None -> ")"
-    | Some ex -> string_of_value ex ^")"
+    | None -> ""
+    | Some ex ->"(" ^  string_of_value ex ^")"
     )
 ;;
 

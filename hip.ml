@@ -258,9 +258,18 @@ let parrallHisAndCurAbsorb  (his:Sleek.instants ) (cur:Sleek.Signals.t option) :
     in helper list
 
 
+type paralleMerheEnv = (Sleek.Signals.t * Sleek.Signals.t * Sleek.instants  * Sleek.instants )   list
 
+let rec recoccurParalleMerheEnv (f1, f2, der1, der2) env : bool = 
+  match env with 
+  | [] -> false  
+  | (ff1, ff2, der11, der22)::xs -> if Sleek.Signals.compareT ff1 f1 && Sleek.Signals.compareT ff2 f2 && Sleek.Signals.compareInstants der11 der1 && Sleek.Signals.compareInstants der22 der2 
+    then true else recoccurParalleMerheEnv (f1, f2, der1, der2)  xs 
 
-let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states = 
+;;
+  
+
+let rec paralleMerge (env: paralleMerheEnv) (state1:prog_states) (state2:prog_states) :prog_states = 
   let state1 = List.filter (fun (his, _, _) -> match normalizeES his with |Sleek.Bottom -> false | _ -> true )state1 in 
   let state2 = List.filter (fun (his, _, _) -> match normalizeES his with |Sleek.Bottom -> false | _ -> true )state2 in 
 
@@ -281,15 +290,21 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
       else [(parrallHisAndCurAbsorb (his2) cur1, cur2, k2)]
     | (_, Sleek.Empty) -> if k2 > 1 then [(Sleek.Empty, parrallHisAndCur his1 cur2, k2) ]
       else [(parrallHisAndCurAbsorb his1 cur2, cur1, k1)]
+    (*| (Sleek.Await _, Sleek.Await _) -> 
+      *)
     | (_, _) -> 
       let fst1 = fstPar his1 in
       let fst2 = fstPar his2 in 
       let headSet = zip (fst1, fst2) in 
-      List.flatten (List.map (fun (f1, f2)->
+      List.flatten (List.map (fun (f1, f2)-> 
         let head =  (Sleek.Signals.merge f1 f2) in 
-        let der1 = derivativePar head his1 in 
-        let der2 = derivativePar head his2 in
-        let states =  paralleMerge [(der1, cur1, k1)] [(der2, cur2, k2)] in 
+        let der1 = normalizeES (derivativePar head his1) in 
+        let der2 = normalizeES (derivativePar head his2) in
+        if recoccurParalleMerheEnv (f1, f2, der1, der2) env then  [(Sleek.Parallel (his1, his2), unionCur cur1 cur2, max k1 k2)]
+        else 
+
+
+        let states =  paralleMerge ((f1, f2, der1, der2)::env) [(der1, cur1, k1)] [(der2, cur2, k2)] in 
         List.map (fun (a, b, c) -> (Sleek.Sequence (Instant head, a), b, c)) states
         )
       headSet)
@@ -352,7 +367,7 @@ let rec splitEffects (env: string list) (es:Sleek.instants) :(Sleek.instants* (S
     let s1  = splitEffects env es1 in 
     let s2  = splitEffects env es2 in 
     let lambda li = List.map (fun (a, b) -> (a, b, 0)) li in 
-    let states = paralleMerge (lambda s1) (lambda s2) in 
+    let states = paralleMerge [] (lambda s1) (lambda s2) in 
     List.map (fun (a, b, _) -> (a, b) ) states
 
 
@@ -387,7 +402,8 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       (Sleek.Sequence (his, fstToInstance cur), Some (Sleek.Signals.empty), 0)) current
 
   | Await (Ev (str, v )) -> 
-    List.map (fun (his, cur, _) -> (Sleek.Sequence(Sleek.Sequence (his, fstToInstance cur), Await (Sleek.Signals.present (Sleek.Signals.makeSignal str (vOptToSigvOpt v)))), None, 0))
+    List.map (fun (his, cur, _) -> (Sleek.Sequence(Sleek.Sequence (his, fstToInstance cur), Await (Sleek.Signals.present (Sleek.Signals.makeSignal str (vOptToSigvOpt v)))), 
+    Some (Sleek.Signals.empty), 0))
     current
 
   
@@ -444,7 +460,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     print_string (string_of_prog_states temp1 ^"\n");
     print_string (string_of_prog_states temp2 ^"\n");
     *)
-    paralleMerge temp1 temp2 
+    paralleMerge  [] temp1 temp2 
 
 
   | ForkPar (p1::p2::rest) -> 
@@ -472,9 +488,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       ) first_round
       )
     ) ) [] current
-
-
-
 
   | _ ->  raise (Foo "not yet covered!")
  

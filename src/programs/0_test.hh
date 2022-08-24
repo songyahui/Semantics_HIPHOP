@@ -7,7 +7,6 @@ hiphop module prg( in A, in B, in C, in R, out O )
    /*@ requires "True && emp "@*/
    /*@ ensures  "True && (R?. (A? // B? // C?).{O})^*" @*/
 {
-   do {
       fork {
 	 await( A );
       } par {
@@ -15,7 +14,6 @@ hiphop module prg( in A, in B, in C, in R, out O )
       } par {
 	 await( C );
       };
-      emit O;
-   } every( R )
+
 }
 exports.prg = new hh.ReactiveMachine( prg, "ABCRO" );
