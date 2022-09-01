@@ -17,7 +17,7 @@ let rec fstPar (es:Sleek.instants) :fst4Par list =
   | Sequence (es1 , es2) -> if Sleek.Inference.nullable es1 then append (fstPar  es1) (fstPar  es2) else fstPar  es1
   | Union (es1, es2) -> append (fstPar  es1) (fstPar  es2)
   | Kleene es1 -> fstPar  es1
-  | Parallel (es1 , _) -> fstPar  es1
+  | Parallel (es1 , es2) -> append (fstPar  es1) (fstPar  es2)
   | _ -> raise (Foo "fstPar later")
     
 
@@ -308,7 +308,7 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
           let states =  paralleMerge [(der1, cur1, k1)] [(der2, cur2, k2)] in 
           List.map (fun (a, b, c) -> (Sleek.Sequence (Instant head, a), b, c)) states
         | Wait _, Wait _ ->
-          [(Sleek.Parallel (Sleek.Sequence (his1, fstToInstance cur1), Sleek.Sequence (his2, fstToInstance cur2)), Some(Sleek.Signals.empty), max k1 k2)]    
+          [(Sleek.Parallel (Sleek.Sequence (his1, fstToInstance cur1), Sleek.Sequence (his2, fstToInstance cur2)), None(*Some(Sleek.Signals.empty)*), max k1 k2)]    
         | Sig f, Wait _ 
         | Wait _, Sig f -> 
           let der1 = normalizeES (derivativePar f his1) in 
@@ -384,6 +384,28 @@ let rec splitEffects (env: string list) (es:Sleek.instants) :(Sleek.instants* (S
   | _ -> raise (Foo ("splitEffects later"))
   ;;
 
+let vOptToSigvOpt (v:value option) : Sleek.Signals.value option = 
+  match v with 
+  | None -> None 
+  | Some v -> Some (valueToSigValue v)
+
+
+let rec addInToTheTail (es:Sleek.instants) (ev:event) : (Sleek.instants)  = 
+  let (str, v) = ev in 
+  (*print_string (Sleek.show_instants (fstToInstance ( (setPresent str (vOptToSigvOpt v) Sleek.Signals.empty))));*)
+  match es with 
+  | Sequence (es1, Parallel(es2, es3)) -> Sequence (es1, Parallel(addInToTheTail es2 ev, addInToTheTail es3 ev))
+  | Sequence (es1, Instant cur) ->  Sequence (es1,fstToInstance ( (setPresent str (vOptToSigvOpt v) cur)))
+  | Sequence (es1, es2) -> Sequence (es1, addInToTheTail es2 ev)
+  | Instant cur ->fstToInstance (setPresent str (vOptToSigvOpt v) cur)
+  | Bottom
+  | Empty
+  | Await  _  -> es 
+  | Union    (es1, es2) -> Union (addInToTheTail es1 ev, addInToTheTail es2 ev)
+  | Parallel (es1, es2) -> Parallel(addInToTheTail es1 ev, addInToTheTail es2 ev)
+  | Kleene   (es1) -> Sequence (es1, addInToTheTail es1 ev)
+  | _   -> raise (Foo "addInToTheTail")
+
 
 
 let addEventToCur (env:event list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.t option):Sleek.Signals.t option=
@@ -392,10 +414,6 @@ let addEventToCur (env:event list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.
   | Some ins ->  Some (ev :: ins )
 ;;
 
-let vOptToSigvOpt (v:value option) : Sleek.Signals.value option = 
-  match v with 
-  | None -> None 
-  | Some v -> Some (valueToSigValue v)
 
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
@@ -414,10 +432,17 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   
   | Emit (str, v) -> 
 
+
       List.map (fun state ->
         match state with 
         | (his, Some (cur), _) -> (his , setPresent str (vOptToSigvOpt v) cur, 0)
-        | (his, None, _ ) -> (his, None, 0)
+        | (his, None, _ ) -> 
+          let trace =  addInToTheTail (Sleek.normalize_es his) (str, v) in 
+          (*print_string (Sleek.show_instants  trace^"\n");*)
+          (trace, None, 0)
+          (*match with 
+          | Some trace -> (trace, None, 0)
+          | None -> (his, None, 0)*)
         
       )  current
 
