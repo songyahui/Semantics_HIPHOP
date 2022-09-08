@@ -172,6 +172,15 @@ let setPresent (ev:_signal) lst =
   Some (helper lst)
 ;;
 
+let setAbsent (ev:_signal) lst = 
+  let rec helper li = 
+  match li with 
+  | [] -> [(Absent ev)]
+  | (Undef s):: xs -> if compareSignal ev s  then (Absent ev) :: xs else (Undef s)::helper xs
+  | x :: xs -> x::helper xs in 
+  Some (helper lst)
+;;
+
 (*
 let rec setPresent str lst= 
   match lst with 
@@ -199,14 +208,7 @@ let rec setPresent str lst=
     | Some rest -> Some (x :: rest)  (* signal status controdiction *)
    *)
 
-let setAbsent str lst= 
-  let rec helper li = 
-  match li with 
-  | [] -> []
-  | (Undef s):: xs -> if compareSignal s str  then (Absent str) :: xs else (Undef s)::helper xs
-  | x :: xs -> x::helper xs in 
-  Some (helper lst)
-;;
+
   (*
   match lst with 
   | [] -> Some []

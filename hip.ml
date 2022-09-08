@@ -426,8 +426,6 @@ let addEventToCur (env:event list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.
 
 
 
-
-
 let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_states = 
   let (str, v) = ev in 
   let fSet = fstPar es in 
@@ -435,7 +433,7 @@ let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_s
     match ele with 
     | Sig ele' -> 
       let thisOne = (pre, setPresent str (vOptToSigvOpt v) ele' , 0) in 
-      let tail =  abortinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativePar ele' es) ev  in 
+      let tail =  abortinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativePar ele' es) ev  in 
       thisOne :: tail
     | Wait ev' -> abortinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativePar (waitToIns ev') es) ev
   )fSet)
