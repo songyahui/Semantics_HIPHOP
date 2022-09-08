@@ -21,7 +21,15 @@ let rec fstPar (es:Sleek.instants) :fst4Par list =
   | _ -> raise (Foo "fstPar later")
     
 
-  
+let fst4Par2Instants f : Sleek.instants = 
+  match f with 
+  | Sig ins -> Instant ins
+  | Wait ev -> Await ev 
+;;
+
+let waitToIns (w:Sleek.Signals.event): Sleek.Signals.t = [w]
+
+
 (*
   [(True, SL ins, None)]
    ->  
@@ -415,6 +423,25 @@ let addEventToCur (env:event list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.
 ;;
 
 
+
+
+
+
+
+let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_states = 
+  let (str, v) = ev in 
+  let fSet = fstPar es in 
+  List.flatten (List.map (fun ele -> 
+    match ele with 
+    | Sig ele' -> 
+      let thisOne = (pre, setPresent str (vOptToSigvOpt v) ele' , 0) in 
+      let tail =  abortinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativePar ele' es) ev  in 
+      thisOne :: tail
+    | Wait ev' -> abortinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativePar (waitToIns ev') es) ev
+  )fSet)
+
+;;
+
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
   match prog with 
@@ -518,6 +545,33 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       ) first_round
       )
     ) ) [] current
+
+  | Abort (ev, p)  -> 
+
+
+    let (str, v) = ev in 
+    List.flatten (List.map (fun (his, cur, k) ->
+      let pEff = forward env [(Empty, cur, k)] p full in 
+      let allPosibleAux = List.map (fun (a, b, k) -> 
+        if k > 1 then [(a, b, k)]
+        else 
+          let interleaving = abortinterleaving (Sleek.Empty) a ev in 
+          (match b with 
+          | Some b' -> (a, setPresent str (vOptToSigvOpt v) b', k) :: interleaving
+          | None -> interleaving
+          ) 
+      ) pEff in 
+      let allPosible = List.fold_left (fun acc a -> List.append acc a) [] allPosibleAux in 
+      List.map (fun (a, b, c) -> (Sleek.Sequence(his, a), b, c)) allPosible
+    ) current)
+
+  
+
+ (* 
+  | Suspend (ev, p)  -> 
+  | DoEvery (p, ev) -> 
+    *)
+
 
   | _ ->  raise (Foo "not yet covered!")
  

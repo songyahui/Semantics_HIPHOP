@@ -52,10 +52,9 @@ type expression =
     | Abort of event * expression  
     | Interrupt of  expression * expression 
     | Suspend of event * expression 
-    | Every of  event * expression 
+    | DoEvery of expression * event
     | Exit of int 
     | Trap of expression 
-    | DoEvery of expression * event
 
 
 

@@ -146,7 +146,6 @@ let rec string_of_expression (expr: expression): string =
   | Emit ex -> "emit " ^ string_of_event ex
   | Await (Ev ex) -> "await " ^ string_of_event ex
   | Await (Count (i, ex)) -> "await count(" ^ string_of_int i ^ "," ^  string_of_event ex ^ ")"
-  | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_event ex2
   | ForkPar (e_li) -> "PAR:\n " ^ List.fold_left (fun acc a -> acc ^"\n||\n"^string_of_expression a) "" e_li
   | Seq (ex1, ex2) -> "Seq:\n " ^ string_of_expression ex1 ^ "; " ^ string_of_expression ex2
   | Abort (ex1, ex2) -> "Abort\n " ^ string_of_event ex1 ^ "; " ^ string_of_expression ex2
@@ -170,7 +169,7 @@ let rec string_of_expression (expr: expression): string =
   | FunctionExpr (p_li, ex) -> "function " ^ "("^ List.fold_left (fun acc a -> acc ^ "," ^ string_of_param a) "" p_li ^") {" ^ string_of_expression ex ^"\n }"
   | Interrupt (p1, p2) -> "interrupt " ^ string_of_expression p1 ^ "\n" ^ string_of_expression p2
   | Suspend (ev, expr) -> "suspend "^ string_of_event ev ^ "\n" ^ string_of_expression expr
-  | Every (ev, expr) -> "suspend "^ string_of_event ev ^ "\n" ^ string_of_expression expr
+  | DoEvery (ex1, ex2) -> "do:\n " ^ string_of_expression ex1 ^ "every: " ^ string_of_event ex2
 
 
   ;;
