@@ -8,7 +8,7 @@
 %token  MINUS PLUS   
 %token EOF GT LT EQ  GTEQ LTEQ   CONCAT 
 %token VARKEY KLEENE NEW HIPHOP MODULE IN OUT 
-%token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL
+%token EMIT AWAIT DO EVERY FORK PAR LOOP YIELD ABORT SIGNAL SUSPENT
 %token HALT CONST LET HOP FUNCTION ASYNC IMPLY 
 %token RETURN EXIT COLON ELSE TRAP RUN
 %token REQUIRE ENSURE  LSPEC RSPEC PRESENT COUNT
@@ -94,6 +94,7 @@ expression:
 | LOOP LBRACK ex1 = expression_shell RBRACK {Loop ex1}
 | HOP LBRACK ex1 = expression_shell RBRACK {Hop ex1}
 | ABORT ev = event LBRACK ex1 = expression_shell RBRACK {Abort (ev, ex1)}
+| SUSPENT ev = event LBRACK ex1 = expression_shell RBRACK {Suspend (ev, ex1)}
 | YIELD {Yield}
 | SIGNAL ex = VAR SIMI ex1 = expression_shell {Signal (ex, ex1)}
 | PRESENT ex = event LBRACK ex1 = expression_shell RBRACK obj = maybeElse {Present (ex, ex1, obj)}

@@ -54,6 +54,7 @@ rule token = parse
 | "par" {PAR}
 | "loop" {LOOP}
 | "abort" {ABORT}
+| "suspend" {SUSPENT}
 | "yield" {YIELD}
 | "signal" {SIGNAL}
 | "present" {PRESENT}
