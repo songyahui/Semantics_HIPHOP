@@ -452,13 +452,34 @@ let rec insertNegation (es:Sleek.instants) (ev) : (Sleek.instants) =
   | _ -> es
   ;;
 
-(*
-let rec suspendinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_states = 
+
+let rec suspendinterleaving (es:Sleek.instants) (cur:(Sleek.Signals.t) option) (ev) : prog_states = 
   let (str, v) = ev in 
   let fSet = fstPar es in 
+  if List.length fSet == 0 then 
+    (match cur with 
+    | None -> [(Sleek.Empty, None, 0)] 
+    | Some cur' -> 
+      let op1 = (setAbsent str (vOptToSigvOpt v) (cur')) in 
+      let op2 = fstToInstance (setPresent str (vOptToSigvOpt v) (Sleek.Signals.empty))  in 
+      [(Sleek.Empty, op1, 0); (op2, op1, 0)]
+    )
+  else 
   List.flatten (List.map (fun ele -> 
+    let aux pre rest = List.map (fun (a, b, k) -> (Sleek.Sequence(pre, a), b, k)) rest in 
     match ele with 
     | Sig ele' -> 
+      let op1 = fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')) in 
+      let op2 = Sleek.Sequence (fstToInstance (setPresent str (vOptToSigvOpt v) (Sleek.Signals.empty)) , op1) in 
+      let rest = suspendinterleaving (derivativePar ele' es) cur ev in (*yaya is pretty*)
+      List.append (aux op1 rest) (aux op2 rest)
+    | Wait ev' -> 
+      let rest = suspendinterleaving (derivativePar (waitToIns ev') es) cur ev in 
+      aux (fst4Par2Instants ele) rest
+      
+    
+    (*
+    
       (match derivativePar ele' es with
       | Sleek.Empty -> [(Sleek.Empty, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')) , 0); (Sleek.Empty, , 0)]
 
@@ -469,10 +490,11 @@ let rec suspendinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog
       let tail =  suspendinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativePar ele' es) ev  in 
       thisOne :: tail
     | Wait ev' -> suspendinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativePar (waitToIns ev') es) ev
+    *)
   )fSet)
 
 ;;
-*)
+
 
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
@@ -597,21 +619,21 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     ) current)
 
   
- (* | Suspend (ev, p)  ->  
+  | Suspend (ev, p)  ->  
     let (str, v) = ev in 
     List.flatten (List.map (fun (his, cur, k) ->
       let pEff = forward env [(Empty, cur, k)] p full in 
       let allPosibleAux = List.map (fun (a, b, k) -> 
-          let interleaving = suspendinterleaving (Sleek.Empty) a ev in 
-          (match b with 
-          | Some b' -> (a, (setAbsent str (vOptToSigvOpt v) b, k):: (Sleek.Sequence(a, fstToInstance (setPresent str (vOptToSigvOpt v) (Sleek.Signals.empty))), b, k) :: interleaving
-          | None -> interleaving
-          ) 
+          let aux = match b with 
+          | None -> None 
+          | Some b' -> setAbsent str (vOptToSigvOpt v) b'
+          in 
+          (insertNegation a ev, aux, k)  :: (suspendinterleaving (Sleek.Sequence (a, fstToInstance b)) b ev)
       ) pEff in 
       let allPosible = List.fold_left (fun acc a -> List.append acc a) [] allPosibleAux in 
       List.map (fun (a, b, c) -> (Sleek.Sequence(his, a), b, c)) allPosible
     ) current)
-*)
+
 
  (* 
   | DoEvery (p, ev) -> 
