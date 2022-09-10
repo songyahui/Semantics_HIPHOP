@@ -440,6 +440,18 @@ let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_s
 
 ;;
 
+let rec insertNegation (es:Sleek.instants) (ev) : (Sleek.instants) = 
+  let (str, v) = ev in 
+  let aux arg = (setAbsent str (vOptToSigvOpt v) arg) in 
+  match es with 
+  | Instant ins -> (fstToInstance (aux ins))
+  | Sequence (es1, es2) -> Sequence (insertNegation es1 ev, insertNegation es2 ev) 
+  | Union (es1, es2) -> Union (insertNegation es1 ev, insertNegation es2 ev) 
+  | Parallel (es1, es2) -> Parallel (insertNegation es1 ev, insertNegation es2 ev) 
+  | Kleene es1 -> Kleene (insertNegation es1 ev)
+  | _ -> es
+  ;;
+
 (*
 let rec suspendinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_states = 
   let (str, v) = ev in 
@@ -568,18 +580,17 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
   | Abort (ev, p)  -> 
 
-
     let (str, v) = ev in 
     List.flatten (List.map (fun (his, cur, k) ->
       let pEff = forward env [(Empty, cur, k)] p full in 
       let allPosibleAux = List.map (fun (a, b, k) -> 
         if k > 1 then [(a, b, k)]
-        else 
-          let interleaving = abortinterleaving (Sleek.Empty) a ev in 
-          (match b with 
-          | Some b' -> (a, setPresent str (vOptToSigvOpt v) b', 0) :: interleaving
-          | None -> interleaving
-          ) 
+        else  
+          let aux = match b with 
+          | None -> None 
+          | Some b' -> setAbsent str (vOptToSigvOpt v) b'
+          in 
+          (insertNegation a ev, aux, k)  :: (abortinterleaving (Sleek.Empty) (Sleek.Sequence (a, fstToInstance b)) ev)
       ) pEff in 
       let allPosible = List.fold_left (fun acc a -> List.append acc a) [] allPosibleAux in 
       List.map (fun (a, b, c) -> (Sleek.Sequence(his, a), b, c)) allPosible
