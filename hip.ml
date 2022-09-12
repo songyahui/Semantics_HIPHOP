@@ -423,6 +423,17 @@ let addEventToCur (env:event list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.
 ;;
 
 
+let rec insertNegation (es:Sleek.instants) (ev) : (Sleek.instants) = 
+  let (str, v) = ev in 
+  let aux arg = (setAbsent str (vOptToSigvOpt v) arg) in 
+  match es with 
+  | Instant ins -> (fstToInstance (aux ins))
+  | Sequence (es1, es2) -> Sequence (insertNegation es1 ev, insertNegation es2 ev) 
+  | Union (es1, es2) -> Union (insertNegation es1 ev, insertNegation es2 ev) 
+  | Parallel (es1, es2) -> Parallel (insertNegation es1 ev, insertNegation es2 ev) 
+  | Kleene es1 -> Kleene (insertNegation es1 ev)
+  | _ -> es
+  ;;
 
 
 
@@ -430,9 +441,18 @@ let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_s
   let es = Sleek.fixpoint ~f: Sleek.normalize_es  es in 
   match es with 
   | Sleek.Kleene es' ->
-     List.map (fun (a, b, k) -> (Sleek.Kleene a, b, k) ) (abortinterleaving pre es' ev)
+    let non_abortion = insertNegation es' ev in 
+    let prepenx = Sleek.Sequence(pre, Kleene non_abortion) in 
+    let interleav = (abortinterleaving (Sleek.Empty) es' ev) in 
+    (*(prepenx, None, 0) :: *)
+    List.map (fun (a, b, k) -> (Sleek.Sequence(prepenx, a), b, k) ) interleav
+
   | Sleek.Sequence (Sleek.Kleene es', _) -> 
-    List.map (fun (a, b, k) -> (Sleek.Kleene a, b, k) ) (abortinterleaving pre es' ev)
+    let non_abortion = insertNegation es' ev in 
+    let prepenx = Sleek.Sequence(pre, Kleene non_abortion) in 
+    let interleav = (abortinterleaving (Sleek.Empty) es' ev) in 
+    (*(prepenx, None, 0) :: *)
+    List.map (fun (a, b, k) -> (Sleek.Sequence(prepenx, a), b, k) ) interleav
 
   | _ -> 
   let (str, v) = ev in 
@@ -448,17 +468,6 @@ let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_s
 
 ;;
 
-let rec insertNegation (es:Sleek.instants) (ev) : (Sleek.instants) = 
-  let (str, v) = ev in 
-  let aux arg = (setAbsent str (vOptToSigvOpt v) arg) in 
-  match es with 
-  | Instant ins -> (fstToInstance (aux ins))
-  | Sequence (es1, es2) -> Sequence (insertNegation es1 ev, insertNegation es2 ev) 
-  | Union (es1, es2) -> Union (insertNegation es1 ev, insertNegation es2 ev) 
-  | Parallel (es1, es2) -> Parallel (insertNegation es1 ev, insertNegation es2 ev) 
-  | Kleene es1 -> Kleene (insertNegation es1 ev)
-  | _ -> es
-  ;;
 
 
 let rec suspendinterleaving (es:Sleek.instants) (cur:(Sleek.Signals.t) option) (ev) : prog_states = 
@@ -622,6 +631,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
           | None -> None 
           | Some b' -> setAbsent str (vOptToSigvOpt v) b'
           in 
+          print_string (Sleek.show_instants ((Sleek.Sequence (a, fstToInstance b))) ^"\n");
           (insertNegation a ev, aux, k)  :: (abortinterleaving (Sleek.Empty) (Sleek.Sequence (a, fstToInstance b)) ev)
       ) pEff in 
       let allPosible = List.fold_left (fun acc a -> List.append acc a) [] allPosibleAux in 
@@ -729,8 +739,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     let raw_final = (*effects_inference*) forward env (List.map (fun (a, b) -> (a, b, 0))init) ex whole in 
     let final = List.map (fun state ->
         match state with 
-        | (his, Some (cur), _) ->Sleek.normalize (True, Sleek.Sequence (his, fstToInstance ( Some (cur))))
-        | (his, None, _) -> (True, his)
+        | (his, cur, _) ->Sleek.normalize (True, Sleek.Sequence (his, fstToInstance ( (cur))))
       ) raw_final in 
 
     let startTimeStamp01 = Sys.time() in

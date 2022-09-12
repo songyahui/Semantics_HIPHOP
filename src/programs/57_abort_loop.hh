@@ -5,7 +5,11 @@ var hh = require("hiphop");
 
 hiphop module prg( in A, in B, in C, in R, out O ) 
    /*@ requires "True && emp "@*/
-   /*@ ensures  "True && ({})^*" @*/
+   /*@ ensures  "True && 
+     {A, !B}·({C, !B}·{A, !B})^* 
+   + {A, B} 
+   + {A, !B}·({C, !B}·{A, !B})^*·{C, B} 
+   + {A, !B}·({C, !B}·{A, !B})^*·{C, !B}·{A, B} " @*/
 {
    abort (B) {
       loop{
@@ -13,8 +17,6 @@ hiphop module prg( in A, in B, in C, in R, out O )
          emit A;
       yield; 
       emit C;
-      yield;
-      emit R;
       }
    }
 

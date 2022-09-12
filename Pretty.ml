@@ -182,10 +182,13 @@ let rec show_effects_list (eff_li: Sleek.effects) : string =
   | (xp, xes) :: (yp, yes) :: xs -> 
     match xs with 
     | [] -> 
-      if (not (xp <> yp)) then Sleek.show_simple_effects (xp, (Sleek.fixpoint ~f: Sleek.normalize_es (Sleek.Union (xes, yes)))) 
+      if (not (xp <> yp)) then 
+        show_effects_list [(xp, (Sleek.fixpoint ~f: Sleek.normalize_es (Sleek.Union (xes, yes))))] 
+        
       else Sleek.show_simple_effects (xp, xes) ^ "\\/" ^ show_effects_list ((yp, yes)::xs) 
     | _ -> 
-      if (not (xp <> yp)) then Sleek.show_simple_effects (xp, (Sleek.fixpoint ~f: Sleek.normalize_es (Sleek.Union (xes, yes)))) ^ "\\/" ^ show_effects_list xs
+      if (not (xp <> yp)) then 
+        show_effects_list ((xp, (Sleek.fixpoint ~f: Sleek.normalize_es (Sleek.Union (xes, yes)))) :: xs)
       else Sleek.show_simple_effects (xp, xes) ^ "\\/" ^ show_effects_list ((yp, yes)::xs) ;;
 
 
