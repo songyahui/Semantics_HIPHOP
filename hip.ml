@@ -704,7 +704,7 @@ let entailmentShell lhs rhs =
   let msg =  (*(string_of_inclusion final_effects post) ^ "\n" ^*)
   "[TRS: Verification for Post Condition]\n" ^ 
   "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 
-  (*Sleek.History.show history    ~verbose ^*) "\n\n" in 
+  Sleek.History.show tree    ~verbose ^ "\n\n" in 
   print_string (msg);
   ((startTimeStamp2 -. startTimeStamp1) *.1000.0, verbose, tree)
 
@@ -750,6 +750,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "[Final  Effects] " ^ show_effects_list ( final) ^"\n"^
     "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms" ^"\n" ^
 
+    "[TOTAL TRS TIME] " ^ string_of_float (totol proves +. totol disproves) ^ " ms \n" ^ 
     "[Proving   Time] " ^ printing proves ^
     "[Disprove  Time] " ^ printing disproves ^"\n" 
 

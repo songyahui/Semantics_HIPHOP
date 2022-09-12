@@ -14,7 +14,7 @@ hiphop module prg( in A, in B, in C, in R, out O )
       } par {
 	 await( C );
       };
-      emit A;
+      emit R;
 
 }
 exports.prg = new hh.ReactiveMachine( prg, "ABCRO" );

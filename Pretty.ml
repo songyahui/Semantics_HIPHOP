@@ -178,7 +178,17 @@ let rec show_effects_list (eff_li: Sleek.effects) : string =
   match eff_li with 
   | [] -> ""
   | [x] -> Sleek.show_simple_effects x 
-  | x :: xs -> Sleek.show_simple_effects x ^ "\\/" ^ show_effects_list xs ;;
+  
+  | (xp, xes) :: (yp, yes) :: xs -> 
+    match xs with 
+    | [] -> 
+      if (not (xp <> yp)) then Sleek.show_simple_effects (xp, (Sleek.fixpoint ~f: Sleek.normalize_es (Sleek.Union (xes, yes)))) 
+      else Sleek.show_simple_effects (xp, xes) ^ "\\/" ^ show_effects_list ((yp, yes)::xs) 
+    | _ -> 
+      if (not (xp <> yp)) then Sleek.show_simple_effects (xp, (Sleek.fixpoint ~f: Sleek.normalize_es (Sleek.Union (xes, yes)))) ^ "\\/" ^ show_effects_list xs
+      else Sleek.show_simple_effects (xp, xes) ^ "\\/" ^ show_effects_list ((yp, yes)::xs) ;;
+
+
 
 let rec show_effects_list_list (eff_li: Sleek.effects list) : string =
   match eff_li with 
