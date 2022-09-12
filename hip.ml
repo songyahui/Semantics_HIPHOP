@@ -600,8 +600,8 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
         if k1 >1 then [(his1, cur1, k1)]
         else let second_round = forward env [(Empty, cur1, k1)] p full in 
 
-        List.map (fun (his2, cur2, k2)->
-          (Sleek.Sequence (his, Sequence(his1, Kleene (his2))), cur2, k2)
+        List.map (fun (his2, _, k2)->
+          (Sleek.Sequence (his, Sequence(his1, Kleene (his2))), None, k2)
 
         ) second_round
       ) first_round
@@ -645,9 +645,10 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     ) current)
 
 
- (* 
+  
   | DoEvery (p, ev) -> 
-    *)
+    let p_new = Seq (Await (Ev ev), Loop(Abort(ev, p))) in 
+    forward env current p_new full  
 
   | Present ((str, v), p1, p2) -> 
     let s1 = List.map (fun state -> 
