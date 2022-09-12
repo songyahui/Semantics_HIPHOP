@@ -649,6 +649,25 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   | DoEvery (p, ev) -> 
     *)
 
+  | Present ((str, v), p1, p2) -> 
+    let s1 = List.map (fun state -> 
+      let (his, cur, k) = state in 
+      match cur with 
+      | Some cur' -> (his, setPresent str (vOptToSigvOpt v) cur', k)
+      | None -> (his, cur, k) 
+    ) current in 
+    let s2 = List.map (fun state -> 
+      let (his, cur, k) = state in 
+      match cur with 
+      | Some cur' -> (his, setAbsent str (vOptToSigvOpt v) cur', k)
+      | None -> (his, cur, k) 
+    ) current in 
+
+    let ifbranch =  forward env s1 p1 full in 
+    let elsebranch =  forward env s2 p2 full in 
+    List.append ifbranch elsebranch
+
+
 
   | _ ->  raise (Foo "not yet covered!")
  
