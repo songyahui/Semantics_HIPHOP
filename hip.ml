@@ -427,6 +427,14 @@ let addEventToCur (env:event list) (ev:Sleek.Signals.event) (cur: Sleek.Signals.
 
 
 let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_states = 
+  let es = Sleek.fixpoint ~f: Sleek.normalize_es  es in 
+  match es with 
+  | Sleek.Kleene es' ->
+     List.map (fun (a, b, k) -> (Sleek.Kleene a, b, k) ) (abortinterleaving pre es' ev)
+  | Sleek.Sequence (Sleek.Kleene es', _) -> 
+    List.map (fun (a, b, k) -> (Sleek.Kleene a, b, k) ) (abortinterleaving pre es' ev)
+
+  | _ -> 
   let (str, v) = ev in 
   let fSet = fstPar es in 
   List.flatten (List.map (fun ele -> 
@@ -602,9 +610,11 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
   | Abort (ev, p)  -> 
 
+
     let (str, v) = ev in 
     List.flatten (List.map (fun (his, cur, k) ->
       let pEff = forward env [(Empty, cur, k)] p full in 
+
       let allPosibleAux = List.map (fun (a, b, k) -> 
         if k > 1 then [(a, b, k)]
         else  
