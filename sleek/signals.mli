@@ -35,6 +35,9 @@ val isEventExist : event -> t -> bool
 
 val show : t -> string
 
+val normalize_ins : t-> t
+
+
 val empty : t
 
 val is_empty : t -> bool

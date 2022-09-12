@@ -200,8 +200,10 @@ let rec normalize_pi : pi -> pi = function
   | pi -> pi
 
 
+
 let rec normalize_es : instants -> instants = function
   (* reduction *)
+  | Instant ev -> Instant (Signals.normalize_ins ev)
   | Union (es, Bottom) -> es
   | Union (Bottom, es) -> es
   | Union (es, es') when es = es' -> es

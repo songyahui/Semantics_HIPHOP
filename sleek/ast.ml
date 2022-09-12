@@ -85,16 +85,16 @@ let rec show_instants_with_prec lprec rprec = function
       Printf.sprintf "%s·%s" (show_instants_with_prec 0 30 es1) (show_instants_with_prec 30 0 es2)
       |> if lprec > 30 || rprec >= 30 then nothing else nothing
   | Union (es1, es2)    ->
-      Printf.sprintf "%s + %s" (show_instants_with_prec 0 20 es1) (show_instants_with_prec 20 0 es2)
-      |> if lprec > 20 || rprec >= 20 then enclose else nothing
+      Printf.sprintf "%s + %s" (show_instants_with_prec 0 20 es1 |> enclose) (show_instants_with_prec 20 0 es2 )
+      |> if lprec > 20 || rprec >= 20 then nothing else nothing
   | Parallel (es1, es2) ->
       Printf.sprintf "%s ║ %s"
         (show_instants_with_prec 0 10 es1)
         (show_instants_with_prec 10 0 es2)
       |> if lprec > 10 || rprec >= 10 then enclose else nothing
   | Kleene es           ->
-      Printf.sprintf "%s^﹡" (show_instants_with_prec 0 40 es)
-      |> if rprec >= 40 then enclose else enclose
+      Printf.sprintf "%s^*" (show_instants_with_prec 0 40 es |> enclose)
+      |> if rprec >= 40 then nothing else nothing
   | Timed (es, term)    ->
       Printf.sprintf "%s # %s" (show_instants_with_prec 0 20 es) (show_term term)
       |> if lprec >= 20 || rprec >= 20 then enclose else nothing

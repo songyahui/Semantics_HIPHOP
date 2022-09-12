@@ -272,6 +272,14 @@ let merge a b =
   
   List.sort_uniq compare (aa @ bb)
 
+  
+let rec normalize_ins (ins:t) : t = 
+  match ins with 
+  | [] -> [] 
+  | x::xs -> if isEventExist x xs then normalize_ins xs else x :: (normalize_ins xs)
+;;
+
+
 
 (* Is `b` included in `a`? *)
 let ( |- ) a b = (*b |> List.fold_left (fun res y -> res && a |> List.exists (( = ) y)) true*)

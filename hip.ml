@@ -607,12 +607,23 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       List.flatten (
       List.map (fun (his1, cur1, k1) -> 
         if k1 >1 then [(his1, cur1, k1)]
-        else let second_round = forward env [(Empty, cur1, k1)] p full in 
+        else 
+          (let second_round = forward env [(Empty, cur1, k1)] p full in 
+          List.map (fun (his2, cur2, k2)->
+            (Sleek.Sequence (his, Sequence(his1, Kleene (his2))), cur2, k2)
+          ) second_round)
+          (*
+          (List.flatten(List.map (fun (his2, cur2, k2)->
+          if k2 >1 then [(his2, cur2, k2)]
+          else 
+            let thrid_round = forward env [(Empty, cur2, k2)] p full in 
+            List.map (fun (his3, cur3, k3)->
+              (Sleek.Sequence (his, Sequence(Sequence(his1, his2), Kleene (his3))), cur3, k3)
+              )
+            thrid_round
 
-        List.map (fun (his2, _, k2)->
-          (Sleek.Sequence (his, Sequence(his1, Kleene (his2))), None, k2)
-
-        ) second_round
+          ) second_round))   
+          *)
       ) first_round
       )
     ) ) [] current
@@ -631,7 +642,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
           | None -> None 
           | Some b' -> setAbsent str (vOptToSigvOpt v) b'
           in 
-          print_string (Sleek.show_instants ((Sleek.Sequence (a, fstToInstance b))) ^"\n");
+          (*print_string (Sleek.show_instants ((Sleek.Sequence (a, fstToInstance b))) ^"\n");*)
           (insertNegation a ev, aux, k)  :: (abortinterleaving (Sleek.Empty) (Sleek.Sequence (a, fstToInstance b)) ev)
       ) pEff in 
       let allPosible = List.fold_left (fun acc a -> List.append acc a) [] allPosibleAux in 
@@ -657,8 +668,11 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
   
   | DoEvery (p, ev) -> 
-    let p_new = Seq (Await (Ev ev), Loop(Abort(ev, p))) in 
-    forward env current p_new full  
+    let halt = Loop (Yield) in 
+    let helper expr cond = Abort (cond, Seq(expr, halt)) in 
+    let loopEach expr cond = Loop (helper expr cond)  in 
+    let _ = Seq (Await (Ev ev), loopEach p ev) in 
+    forward env current (loopEach p ev) full  
 
   | Present ((str, v), p1, p2) -> 
     let s1 = List.map (fun state -> 
@@ -684,7 +698,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
  
     ;;
   
-
 
 
 let normalize_effs effs = 
