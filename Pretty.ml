@@ -18,7 +18,35 @@ let getAnewVar =
 
 let counter_rewriting = ref 0;;
 
-
+let string_of_expression_kind prog : string = 
+  match prog with 
+  | Value _ -> "Value"
+  | BinOp _ -> "BinOp"
+  | FunctionCall _-> "FunctionCall" 
+  | NewExpr _-> "NewExpr" 
+  | ForkPar _-> "ForkPar" 
+  | Seq _-> "Seq" 
+  | Loop _-> "Loop" 
+  | Hop _-> "Hop" 
+  | Yield -> "Yield"
+  | Halt -> "Halt"
+  | Signal _ -> "Signal"
+  | Present _ -> "Present"
+  | Lambda _ -> "Lambda"
+  | Continue _ -> "Continue"
+  | Return _ -> "Return_"
+  | Run _ -> "Run"
+  | FunctionExpr _ -> "FunctionExpr"
+(* Preemptive and promise-related constructs *)
+  | Emit _ -> "Emit"
+  | Async _ -> "Async"
+  | Await _ -> "Await"
+  | Abort _ -> "Abort"
+  | Interrupt _ -> "Interrupt"
+  | Suspend _ -> "Suspend"
+  | DoEvery _ -> "DoEvery"
+  | Exit _ -> "Exit"
+  | Trap _ -> "Trap"
 
 let getAnewVar_rewriting () = 
   counter_rewriting := ! counter_rewriting + 1; 

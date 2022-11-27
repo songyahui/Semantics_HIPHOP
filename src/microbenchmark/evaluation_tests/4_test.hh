@@ -83,7 +83,7 @@ hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done )
    yield;
    {async Done {
       emit A();
-      if (B.now) {
+      present (B()) {
          yield; 
          emit C()}
       else {

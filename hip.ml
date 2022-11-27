@@ -694,7 +694,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
 
 
-  | _ ->  raise (Foo "not yet covered!")
+  | _ ->  raise (Foo(string_of_expression_kind prog ^ " not yet covered!"))
  
     ;;
   

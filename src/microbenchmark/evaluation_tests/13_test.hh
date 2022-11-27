@@ -61,7 +61,7 @@ hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done )
          emit D();  
    emit B (); 
    emit Done ();
-   if (Done.now) {
+   present (Done()) {
       yield;
    emit Start();
    yield;
@@ -89,7 +89,7 @@ yield;
    emit Done ();
    };
 
-   if (Done.now) {
+   present (Done()) {
       yield;
    emit Start();
    yield;
@@ -117,7 +117,7 @@ yield;
    emit Done ();
    };
 
-   if (Done.now) {
+   present (Done()) {
       yield;
    emit Start();
    yield;
@@ -131,7 +131,7 @@ yield;
    emit B (); 
    emit Done ();
    } else {
-if (Done.now) {
+present (Done()) {
       yield;
    emit Start();
    yield;
@@ -225,39 +225,19 @@ yield;
    emit B (); 
    emit Done ();
 
-   try {
-   loop{
-      emit Start();
-   yield;
-   {async Done {
-      emit A();
-      if (B.now) {
-         yield; 
-         emit C()}
-      else {
-         yield; 
-         emit D()};  
-   };
-   emit B (); 
-   emit Done ();};
-   raise 0;
-   }}
-   catch {
-      emit C();
-   };
 
    loop{
       emit Start();
    yield;
    {async Done {
       emit A();
-      if (B.now) {
+      present (B()) {
          yield; 
          emit C()}
       else {
          yield; 
          emit D()};  
-      if (C.now) {
+      present (C()) {
          yield; 
          emit C()}
       else {
