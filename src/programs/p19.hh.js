@@ -3,7 +3,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( out O ) {
+module prg( out O ) {
    emit O( 123 );
    loop {
       {

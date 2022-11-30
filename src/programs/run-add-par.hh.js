@@ -3,7 +3,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module m1( S, U, W, Z ) {
+module m1( S, U, W, Z ) {
    fork {
       if( S.now ) emit W();
    } par {
@@ -11,7 +11,7 @@ hiphop module m1( S, U, W, Z ) {
    }
 }
 
-hiphop module run2( S, U, A, B ) {
+module run2( S, U, A, B ) {
    fork "par" {
       run m1( S, U, W as A, Z as B );
    } par {

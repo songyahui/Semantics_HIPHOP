@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( J ) {
+module prg( J ) {
    signal I;
 
    fork {

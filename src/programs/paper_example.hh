@@ -1,4 +1,4 @@
-hiphop module authenticate (
+module authenticate (
 		var d, 
 	 	var name, 
 	 	var passwd, 

@@ -3,7 +3,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( X=1, Y, Z ) {
+module prg( X=1, Y, Z ) {
    T: {
       signal __internal=-1;
 

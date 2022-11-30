@@ -1,4 +1,4 @@
-hiphop module Session(
+module Session(
   connState,
   time,
   logout)

@@ -74,4 +74,4 @@ type statement =
 
 
 
-type prog_states = (Sleek.instants* (Sleek.Signals.t) option * int) list
+type prog_states = (Sleek.instants * int) list

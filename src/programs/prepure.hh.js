@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( O1, O2 ) {
+module prg( O1, O2 ) {
    loop {
       signal S;
 

@@ -1,7 +1,7 @@
 "use hiphop";
 "use strict";
 
-hiphop module M( a = 99999 ) {
+module M( a = 99999 ) {
    hop {console.log( "a=", a.nowval ) };
 }
 

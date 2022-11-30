@@ -5,7 +5,7 @@ function plus( x, y ) { return x+y };
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in I, in R, O = 0 ) {
+module prg( in I, in R, O = 0 ) {
    loop {
       abort( R.now ) {
 	 await( I.now );

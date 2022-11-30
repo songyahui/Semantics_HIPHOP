@@ -1,4 +1,4 @@
-hiphop module prg(out Start, in A, in B, in C, in D, out O, out Done ) 
+module prg(out Start, in A, in B, in C, in D, out O, out Done ) 
    /*@ requires "True && emp "@*/
 /*@ ensures  "True && ({}.{})^*.{Start}^*" @*/
 /*@ ensures  "True && ({})^*.{Done}" @*/

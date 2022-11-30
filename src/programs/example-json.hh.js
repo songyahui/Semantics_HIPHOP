@@ -46,7 +46,7 @@ const hh = require( "hiphop" );
 
 var inSig = {accessibility: hh.IN};
 
-hiphop module prg( in I, in TIN, Time=WatchTime ) {
+module prg( in I, in TIN, Time=WatchTime ) {
    loop {
       emit Time( IncrementTimeInPlace( Time.preval ) );
       yield;

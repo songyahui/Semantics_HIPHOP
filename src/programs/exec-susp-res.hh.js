@@ -7,7 +7,7 @@ const hh = require( "hiphop" );
 
 var glob = 5;
 
-hiphop module prg( in RESS, in S, O, OT, in T ) {
+module prg( in RESS, in S, O, OT, in T ) {
    fork {
       suspend( S.now ) {
 	 async T {

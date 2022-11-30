@@ -26,6 +26,12 @@ type _signal = string * value option
 
 type event = Present of _signal | Absent of _signal | Undef of _signal 
 
+let negateEvent (ev:event):event = 
+  match ev with 
+  | Present s -> Absent s 
+  | Absent s -> Present s
+  | _ -> ev 
+  ;;
 
 let string_of_literal (l:literal) : string = 
   match l with 

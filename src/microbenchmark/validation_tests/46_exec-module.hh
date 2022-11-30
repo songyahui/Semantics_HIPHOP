@@ -1,6 +1,6 @@
 "use hopscript"
 
-hiphop module M1( in A , out B) 
+module M1( in A , out B) 
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {A, B}.{A}  " @*/	
@@ -12,7 +12,7 @@ hiphop module M1( in A , out B)
    };
 }
 
-hiphop module m( a, b ) 
+module m( a, b ) 
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {A, B}.{A}.{}  " @*/	

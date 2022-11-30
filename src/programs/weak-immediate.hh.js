@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module m( in S, O, F, W ) {
+module m( in S, O, F, W ) {
    weakabort immediate( S.now ) {
       loop {
 	 emit O();

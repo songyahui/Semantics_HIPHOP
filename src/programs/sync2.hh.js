@@ -4,7 +4,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( O ) {
+module prg( O ) {
    signal L;
 
    fork {

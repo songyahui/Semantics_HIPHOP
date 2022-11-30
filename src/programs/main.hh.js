@@ -1,4 +1,4 @@
-hiphop module Main (
+module Main (
   in name="", 
   in passwd="", 
   in login, 

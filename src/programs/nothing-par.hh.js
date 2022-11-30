@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg() {
+module prg() {
    fork {
       yield;
    } par {

@@ -1,4 +1,4 @@
-hiphop module main (out Prep, in Tick, out Ready, out Go, out Cook)
+module main (out Prep, in Tick, out Ready, out Go, out Cook)
 
 /*@ requires "True && emp" @*/
 /*@ ensures  "(0<=t && t<3) && (({}.{Cook})#t).({}^*)" @*/
@@ -15,7 +15,7 @@ hiphop module main (out Prep, in Tick, out Ready, out Go, out Cook)
 	}
 }
       
-hiphop module cook (var d, in Tick, out Cook)
+module cook (var d, in Tick, out Cook)
   
 /*@ requires "d>2  && {Prep}" @*/
 /*@ ensures  "(0<=t && t<d) && ({}. {Cook})#t" @*/

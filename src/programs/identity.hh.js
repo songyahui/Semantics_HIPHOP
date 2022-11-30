@@ -1,4 +1,4 @@
-hiphop module Identity(
+module Identity(
   in name,
   in passwd, out enableLogin) 
 {

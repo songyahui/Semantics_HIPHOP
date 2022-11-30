@@ -3,7 +3,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module m1( T, W, V, Z ) {
+module m1( T, W, V, Z ) {
    fork {
       if( T.now ) {
 	 signal L;
@@ -16,7 +16,7 @@ hiphop module m1( T, W, V, Z ) {
    }
 }
 
-hiphop module m2( in S, in U, A, B ) {
+module m2( in S, in U, A, B ) {
    signal L;
 
    emit L();

@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in I, J, O ) {
+module prg( in I, J, O ) {
    suspend( I.now ) {
       loop {
 	 emit O();

@@ -4,7 +4,7 @@
 var hh = require("hiphop");
 
 try {
-   const prg = hiphop module( O ) {
+   const prg = module( O ) {
       loop {
 	 signal L;
 

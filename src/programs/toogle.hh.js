@@ -14,7 +14,7 @@ function plus( x, y ) {
    return x + y
 }
 
-hiphop module prg( SEQ=1 combine plus,
+module prg( SEQ=1 combine plus,
 		   STATE1=false combine bool_or,
 		   STATE2=false combine bool_and,
 		   S,

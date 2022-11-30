@@ -1,6 +1,19 @@
 let tests =
   [
-    (* Single Instant *)
+    "True && {A} // A?  |-  True && {A}  : true";
+    "True && {A}   |-  True && {A} // A? : true";
+
+
+   (* 
+   
+       "True && {!A}^*.{A}  |-  True && A? : true";
+    "True && A?  |-  True && {!A}^*.{A} : true";
+    "True && {!A}.{A}  |-  True && {!A}^*.{A} : true";
+    "True && {!A}.{A} |-  True && A?  : true";
+    "True && {}.{A}  |-  True && {!A}^*.{A} : false";
+
+    "True && {}.{A} |-  True && A?  : false";
+   (* Single Instant *)
     "True && {A}  |-  True && {A} : true";
     "True && {}   |-  True && {A} : false";
     "True && {A}  |-  True && {}  : true";
@@ -271,6 +284,7 @@ let tests =
         (0≤t ⋀ t<3): ({Prep}·{Cook} # t)·{Ready}·{Go} : true
     |};
     "t < 3: {Doing}* # t.{Done}  |-  u < 4: ({Doing} + {Other})* # u . {Done} : true";
+    *)
   ]
 
 

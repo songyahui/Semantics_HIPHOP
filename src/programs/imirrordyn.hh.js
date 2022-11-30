@@ -8,16 +8,16 @@ const Intf = <hh.interface>
   ${SIGS.map( sp => <hh.signal name=${sp.name} direction=${sp.dir}/> )}
 </hh.interface>
 
-hiphop module M1() implements Intf {
+module M1() implements Intf {
    if( I.now ) emit O();
 }
 
-hiphop module M2( out OK ) implements mirror Intf {
+module M2( out OK ) implements mirror Intf {
    emit I();
    if( O.now ) emit OK();
 }
 
-hiphop module Main( OK ) {
+module Main( OK ) {
    signal implements Intf;
 
    fork {

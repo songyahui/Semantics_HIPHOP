@@ -2,7 +2,7 @@
 
 const hh = require("hiphop");
 
-hiphop module prg( in I, X, Y ) {
+module prg( in I, X, Y ) {
    emit Y();
 }
 

@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( A, B, C ) {
+module prg( A, B, C ) {
    emit A();
    T: {
       break T;

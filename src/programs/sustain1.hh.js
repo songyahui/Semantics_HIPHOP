@@ -3,7 +3,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( in I, J, K ) {
+module prg( in I, J, K ) {
    loop {
       abort( I.now ) {
 	 sustain J();

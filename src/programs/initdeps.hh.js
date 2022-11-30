@@ -2,7 +2,7 @@
 
 const hh = require("hiphop");
 
-hiphop module prg( B = 5, A = B.nowval ) {
+module prg( B = 5, A = B.nowval ) {
    emit A();
    yield;
    {

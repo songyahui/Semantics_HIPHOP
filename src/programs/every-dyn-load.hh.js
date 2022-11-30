@@ -25,7 +25,7 @@ function make_atom3(i) {
    }
 }
 
-hiphop module prg() {
+module prg() {
    signal G0;
 
    fork "par" {

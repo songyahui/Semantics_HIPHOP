@@ -2,7 +2,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( O combine (x, y) => x + y ) {
+module prg( O combine (x, y) => x + y ) {
    loop {
       fork "par" {
 	 emit O( 1 );

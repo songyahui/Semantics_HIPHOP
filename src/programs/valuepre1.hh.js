@@ -3,7 +3,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( I, O=5, U ) {
+module prg( I, O=5, U ) {
    loop {
       emit I( ${3} );
       emit O( I.nowval );

@@ -3,7 +3,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg(out O ) 
+module prg(out O ) 
 
    /*@ requires "True && emp" @*/
    /*@ ensures "t>3 && ({} # t).{O}" @*/	

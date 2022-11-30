@@ -49,7 +49,7 @@ function svcSearch2( src, dst ) {
 }
 
 const machine = new hh.ReactiveMachine(
-   hiphop module( SRC, DST, AIRLINESWITHDIRECT ) {
+   module( SRC, DST, AIRLINESWITHDIRECT ) {
       do {
 	 signal AIRLINESFOUND;
 	 

@@ -3,7 +3,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( in SAME=1 ) {
+module prg( in SAME=1 ) {
    emit SAME( 2 );
    hop { console.log( "1:", SAME.nowval ) }
    {

@@ -6,7 +6,7 @@ function plus( a, b ) {
    return a + b;
 }
 
-hiphop module prg( S, I, J ) {
+module prg( S, I, J ) {
    loop {
       fork {
 	 signal M=5;

@@ -54,7 +54,7 @@ let verify_simple_entailment (Ast.SimpleEntail { lhs; rhs }) =
     in
     (* Verify *)
     let lhs, rhs = normal lhs rhs in
-    let verdict =
+    let verdict = 
       if bot_lhs lhs then (
         hist |> History.add_iteration ("Bot-LHS", SimpleEntail { lhs; rhs });
         check true)

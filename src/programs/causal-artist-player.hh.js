@@ -4,7 +4,7 @@
 const hh = require( "hiphop" );
 
 function prg2() {
-   return hiphop module( artist, playlist ) {
+   return module( artist, playlist ) {
       found: loop {
 	 signal candidateArtist, candidatePlaylist;
 	 async candidateArtist {
@@ -22,7 +22,7 @@ function prg2() {
    }
 }
 
-hiphop module prg( artist, playlist, exit ) {
+module prg( artist, playlist, exit ) {
    abort( exit.now ) {
       fork {
 	 run ${prg2()}( artist as artist, ... );

@@ -3,7 +3,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in sig ) {
+module prg( in sig ) {
    let v = 1;
 
    every( sig.now ) {

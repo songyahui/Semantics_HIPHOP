@@ -43,7 +43,7 @@ function print_time( evt ) {
 
 var hh = require( "hiphop" );
 
-hiphop module prg( in I, Time=WatchTime ) {
+module prg( in I, Time=WatchTime ) {
    loop {
       emit Time( IncrementTimeInPlace( Time.preval ) );
       yield;

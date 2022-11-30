@@ -2,7 +2,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( A, B ) {
+module prg( A, B ) {
    EXIT: fork {
       await( A.now );
       hop { console.log( "A" ) }

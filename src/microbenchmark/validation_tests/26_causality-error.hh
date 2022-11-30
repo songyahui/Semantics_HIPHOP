@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module example( out I, in O ) 
+module example( out I, in O ) 
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {O}.{O}^*" @*/	

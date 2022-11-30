@@ -3,7 +3,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module a_loop(out J ) 
+module a_loop(out J ) 
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {I, J}" @*/	

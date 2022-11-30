@@ -253,14 +253,18 @@ let rec string_of_program (states : statement list) : string =
 
 
 let string_of_prog_states (ps: prog_states) : string = 
-  List.fold_left  (fun acc (his, instance, k) -> 
+  List.fold_left  (fun acc (his, k) -> 
 
-    acc^  " : " ^  Sleek.show_instants his ^ ", "^
+    acc^  " : " ^  Sleek.show_instants his ^ 
+    
+    (*
+    ", "^
     
     (match instance with 
     | None -> "none instance"
     | Some (t) -> Sleek.show_instants (Instant t)
-    ) ^ ", " ^ string_of_int k 
+    ) ^
+    *)", " ^ string_of_int k 
 
   ) " "ps
   ;;
@@ -274,6 +278,5 @@ let rec zip (ls:'a list * 'b list) : ('a * 'b) list =
     | (x::xrest,[y]) -> (x,y)::zip (xrest,[y])
     | (x::xrest, _) -> List.append (zip ([x], ys)) (zip (xrest, ys))
 ;;
-
 
 

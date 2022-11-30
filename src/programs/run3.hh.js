@@ -4,7 +4,7 @@
 const gameTimeout = 100;
 
 function Timer( timeout ) { 
-   return hiphop module( tmt ) {
+   return module( tmt ) {
       async tmt {
 	 this.timer = setTimeout(() => this.notify( "ok" ), timeout ); 
       } kill { 

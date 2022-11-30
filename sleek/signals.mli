@@ -13,6 +13,8 @@ val present : _signal -> event
 
 val absent : _signal -> event
 
+val negateEvent: event -> event
+
 val is_present : event -> bool
 
 

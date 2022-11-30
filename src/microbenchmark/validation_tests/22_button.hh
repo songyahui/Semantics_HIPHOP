@@ -4,7 +4,7 @@ var hh = require( "hiphop" );
 
 function plus( x, y ) { return x+y };
 
-hiphop module BUTTON( in UL, in UR, in LL, in LR,
+module BUTTON( in UL, in UR, in LL, in LR,
 		      out WATCH_MODE_COMMAND,
 		      out ENTER_SET_WATCH_MODE_COMMAND,
 		      out SET_WATCH_COMMAND,

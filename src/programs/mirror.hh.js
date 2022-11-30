@@ -11,7 +11,7 @@ function bar( evt ) {
 	       evt.nowval, "!" )
 }
 
-hiphop module prg( in I1, in I2, in I3, in I4, O1, O2, O3, O4 ) {
+module prg( in I1, in I2, in I3, in I4, O1, O2, O3, O4 ) {
    loop {
       if( I1.now ) emit O1();
       if( I2.now ) emit O2( I2.nowval );

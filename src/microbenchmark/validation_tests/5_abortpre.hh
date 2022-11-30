@@ -3,7 +3,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg(out O, out S ) 
+module prg(out O, out S ) 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && ({})^*" @*/
 

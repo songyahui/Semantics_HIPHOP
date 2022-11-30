@@ -3,7 +3,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( in IN combine (x, y) => x + y ) {
+module prg( in IN combine (x, y) => x + y ) {
    emit IN( ${5} );
    async {
       console.log( "receive " + IN.nowval );

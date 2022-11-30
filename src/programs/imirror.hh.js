@@ -4,16 +4,16 @@ const hh = require( "hiphop" );
 
 hiphop interface Intf( in I, out O );
 
-hiphop module M1() implements Intf {
+module M1() implements Intf {
    if( now( I ) ) emit O();
 }
 
-hiphop module M2( out OK ) implements mirror Intf {
+module M2( out OK ) implements mirror Intf {
    emit I();
    if( now( O ) ) emit OK();
 }
 
-hiphop module Main( OK ) {
+module Main( OK ) {
    signal implements Intf;
 
    fork {

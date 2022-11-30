@@ -2,7 +2,7 @@
 
 var hh = require( "hiphop" );
 
-hiphop module prg
+module prg
    ( in I, out J, 
      out K, out V ) 
      

@@ -3,11 +3,11 @@
 
 var hh = require( "hiphop" );
 
-hiphop module sub() {
+module sub() {
    break T;
 }
 
-hiphop module main( O, S ) {
+module main( O, S ) {
    T: {
       run sub();
    }

@@ -87,7 +87,7 @@ let first ctx es =
     | Bottom -> Set.empty
     | Empty -> Set.empty
     | Instant i -> Set.from i None
-    | Await e -> Set.(union (from Signals.empty None) (from (Signals.make [ e ]) None))
+    | Await e -> Set.(union (from (Signals.make [ Signals.negateEvent e ]) None) (from (Signals.make [ e ]) None))  (* Set.(union (from Signals.empty None) (from (Signals.make [ e ]) None)) *)
     | Sequence (es1, es2) when nullable es1 -> Set.union (aux es1) (aux es2)
     | Sequence (es1, _) -> aux es1
     | Union (es1, es2) -> Set.union (aux es1) (aux es2)
@@ -106,13 +106,14 @@ let first ctx es =
 
 let partial_deriv ctx (i, t') es =
   let rec aux es =
-    match es with
+    match es with 
     | Bottom -> Bottom
     | Empty -> Bottom
     | Instant j when Signals.(i |- j) -> Empty
     | Instant _ -> Bottom
     | Await e when Signals.(i |- make [ e ]) -> Empty
-    | Await e -> Await e
+    | Await e when not Signals.(i |- make [negateEvent e ])  -> Bottom
+    | Await e -> Await e 
     | Sequence (es1, es2) when nullable es1 ->
         let deriv1 = aux es1 in
         let deriv2 = aux es2 in

@@ -1,7 +1,7 @@
 "use hopscript"
 let hh = require( "hiphop" );
 
-hiphop module prg( O1, O2, OUTER = 0 ) {
+module prg( O1, O2, OUTER = 0 ) {
    hop { console.log( "dans atom" ) }
    emit O1( (console.log("emit o1"), OUTER.nowval) );
    hop { console.log( "apres atom" ) }

@@ -7,7 +7,7 @@ function zoom_in_cb() {
    console.log( "********* ZOOOOOOOOOOOOOOOOOM ************" );
 }
 
-hiphop module prg( ZOOM_LOCK_TOOGLE, ZOOM_IN ) {
+module prg( ZOOM_LOCK_TOOGLE, ZOOM_IN ) {
    loop {
       abort( ZOOM_LOCK_TOOGLE.now ) {
 	 every( ZOOM_IN.now ) {

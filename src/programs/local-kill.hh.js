@@ -4,7 +4,7 @@
 const hh = require( "hiphop" );
 
 const mach = new hh.ReactiveMachine(
-   hiphop module( A ) {
+   module( A ) {
       T: fork {
 	 loop {
 	    async {

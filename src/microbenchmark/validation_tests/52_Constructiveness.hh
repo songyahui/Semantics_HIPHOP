@@ -1,4 +1,4 @@
-hiphop module a_bug( out S ) 
+module a_bug( out S ) 
 
    /*@ requires "True && {}" @*/
    /*@ ensures "True && {S}" @*/	

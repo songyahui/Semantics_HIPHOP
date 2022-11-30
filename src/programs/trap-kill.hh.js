@@ -5,7 +5,7 @@
 const hh = require( "hiphop" );
 
 const mach = new hh.ReactiveMachine(
-   hiphop module() {
+   module() {
       T: fork {
 	 async {
 	    setTimeout( this.notify.bind( this ), 500 );

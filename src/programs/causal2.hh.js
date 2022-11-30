@@ -2,7 +2,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg() {
+module prg() {
    signal V_S_C, V_S_i;
 
    if( now( V_S_C ) ) {

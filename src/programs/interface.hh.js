@@ -6,12 +6,12 @@ const hh = require( "hiphop" );
 hiphop interface I1( A, B, C );
 hiphop interface I2( D ) extends I1;
 
-hiphop module M2() implements I2 {
+module M2() implements I2 {
    emit A( 10 );
    emit D( 23 );
 }
 
-hiphop module M1( Z ) implements I1 {
+module M1( Z ) implements I1 {
    run M2( D as Z, ... );
 }
 

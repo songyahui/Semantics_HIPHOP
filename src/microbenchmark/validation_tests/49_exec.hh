@@ -2,7 +2,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( in T, in O, in OT ) 
+module prg( in T, in O, in OT ) 
 
    /*@ requires "True && emp" @*/
    /*@ ensures "t>2 && ({O} # t).{T, OT} " @*/	

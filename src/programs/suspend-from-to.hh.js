@@ -2,7 +2,7 @@
 
 const hh = require( "hiphop" );
 
-hiphop module prg( I, O ) {
+module prg( I, O ) {
    yield;
    suspend from( I.now ) to( O.now ) {
       loop {

@@ -1,4 +1,4 @@
-hiphop module Authenticate(
+module Authenticate(
   in name,
   in passwd,
   out connState, 

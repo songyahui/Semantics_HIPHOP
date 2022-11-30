@@ -2,10 +2,10 @@
 
 const hh = require( "hiphop" );
 
-const pauseModule = hiphop module() { yield }
+const pauseModule = module() { yield }
 
 const m = new hh.ReactiveMachine(
-   hiphop module() {
+   module() {
       loop {
 	 hop { console.log( ">>> start" ) }
 	 if( 1 ) {
