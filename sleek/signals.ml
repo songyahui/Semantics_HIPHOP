@@ -170,12 +170,14 @@ let initUndef lst = List.map (fun a -> undefine a) lst
 
 
 let setPresent (ev:_signal) lst = 
-  let rec helper li = 
+  if controdicts_final ((Present ev) :: lst) then None 
+  else Some ((Present ev) :: lst)
+  (*let rec helper li = 
   match li with 
   | [] -> [(Present ev)]
   | (Undef s):: xs -> if compareSignal ev s  then (Present ev) :: xs else (Undef s)::helper xs
   | x :: xs -> x::helper xs in 
-  Some (helper lst)
+  Some (helper lst)*)
 ;;
 
 let setAbsent (ev:_signal) lst = 

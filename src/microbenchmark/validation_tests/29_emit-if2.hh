@@ -5,26 +5,26 @@ const hh = require( "hiphop" );
 module prg( out A, out B, out C ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({B(4), C}·{A, B}·{}) + ({B(3), !C}·{A, B}·{}) + ({B(4), C}·{!B}·{}) + {B(3), !C}·{!B}·{} " @*/	
+   /*@ ensures "True && ({}·{A, B, B(4), C}·{}·{A, B, B(4), C}·{}·{A, B, B(4), C}·{}) + ({}·{A, B, B(4), C}·{}·{A, B, B(4), C}·{}·{A, B, B(3), !C}) + ({}·{A, B, B(4), C}·{}·{A, B, B(4), C}·{}·{B(4), C, !B}) + ({}·{A, B, B(4), C}·{}·{A, B, B(4), C}·{}·{B(3), !B, !C}) + ({}·{A, B, B(4), C}·{}·{A, B, B(3), !C}) + ({}·{A, B, B(4), C}·{}·{B(4), C, !B}) + ({}·{A, B, B(4), C}·{}·{B(3), !B, !C}) + ({}·{A, B, B(3), !C}) + ({}·{B(4), C, !B}) + {}·{B(3), !B, !C} " @*/	
 
 {
 
    fork {
-     // loop {
+      loop {
          yield;
 	 present( B) {emit A()};
 	 yield;
-     // }
+      }
    } par {
-      //loop {
-       //    yield;
+      loop {
+           yield;
 	 present( C ) {
 	    emit B( 4 );
 	 } else {
 	    emit B( 3 );
 	 } ;
 	 yield;
-     // }
+      }
    }
 }
 

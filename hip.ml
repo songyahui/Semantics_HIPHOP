@@ -12,7 +12,9 @@ let rec fstPar (es:Sleek.instants) :fst4Par list =
   match es with 
   | Bottom -> []
   | Empty -> []
-  | Await ev -> [(Wait ev)] (*[Sleek.Signals.fstHelper ev ]*)
+  | Await ev -> [(Sig (Sleek.Signals.make [ ev ])); (Sig (Sleek.Signals.make [ Sleek.Signals.negateEvent ev ]))]
+   (*[(Sig (Sleek.Signals.make [ ev ])); (Sig (Sleek.Signals.make [ Sleek.Signals.negateEvent ev ]))] *) (*[(Wait ev)] [Sleek.Signals.fstHelper ev ]*)
+  (*Set.(union (from (Signals.make [ Signals.negateEvent e ]) None) (from (Signals.make [ e ]) None))*)
   | Instant ins -> [(Sig ins)]
   | Sequence (es1 , es2) -> if Sleek.Inference.nullable es1 then append (fstPar  es1) (fstPar  es2) else fstPar  es1
   | Union (es1, es2) -> append (fstPar  es1) (fstPar  es2)
@@ -205,6 +207,7 @@ let rec normalizeES_final (trace:Sleek.instants):Sleek.instants =
 
 
 let rec normalizeES (trace:Sleek.instants):Sleek.instants =
+  print_string (Sleek.show_instants trace^"\n");
   match trace with 
   (* reduction *)
   | Bottom -> Bottom
@@ -215,7 +218,7 @@ let rec normalizeES (trace:Sleek.instants):Sleek.instants =
     | (Bottom, es) -> normalizeES es 
     | (es, Bottom) -> normalizeES es 
     | (Union (es11, es12), es3) -> Union (es11, Union (es12, es3))
-    | _ -> normalizeES (Union (normalizeES es1, normalizeES es2))
+    | _ -> (Union (normalizeES es1, normalizeES es2))
     )
   | Sequence (es1, es2) -> 
     let es1 = normalizeES es1 in 
@@ -339,27 +342,27 @@ let fstToInstance cur =
   | Some ins ->  Sleek.Instant ins 
 ;;
 
-(*let index = ref 7;;*)
+let index = ref 5;;
 
 let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states = 
-  let state1 = List.filter (fun (his, _) -> match normalizeES his with |Sleek.Bottom -> false | _ -> true )state1 in 
-  let state2 = List.filter (fun (his, _) -> match normalizeES his with |Sleek.Bottom -> false | _ -> true )state2 in 
+  let state1 = List.filter (fun (his, _) -> 
+    match Sleek.fixpoint ~f: Sleek.normalize_es his with |Sleek.Bottom -> false | _ -> true )state1 in 
+  let state2 = List.filter (fun (his, _) -> 
+    match Sleek.fixpoint ~f: Sleek.normalize_es his with |Sleek.Bottom -> false | _ -> true )state2 in 
 
+  if !index < 0 then [(Sleek.Empty , 0)]
+  else 
+  (index := !index -1; 
   let combine = zip (state1, state2) in 
   List.flatten (List.map (fun ((his1, k1), (his2, k2)) ->
     
-    let his1 =  Sleek.fixpoint ~f: Sleek.normalize_es his1 in
-    let his2 =  Sleek.fixpoint ~f: Sleek.normalize_es his2 in 
-    
-   
     (*print_string ("\n==================\n");
     print_string (string_of_prog_states [(normalizeES his1, k1)] ^"\n");
     print_string (string_of_prog_states [(normalizeES his2, k2)] ^"\n");
-    if !index == 0 then [(Sleek.Parallel (his1, his2), 0)]
-    else 
+   
     *)
     
-    ((*index := !index -1; *)
+    (
     match (his1, his2) with 
     | (Sleek.Bottom, _) | (_, Sleek.Bottom) -> []
     | (Sleek.Empty, Sleek.Empty) -> [(Sleek.Empty, max k1 k2)]
@@ -405,7 +408,7 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
       ))
 
   )
-  combine)
+  combine))
   
 let literalToSigLiteral (l:literal) :Sleek.Signals.literal = 
   match l with 
@@ -505,7 +508,7 @@ let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_s
     match ele with 
     | Sig ele' -> 
       (match setPresent str (vOptToSigvOpt v) ele' with 
-      | None -> raise (Foo "abortinterleaving")
+      | None -> []
       | Some a -> 
         let thisOne = (Sleek.Sequence (pre, Instant (a)), 0) in 
         let tail =  abortinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativeFun ele' es) ev  in 
@@ -615,13 +618,11 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   
   | ForkPar (p1::p2::[]) -> 
 
-    let temp1 = forward env current p1 full in 
-    let temp2 = forward env current p2 full in 
-    let res = paralleMerge temp1 temp2 in 
-
-    (*print_string ( string_of_prog_states (res) );*)
+    let temp1 = forward env [(Sleek.Empty, 0)] p1 full in 
+    let temp2 = forward env [(Sleek.Empty, 0)]  p2 full in 
+    let combine = zip (current, paralleMerge temp1 temp2) in 
+    let res = List.map (fun ((his1, _), (his2, k2)) -> (Sleek.Sequence(his1, his2), k2)) combine in 
     res
-
   
   | ForkPar (p1::p2::rest) -> 
     forward env current (ForkPar ((ForkPar ([p1; p2])) ::rest)) full
@@ -664,6 +665,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let res  = List.map(fun ((his1, _))-> 
       (Sleek.Sequence (( Sleek.fixpoint ~f: Sleek.normalize_es his1), Kleene ( Sleek.fixpoint ~f: Sleek.normalize_es  loopEff)), 0)
     ) current in 
+    (*print_string (string_of_prog_states (res));*)
     res
 
 

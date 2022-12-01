@@ -13,7 +13,7 @@ module prg( in I, out O )
     do {
       yield;
       emit O();
-       yield;
+      
    }every( I )
 }
 
