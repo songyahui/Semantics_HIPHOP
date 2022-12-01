@@ -287,10 +287,11 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
       let fst2 = fstPar his2 in 
       (match fst1, fst2 with 
       | [], [] -> [(Sleek.Parallel (his1, his2), 0)]
-      | _ , [] -> List.flatten (List.map (fun f1 -> 
+      | _ , [] -> 
+        List.flatten (List.map (fun f1 -> 
         let der2 = normalizeES (derivativePar f1 his2) in 
-        if not (der2 <> his2) then [(Sleek.Parallel (his1, his2), 0)]
-        else 
+       (* if not (der2 <> his2) then [(Sleek.Parallel (his1, his2), 0)]
+        else *)
           let der1 = normalizeES (derivativePar f1 his1) in 
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
           List.map (fun (a, c) -> (Sleek.Sequence (Instant f1, a), c)) states 
@@ -298,8 +299,8 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
         
       | [], _ -> List.flatten (List.map (fun f2 -> 
         let der1 = normalizeES (derivativePar f2 his1) in 
-        if not (der1 <> his1) then [(Sleek.Parallel (his1, his2), 0)]
-        else 
+        (*if not (der1 <> his1) then [(Sleek.Parallel (his1, his2), 0)]
+        else *)
           let der2 = normalizeES (derivativePar f2 his2) in 
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
           List.map (fun (a, c) -> (Sleek.Sequence (Instant f2, a), c)) states 
@@ -495,12 +496,12 @@ let rec addEventToTheTail (es:Sleek.instants) ((str, v):event) : Sleek.instants 
   | Parallel (es1 , es2) -> Parallel (addEventToTheTail es1 (str, v), addEventToTheTail es2 (str, v))
   | _ -> raise (Foo "addEventToTheTail later")
 
-let entailmentShell lhs rhs = 
+let entailmentShell preOrPost lhs rhs = 
   let startTimeStamp1 = Sys.time() in
   let (verbose, tree) = Sleek.verify_entailment (Sleek.Entail {lhs = lhs; rhs = (rhs) })  in 
   let startTimeStamp2 = Sys.time() in
   let msg =  (*(string_of_inclusion final_effects post) ^ "\n" ^*)
-  "[TRS: Verification for Post Condition]\n" ^ 
+  (if preOrPost then "[TRS: Verification for Pre Condition]\n" else "[TRS: Verification for Post Condition]\n" )^
   "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 
   Sleek.History.show tree    ~verbose ^ "\n\n" in 
   print_string (msg);
@@ -550,7 +551,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     | Some (pre, post) -> 
       let currentDisj = List.map (fun (his, _)  -> Sleek.normalize (True, his)) current in 
       let current' = List.map (fun (_, his) -> his ) currentDisj in 
-      let (_, res, _) = entailmentShell ([(True, disjEffects current')]) pre in  
+      let (_, res, _) = entailmentShell true ([(True, disjEffects current')]) pre in  
       if res then 
         concatenateEffects current (List.map (fun (_, his)-> (his, 0)) post)
       else raise (Foo ("function call to " ^ mn ^ " is failed at precondition checking"))
@@ -761,7 +762,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
 
     let final = normalize_effs_final final in 
 
-    let results = List.map (fun rhs -> entailmentShell final rhs) posts in 
+    let results = List.map (fun rhs -> entailmentShell false final rhs) posts in 
 
     let proves = List.filter (fun (_, b, _) -> b ==true ) results in 
     let disproves = List.filter (fun (_, b, _) -> b==false ) results in 
