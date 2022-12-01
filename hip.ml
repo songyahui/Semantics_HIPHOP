@@ -649,6 +649,26 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     ) current)
   
 
+  | Present ((str, v), p1, p2) -> 
+    let cond1 = 
+      match setPresent str (vOptToSigvOpt v) ( (Sleek.Signals.empty)) with 
+      | Some s1 -> s1 
+      | None -> raise (Foo "Present if ") in 
+    let cond2 = 
+      match setAbsent str (vOptToSigvOpt v) ( (Sleek.Signals.empty)) with 
+      | Some s1 -> s1 
+      | None -> raise (Foo "Present if ") in 
+
+
+    let ifbranch =  forward env [(Sleek.Instant cond1, 0)] p1 full in 
+    let elsebranch =  forward env [(Sleek.Instant cond2, 0)] p2 full in 
+
+
+    let ifbranch = List.flatten ( List.map (fun (his, k)-> List.map (fun (his2, _) -> (Sleek.Sequence (his, his2), k)) ifbranch) current) in 
+    let elsebranch = List.flatten ( List.map (fun (his, k)-> List.map (fun (his2, _) -> (Sleek.Sequence (his, his2), k)) elsebranch) current) in 
+    List.append ifbranch elsebranch
+
+
 
  (* 
 
@@ -773,24 +793,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
   
 
 
-  | Present ((str, v), p1, p2) -> 
-    let s1 = List.map (fun state -> 
-      let (his, cur, k) = state in 
-      match cur with 
-      | Some cur' -> (his, setPresent str (vOptToSigvOpt v) cur', k)
-      | None -> (his, cur, k) 
-    ) current in 
-    let s2 = List.map (fun state -> 
-      let (his, cur, k) = state in 
-      match cur with 
-      | Some cur' -> (his, setAbsent str (vOptToSigvOpt v) cur', k)
-      | None -> (his, cur, k) 
-    ) current in 
-
-    let ifbranch =  forward env s1 p1 full in 
-    let elsebranch =  forward env s2 p2 full in 
-    List.append ifbranch elsebranch
-
 
 
 (*
@@ -856,25 +858,25 @@ let forward_verification (prog : statement) (whole: statement list): string =
 
     let final = if String.compare mn "main" == 0 then normalize_effs_final final  else final in 
 
-   (* let results = List.map (fun rhs -> entailmentShell false final rhs) posts in 
+    let results = List.map (fun rhs -> entailmentShell false final rhs) posts in 
 
     let proves = List.filter (fun (_, b, _) ->  b ==true ) results in 
     let disproves = List.filter (fun (_, b, _) -> b==false ) results in 
     let totol li = List.fold_left (fun acc (a, _, _) -> acc +. a) 0.0 li in  
     let printing li = string_of_int (List.length li) ^ " cases with avg time " ^  string_of_float ((totol li)/.(float_of_int(List.length li))) ^ " ms\n" in 
-*)
+
 
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list_list posts ^"\n"^
     "[Final  Effects] " ^ show_effects_list ( final) ^"\n"^
-    "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms" (* ^"\n" ^
+    "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms"  ^"\n" ^
 
     "[TOTAL TRS TIME] " ^ string_of_float (totol proves +. totol disproves) ^ " ms \n" ^ 
     "[Proving   Time] " ^ printing proves ^
     "[Disprove  Time] " ^ printing disproves ^"\n" 
     ^ List.fold_left (fun acc (_, _,  msg) -> acc^ msg ) "" results
-    *)
+    
 
     
     
