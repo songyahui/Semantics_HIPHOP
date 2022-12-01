@@ -156,10 +156,12 @@ let rec normalizeES_final (trace:Sleek.instants):Sleek.instants =
         let headSet = zip (fst1, fst2) in 
         disjEffects (List.map (fun (f1, f2)-> 
           let head =  (Sleek.Signals.merge f1 f2) in 
-          let der1 = normalizeES_final (derivativePar head his1) in 
-          let der2 = normalizeES_final (derivativePar head his2) in
-          let states =  normalizeES_final (Parallel (der1, der2))  in 
-          Sleek.Sequence (Instant head, states)
+          if Sleek.Signals.controdicts_final head then (Sleek.Bottom)
+          else 
+            let der1 = normalizeES_final (derivativePar head his1) in 
+            let der2 = normalizeES_final (derivativePar head his2) in
+            let states =  normalizeES_final (Parallel (der1, der2))  in 
+            Sleek.Sequence (Instant head, states)
           )
         headSet)
       ))
@@ -310,7 +312,7 @@ let fstToInstance cur =
   | Some ins ->  Sleek.Instant ins 
 ;;
 
-
+(*let index = ref 7;;*)
 
 let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states = 
   let state1 = List.filter (fun (his, _) -> match normalizeES his with |Sleek.Bottom -> false | _ -> true )state1 in 
@@ -323,12 +325,15 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
     let his2 =  Sleek.fixpoint ~f: Sleek.normalize_es his2 in 
     
    
-    print_string ("\n==================\n");
+    (*print_string ("\n==================\n");
     print_string (string_of_prog_states [(normalizeES his1, k1)] ^"\n");
     print_string (string_of_prog_states [(normalizeES his2, k2)] ^"\n");
-
+    if !index == 0 then [(Sleek.Parallel (his1, his2), 0)]
+    else 
+    *)
     
-    (match (his1, his2) with 
+    ((*index := !index -1; *)
+    match (his1, his2) with 
     | (Sleek.Bottom, _) | (_, Sleek.Bottom) -> []
     | (Sleek.Empty, Sleek.Empty) -> [(Sleek.Empty, max k1 k2)]
     | (Sleek.Empty, _) -> if k1 > 1 then [(Sleek.Empty, k1)] else [(his2, k2)]
@@ -362,6 +367,8 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
         let headSet = zip (fst1, fst2) in 
         List.flatten (List.map (fun (f1, f2)-> 
           let head =  (Sleek.Signals.merge f1 f2) in 
+          if Sleek.Signals.controdicts_final head then [(Sleek.Bottom, 0)]
+          else 
           let der1 = normalizeES (derivativePar head his1) in 
           let der2 = normalizeES (derivativePar head his2) in
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
@@ -578,7 +585,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let temp2 = forward env current p2 full in 
     let res = paralleMerge temp1 temp2 in 
 
-    print_string ( string_of_prog_states (res) );
+    (*print_string ( string_of_prog_states (res) );*)
     res
 
   
