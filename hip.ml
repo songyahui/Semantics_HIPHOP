@@ -207,7 +207,7 @@ let rec normalizeES_final (trace:Sleek.instants):Sleek.instants =
 
 
 let rec normalizeES (trace:Sleek.instants):Sleek.instants =
-  print_string (Sleek.show_instants trace^"\n");
+  (*print_string (Sleek.show_instants trace^"\n");*)
   match trace with 
   (* reduction *)
   | Bottom -> Bottom
@@ -617,12 +617,18 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
   
   | ForkPar (p1::p2::[]) -> 
+    let temp1 = forward env current p1 full in 
+    let temp2 = forward env current  p2 full in 
+    paralleMerge temp1 temp2
 
+
+    (*
     let temp1 = forward env [(Sleek.Empty, 0)] p1 full in 
     let temp2 = forward env [(Sleek.Empty, 0)]  p2 full in 
     let combine = zip (current, paralleMerge temp1 temp2) in 
     let res = List.map (fun ((his1, _), (his2, k2)) -> (Sleek.Sequence(his1, his2), k2)) combine in 
     res
+    *)
   
   | ForkPar (p1::p2::rest) -> 
     forward env current (ForkPar ((ForkPar ([p1; p2])) ::rest)) full
@@ -807,8 +813,8 @@ let forward_verification (prog : statement) (whole: statement list): string =
 
  "[TOTAL TRS TIME] " ^ string_of_float (totol proves +. totol disproves) ^ " ms \n" ^ 
     "[Proving   Time] " ^ printing proves ^
-    "[Disprove  Time] " ^ printing disproves ^"\n" 
-    ^ List.fold_left (fun acc (_, _,  msg) -> acc^ msg ) "" results
+    "[Disprove  Time] " ^ printing disproves (*^"\n" 
+    ^ List.fold_left (fun acc (_, _,  msg) -> acc^ msg ) "" results*)
     
 
     

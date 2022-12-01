@@ -1,9 +1,9 @@
-module prg(out Start, in A, in B, in C, in D, out O, out Done ) 
+module main(out Start, in A, in B, in C, in D, out O, out Done ) 
    /*@ requires "True && emp "@*/
  /*@ ensures  "True && ({})^*.{Done}" @*/
- /*@ ensures  "True && ({}.{}).{Done}" @*/
-/*@ ensures  "True && ({}.{A}).{C}" @*/
-/*@ ensures  "True && ({}.{A})^*.{C}" @*/
+ /*@ ensures  "True && ({Start}·{A, B, BB}·{C}·{Done}) + {Start}·{A, BB, !B}·{D}·{Done}" @*/
+/*@ ensures  "True && ({Start}·{A, B}·{C}·{Done}) + {}·{A, BB, !B}·{D}·{Done}" @*/
+/*@ ensures  "True && ({}·{A, BB}·{C}·{}) + {}·{A, BB, !B}·{D}·{Done}" @*/
 /*@ ensures  "True && ({}.{A})^*.{C}^*" @*/
 
 /*@ ensures  "True && ({})^*.{A}" @*/
@@ -13,8 +13,8 @@ module prg(out Start, in A, in B, in C, in D, out O, out Done )
 /*@ ensures  "True && ({}.{})^*.{Start}^*" @*/
 {
    emit Start();
-   yield;
    async Done {
+      yield;
       emit A();
       present (B()) {
          yield; 
@@ -23,6 +23,7 @@ module prg(out Start, in A, in B, in C, in D, out O, out Done )
          yield; 
          emit D()};  
    };
-   emit B (); 
+   yield;
+   emit BB (); 
    await Done;
 }

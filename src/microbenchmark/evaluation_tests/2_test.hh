@@ -23,23 +23,10 @@ module prg(out Start, in A, in B, in C, in D, out O, out Done )
          yield; 
          emit D()};  
    };
+    yield;
    emit B (); 
    await Done;
-   loop{
-      emit Start();
-   yield;
-   async Done {
-      emit A();
-      present (B()) {
-         yield; 
-         emit C()}
-      else {
-         yield; 
-         emit D()};  
-   };
-   emit B (); 
-   await Done;
-   }
+   
 }
 
 //
