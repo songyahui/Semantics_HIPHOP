@@ -7,11 +7,10 @@ module prg
      out K, out V ) 
      
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({!I, J, K}.{!I, V})^* + ({!I, J}.{!I, V})^*" @*/
+   /*@ ensures "True && ({}·{J, !I}·{V, !I}) + ({}·{J, I, K}) + {}·{J, !I}·{V, I, K}" @*/
 {
 
-   loop {
-      abort( I ) {
+    abort( I ) {
     yield;
 	 emit J;
 	 yield;
@@ -20,7 +19,6 @@ module prg
       present( I ) {
 	 emit K;
       }
-   }
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "abortpresent" );

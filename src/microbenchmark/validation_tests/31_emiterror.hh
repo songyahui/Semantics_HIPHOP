@@ -5,11 +5,12 @@ const hh = require( "hiphop" );
 module prg( out O ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {O}^* " @*/	
+   /*@ ensures "True &&  {}·({O(5)}·{})^* " @*/	
 
 {
 
    loop {
+      yield;
       emit O( 5 );
       emit O( 5 );
       yield;

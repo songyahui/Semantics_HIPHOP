@@ -5,11 +5,11 @@ module Authenticate(
   out connected) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {connState}.{connected}" @*/
+   /*@ ensures "True && {connState}·{connected}" @*/
 {
 
-  emit connState("connecting");
+  emit connState();
   async connected {
-    authenticateSvc(name.nowval, passwd.nowval).post().then(v => this.notify(v));
+   () //authenticateSvc(name.nowval, passwd.nowval).post().then(v => this.notify(v));
   };
 }

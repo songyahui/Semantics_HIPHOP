@@ -11,6 +11,7 @@ let verify_simple_entailment (Ast.SimpleEntail { lhs; rhs }) =
     and disprove (_, es1) (_, es2) = Inference.nullable es1 && not (Inference.nullable es2)
     and reoccur ctx (_, es1) (_, es2) = Proofctx.exists_entail es1 es2 ctx
     and unfold ctx (pi1, es1) (pi2, es2) =
+
       ctx |> Proofctx.add_entail es1 es2;
       let firsts = Inference.first ctx es1 in
       let terminate = Inference.Set.is_empty firsts in

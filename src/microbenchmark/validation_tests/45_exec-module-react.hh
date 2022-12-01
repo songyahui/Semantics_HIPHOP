@@ -2,8 +2,8 @@
 
 module M1( in A ) 
 
-   /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({A}.A?)  " @*/	
+   /*@ requires "True && {}^*" @*/
+   /*@ ensures "True && {A(100)}·{A}  " @*/	
 
 {
 
@@ -15,10 +15,10 @@ module M1( in A )
 
 module m( a, b ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({A}.A?)  " @*/	
+   /*@ ensures "True && {}·{A(100)}·{A}  " @*/	
 
 {
-   run M1( a);
+    M1( a);
 }
 
 m.addEventListener( "a", e => console.log( "a=", e.nowval ) );

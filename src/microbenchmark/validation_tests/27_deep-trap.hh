@@ -5,7 +5,7 @@ const hh = require( "hiphop" );
 module prg() 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && emp" @*/	
+   /*@ ensures "True && {}" @*/	
 
 {
 // currently trap has not fully implemented. 

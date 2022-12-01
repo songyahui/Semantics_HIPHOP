@@ -5,13 +5,14 @@ var hh = require( "hiphop" );
 module prg( T, V ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({S})^* " @*/	
+   /*@ ensures "True && {}·({S, T}·{V})^* " @*/	
 
 {
 
    signal S;
 
    loop {
+      yield;
       emit S();
       present( S ) {emit T()};
       yield;

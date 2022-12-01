@@ -4,13 +4,14 @@ var hh = require("hiphop");
 
 module prg() 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && ({L}.{})^*" @*/
+   /*@ ensures "True && {}·({L()}·{})^*" @*/
 {
 
    loop {
+      yield;
       signal L;
 
-      emit L( "foo bar" );
+      emit L();
       yield;
       hop { console.log( "atom works! value of L is", L.nowval ) }
    }

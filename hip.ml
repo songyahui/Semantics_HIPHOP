@@ -6,24 +6,51 @@ open List
 exception Foo of string
 
 
+type fst4Par = Sig of Sleek.Signals.t | Wait of Sleek.Signals.event 
 
-let rec fstPar (es:Sleek.instants) :Sleek.Signals.t list = 
+let rec fstPar (es:Sleek.instants) :fst4Par list = 
+  match es with 
+  | Bottom -> []
+  | Empty -> []
+  | Await ev -> [(Wait ev)] (*[Sleek.Signals.fstHelper ev ]*)
+  | Instant ins -> [(Sig ins)]
+  | Sequence (es1 , es2) -> if Sleek.Inference.nullable es1 then append (fstPar  es1) (fstPar  es2) else fstPar  es1
+  | Union (es1, es2) -> append (fstPar  es1) (fstPar  es2)
+  | Kleene es1 -> fstPar  es1
+  | Parallel (es1 , es2) -> append (fstPar  es1) (fstPar  es2)
+  | _ -> raise (Foo "fstPar later")
+
+let fst4Par2Instants f : Sleek.instants = 
+  match f with 
+  | Sig ins -> Instant ins
+  | Wait ev -> Await ev 
+;;
+
+let waitToIns (w:Sleek.Signals.event): Sleek.Signals.t = [w]
+
+(*
+  [(True, SL ins, None)]
+   ->  
+*)
+    ;;
+
+
+let rec fstFun (es:Sleek.instants) :Sleek.Signals.t list = 
   match es with 
   | Bottom -> []
   | Empty -> []
   | Await _ -> [] (* (Wait ev) [Sleek.Signals.fstHelper ev ]*)
   | Instant ins -> [(ins)]
-  | Sequence (es1 , es2) -> if Sleek.Inference.nullable es1 then append (fstPar  es1) (fstPar  es2) else fstPar  es1
-  | Union (es1, es2) -> append (fstPar  es1) (fstPar  es2)
-  | Kleene es1 -> fstPar  es1
+  | Sequence (es1 , es2) -> if Sleek.Inference.nullable es1 then append (fstFun  es1) (fstFun  es2) else fstFun  es1
+  | Union (es1, es2) -> append (fstFun  es1) (fstFun  es2)
+  | Kleene es1 -> fstFun  es1
   | Parallel (es1 , es2) -> 
-    let ins = List.fold_left (fun acc a -> List.append acc a) [] (append (fstPar  es1) (fstPar  es2)) in 
+    let ins = List.fold_left (fun acc a -> List.append acc a) [] (append (fstFun  es1) (fstFun  es2)) in 
     [(ins) ]
-  | _ -> raise (Foo "fstPar later")
+  | _ -> raise (Foo "fstFun later")
     
 
 
-let waitToIns (w:Sleek.Signals.event): Sleek.Signals.t = [w]
 
 
 (*
@@ -33,7 +60,7 @@ let waitToIns (w:Sleek.Signals.event): Sleek.Signals.t = [w]
     ;;
 
 
-let rec derivativePar (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants =
+let rec derivativeFun (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants =
 
   match es with 
   | Bottom ->  Bottom
@@ -45,32 +72,32 @@ let rec derivativePar (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants
   | Instant ins -> if Sleek.Signals.(|-) fst ins then Empty else Bottom
     
   | Sequence (es1 , es2) -> 
-      let esF = derivativePar fst es1 in 
+      let esF = derivativeFun fst es1 in 
       let esL = Sleek.Sequence(esF,  es2) in  
       if Sleek.Inference.nullable es1 
       then 
-          let esR =  derivativePar fst es2 in 
+          let esR =  derivativeFun fst es2 in 
           Union (esL, esR)
       else (esL)
 
   | Union (es1, es2) -> 
-      let (temp1) =  derivativePar fst es1  in
-      let (temp2) =  derivativePar fst es2  in 
+      let (temp1) =  derivativeFun fst es1  in
+      let (temp2) =  derivativeFun fst es2  in 
       (Union (temp1,temp2))
 
 
   | Kleene (es1) -> 
-    let (temp1) =  derivativePar fst es1  in  
+    let (temp1) =  derivativeFun fst es1  in  
     (Sleek.Sequence (temp1, es))
 
   | Parallel (es1, es2) -> 
-      let (temp1) =  derivativePar fst es1 in
-      let (temp2) =  derivativePar fst es2 in 
+      let (temp1) =  derivativeFun fst es1 in
+      let (temp2) =  derivativeFun fst es2 in 
 
       ( Parallel (temp1,temp2))
 
 
-  | _ -> raise (Foo "derivativePar later")
+  | _ -> raise (Foo "derivativeFun later")
   ;;
 
 let rec disjEffects (li:Sleek.instants list) : Sleek.instants = 
@@ -130,25 +157,25 @@ let rec normalizeES_final (trace:Sleek.instants):Sleek.instants =
     | (Sleek.Empty, _) -> his2
     | (_, Sleek.Empty) -> his1
     | (_, _) -> 
-      let fst1 = fstPar his1 in
-      let fst2 = fstPar his2 in 
+      let fst1 = fstFun his1 in
+      let fst2 = fstFun his2 in 
       (match fst1, fst2 with 
       | [], [] -> Sleek.Parallel (his1, his2)
       | _ , [] -> 
       disjEffects (List.map (fun f1 -> 
-          let der2 = normalizeES_final (derivativePar f1 his2) in 
+          let der2 = normalizeES_final (derivativeFun f1 his2) in 
         (*if not (der2 <> his2) then Sleek.Parallel (his1, his2)
         else *)
-          let der1 = normalizeES_final (derivativePar f1 his1) in 
+          let der1 = normalizeES_final (derivativeFun f1 his1) in 
           let states =  normalizeES_final (Parallel (der1, der2)) in 
           Sleek.Sequence (Instant f1, states)
         ) fst1)
         
       | [], _ -> disjEffects (List.map (fun f2 -> 
-        let der1 = normalizeES_final (derivativePar f2 his1) in 
+        let der1 = normalizeES_final (derivativeFun f2 his1) in 
         (*if not (der1 <> his1) then Sleek.Parallel (his1, his2)
         else *)
-          let der2 = normalizeES_final (derivativePar f2 his2) in 
+          let der2 = normalizeES_final (derivativeFun f2 his2) in 
           let states =  normalizeES_final (Parallel (der1, der2)) in 
           Sleek.Sequence (Instant f2, states)
         ) fst2)
@@ -158,8 +185,8 @@ let rec normalizeES_final (trace:Sleek.instants):Sleek.instants =
           let head =  (Sleek.Signals.merge f1 f2) in 
           if Sleek.Signals.controdicts_final head then (Sleek.Bottom)
           else 
-            let der1 = normalizeES_final (derivativePar head his1) in 
-            let der2 = normalizeES_final (derivativePar head his2) in
+            let der1 = normalizeES_final (derivativeFun head his1) in 
+            let der2 = normalizeES_final (derivativeFun head his2) in
             let states =  normalizeES_final (Parallel (der1, der2))  in 
             Sleek.Sequence (Instant head, states)
           )
@@ -339,27 +366,27 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
     | (Sleek.Empty, _) -> if k1 > 1 then [(Sleek.Empty, k1)] else [(his2, k2)]
     | (_, Sleek.Empty) -> if k2 > 1 then [(Sleek.Empty, k2)] else [(his1, k1)]      
     | (_, _) -> 
-      let fst1 = fstPar his1 in
-      let fst2 = fstPar his2 in 
+      let fst1 = fstFun his1 in
+      let fst2 = fstFun his2 in 
       (match fst1, fst2 with 
       | [], [] -> [(Sleek.Parallel (his1, his2), 0)]
       | _ , [] -> 
     
         List.flatten (List.map (fun f1 -> 
-        let der2 = normalizeES (derivativePar f1 his2) in 
+        let der2 = normalizeES (derivativeFun f1 his2) in 
         if not (der2 <> his2) then [(Sleek.Parallel (his1, his2), 0)]
         else 
 
-          let der1 = normalizeES (derivativePar f1 his1) in 
+          let der1 = normalizeES (derivativeFun f1 his1) in 
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
           List.map (fun (a, c) -> (Sleek.Sequence (Instant f1, a), c)) states 
         ) fst1)
         
       | [], _ -> List.flatten (List.map (fun f2 -> 
-        let der1 = normalizeES (derivativePar f2 his1) in 
+        let der1 = normalizeES (derivativeFun f2 his1) in 
         if not (der1 <> his1) then [(Sleek.Parallel (his1, his2), 0)]
         else 
-          let der2 = normalizeES (derivativePar f2 his2) in 
+          let der2 = normalizeES (derivativeFun f2 his2) in 
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
           List.map (fun (a, c) -> (Sleek.Sequence (Instant f2, a), c)) states 
         ) fst2)
@@ -369,8 +396,8 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
           let head =  (Sleek.Signals.merge f1 f2) in 
           if Sleek.Signals.controdicts_final head then [(Sleek.Bottom, 0)]
           else 
-          let der1 = normalizeES (derivativePar head his1) in 
-          let der2 = normalizeES (derivativePar head his2) in
+          let der1 = normalizeES (derivativeFun head his1) in 
+          let der2 = normalizeES (derivativeFun head his2) in
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
           List.map (fun (a, c) -> (Sleek.Sequence (Instant head, a), c)) states
           )
@@ -473,43 +500,48 @@ let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_s
 
   | _ -> 
   let (str, v) = ev in 
-  let fSet = fstPar es in 
-  List.flatten (List.map (fun ele' -> 
-    match setPresent str (vOptToSigvOpt v) ele' with 
-    | None -> raise (Foo "abortinterleaving")
-    | Some a -> 
-      let thisOne = (Sleek.Sequence (pre, Instant (a)), 0) in 
-      let tail =  abortinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativePar ele' es) ev  in 
-      thisOne :: tail
+  let (fSet:fst4Par list) = fstPar es in 
+  List.flatten (List.map (fun ele -> 
+    match ele with 
+    | Sig ele' -> 
+      (match setPresent str (vOptToSigvOpt v) ele' with 
+      | None -> raise (Foo "abortinterleaving")
+      | Some a -> 
+        let thisOne = (Sleek.Sequence (pre, Instant (a)), 0) in 
+        let tail =  abortinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativeFun ele' es) ev  in 
+        thisOne :: tail)
+    | Wait ev' -> abortinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativeFun (waitToIns ev') es) ev
+
+
   )fSet)
 ;;
 
 
 let rec suspendinterleaving (es:Sleek.instants) (ev) : prog_states = 
   let (str, v) = ev in 
-  let fSet = fstPar es in 
+  let fSet = fstFun es in 
   if List.length fSet == 0 then [(Sleek.Empty, 0)] 
   else 
   List.flatten (List.map (fun ele -> 
     let aux pre rest = List.map (fun (a, k) -> (Sleek.Sequence(pre, a), k)) rest in 
     let op1 = fstToInstance (setAbsent str (vOptToSigvOpt v) (ele)) in 
       let op2 = Sleek.Sequence (fstToInstance (setPresent str (vOptToSigvOpt v) (Sleek.Signals.empty)) , op1) in 
-      let rest = suspendinterleaving (derivativePar ele es) ev in (*yaya is pretty*)
+      let rest = suspendinterleaving (derivativeFun ele es) ev in (*yaya is pretty*)
       List.append (aux op1 rest) (aux op2 rest)
       
     
     (*
     
-      (match derivativePar ele' es with
+      (match derivativeFun ele' es with
       | Sleek.Empty -> [(Sleek.Empty, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')) , 0); (Sleek.Empty, , 0)]
 
 
       )
 
       let thisOne = (pre, setPresent str (vOptToSigvOpt v) ele' , 0) in 
-      let tail =  suspendinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativePar ele' es) ev  in 
+      let tail =  suspendinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativeFun ele' es) ev  in 
       thisOne :: tail
-    | Wait ev' -> suspendinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativePar (waitToIns ev') es) ev
+    | Wait ev' -> suspendinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativeFun (waitToIns ev') es) ev
     *)
   )fSet)
 
@@ -525,8 +557,9 @@ let rec findSpecification (prog:statement list) (mn:string) : (Sleek.effects * S
 
 let rec addEventToTheTail (status:bool) (es:Sleek.instants) ((str, v):event) : Sleek.instants = 
   let es = (Sleek.fixpoint ~f: Sleek.normalize_es es) in 
+  (*print_string ("addEventToTheTail: " ^ Sleek.show_instants es^"\n");*)
   match es with 
-  | Bottom 
+  | Bottom -> Bottom
   | Empty -> raise (Foo "addEventToTheTail" )
   | Await _ -> Sequence (es, Instant(Sleek.Signals.from (Sleek.Signals.makeSignal str (vOptToSigvOpt v))))
   | Instant ins -> 
@@ -540,13 +573,15 @@ let rec addEventToTheTail (status:bool) (es:Sleek.instants) ((str, v):event) : S
     | None -> Bottom
     | Some ins' -> Instant (ins' ))
   
+  | Sequence (es1 , Kleene es2) ->Union (addEventToTheTail status es1  (str, v),  Sequence (es1 ,addEventToTheTail status (Kleene es2) (str, v))  )
 
-  
   
   | Sequence (es1 , es2) -> Sequence (es1 ,addEventToTheTail status es2 (str, v))  
   | Union (es1, es2) -> Union (addEventToTheTail status es1 (str, v), addEventToTheTail status es2 (str, v))
   | Kleene es1 -> Sequence (es ,addEventToTheTail  status es1 (str, v))  
-  | Parallel (es1 , es2) -> Parallel (addEventToTheTail status es1 (str, v), addEventToTheTail status es2 (str, v))
+  (*| Parallel (es1 , es2) -> Parallel (addEventToTheTail status es1 (str, v), addEventToTheTail status es2 (str, v)) *)
+  | Parallel (_ , _) -> Sequence (es, Instant(Sleek.Signals.from (Sleek.Signals.makeSignal str (vOptToSigvOpt v))))
+
   | _ -> raise (Foo "addEventToTheTail later")
 
 let entailmentShell preOrPost lhs rhs = 
@@ -566,7 +601,6 @@ let concatenateEffects (state1:prog_states) (state2:prog_states) : prog_states =
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
   match prog with 
-  | Value _ -> current
   | Yield -> List.map (fun (his, _) -> (Sleek.Sequence (his, Sleek.Instant (Sleek.Signals.empty)), 0)) current
 
   | Await (Ev (str, v )) -> 
@@ -622,7 +656,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
         raise (Foo ("function call to " ^ mn ^ " is failed at precondition checking")))
     )
 
-  | FunctionCall _ -> current
 
 
   | Loop p ->
@@ -677,6 +710,8 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
   | Signal (s, p) -> forward (s::env) current p full 
 
+
+  | Halt -> forward env current (Loop Yield) full 
   
   | DoEvery (p, ev) -> 
     let halt = Loop (Yield) in 
@@ -685,24 +720,22 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let final = Seq (Await (Ev ev), loopEach p ev) in 
     forward env current final full  
 
- (* 
-
   | Exit d -> 
-    List.map (fun (a, b, _) -> (a, b, d+2) ) current
+    List.map (fun (a, _) -> (a, d+2) ) current
 
   | Trap p  -> 
     let state1 = forward env current p full in 
     List.flatten (
-      List.map (fun (his, cur, k) ->
-        if k =2 then [((his, cur, 0))]
-        else if k > 2 then [(his, cur, k-1)]
-        else [(his, cur, k)]
+      List.map (fun (his, k) ->
+        if k =2 then [((his, 0))]
+        else if k > 2 then [(his, k-1)]
+        else [(his, k)]
 
       ) state1
     )
-  
-*)
     
+  | Run _ | Value _ | FunctionCall _ | Hop _ -> current
+
   | _ ->  raise (Foo(string_of_expression_kind prog ^ " not yet covered!"))
  
     ;;

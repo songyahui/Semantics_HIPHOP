@@ -9,12 +9,12 @@ function foo( evt ) {
 
 module prg( in I, out O ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && (I?).{O}" @*/
+   /*@ ensures "True && {}·I?·{O}" @*/
 
 {
 
    await( I );
-   emit O( I.nowval );
+   emit O( );
 }
 
 var m = new hh.ReactiveMachine( prg, "awaitvalued" );

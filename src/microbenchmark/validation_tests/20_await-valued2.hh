@@ -17,12 +17,12 @@ function foo3( evt ) {
 
 module prg( in I, out O ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && I?.({O}.I?)^*" @*/
+   /*@ ensures "True && {}·(I?·{O})^*" @*/
 {
 
    loop {
       await( I );
-      emit O( I.nowval );
+      emit O( );
    }
 }
 

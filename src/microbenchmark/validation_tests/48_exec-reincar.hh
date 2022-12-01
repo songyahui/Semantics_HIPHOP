@@ -5,6 +5,12 @@ const hh = require( "hiphop" );
 
 var glob = 5;
 
+module setTimeout () 
+/*@ requires "True && {}^*" @*/
+/*@ ensures "True && {}" @*/	{
+   ();
+}
+
 module prg( in R, in O, in OT, in T ) 
 
    /*@ requires "True && emp" @*/

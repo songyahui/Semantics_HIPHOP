@@ -26,19 +26,27 @@ module BUTTON( in UL, in UR, in LL, in LR,
    /*@ ensures "True && ({UR,  STOP_ALARM_BEEP_COMMAND} + {})^*" @*/					
 {
 
+
    // global loop
    fork {
       loop {
+		yield;
 	 // watch / set-watch mode
 	 emit WATCH_MODE_COMMAND();
 	 
 	 loop {
+				yield;
+
 	    // watch mode
 	    abort( UL ) {
+					yield;
+
 	       fork {
 		  emit LL();
 	       } par {
 		  loop {
+					yield;
+
 		     emit LR( );
 		     emit TOGGLE_24H_MODE_COMMAND();
 		  }
@@ -48,13 +56,19 @@ module BUTTON( in UL, in UR, in LL, in LR,
 	    // set watch-mode
 	    emit ENTER_SET_WATCH_MODE_COMMAND();
 	    abort( UL ) {
+					yield;
+
 	       fork {
 		  loop {
+					yield;
+
 		     emit LL ();
 		     emit NEXT_WATCH_TIME_POSITION_COMMAND();
 		  }
 	       } par {
 		  loop {
+					yield;
+
 		     emit LR();
 		     emit SET_WATCH_COMMAND();
 		  }
@@ -66,8 +80,12 @@ module BUTTON( in UL, in UR, in LL, in LR,
 	 // stopwatch mode
 	 emit STOPWATCH_MODE_COMMAND();
 	 abort( LL ) {
+				yield;
+
 	    fork {
 	       loop {
+					yield;
+
 		  emit LR (  );
 		  emit START_STOP_COMMAND();
 	       }
@@ -82,19 +100,27 @@ module BUTTON( in UL, in UR, in LL, in LR,
 	 // alarm / set alarm mode
 	 emit ALARM_MODE_COMMAND();
 	 loop {
+				yield;
+
 	    // alarm mode
 	    abort( UL ) {
+					yield;
+
 	       fork {
 		  fork {
 		     emit LL (  );
 		  } par {
 		     loop {
+						yield;
+
 			emit LR( );
 			emit TOGGLE_CHIME_COMMAND();
 		     }
 		  }
 	       } par {
 		  loop {
+					yield;
+
 		     emit UR( UR );
 		     emit TOGGLE_ALARM_COMMAND();
 		  }
@@ -104,13 +130,19 @@ module BUTTON( in UL, in UR, in LL, in LR,
 	    // set-alarm mode
 	    emit ENTER_SET_ALARM_MODE_COMMAND();
 	    abort( UL ) {
+					yield;
+
 	       fork {
 		  loop {
+					yield;
+
 		     emit LL( LL );
 		     emit NEXT_ALARM_TIME_POSITION_COMMAND();
 		  }
 	       } par {
 		  loop {
+					yield;
+
 		     emit LR ( LR );
 		     emit SET_ALARM_COMMAND();
 		  }

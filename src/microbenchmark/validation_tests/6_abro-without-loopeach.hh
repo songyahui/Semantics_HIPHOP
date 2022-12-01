@@ -4,18 +4,18 @@ var hh = require("hiphop");
 
 module prg( in A, in B, in R, out O ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && (A? // B?·{O, !R})^*" @*/
+   /*@ ensures "True && {}·(({A, !S}·{O, !S, I, K}) + ({A, !S}·{O, !S, !I}) + ({A, S, I, K}) + ({A, S, !I}) + ({A, !S}·{O, S, I, K}) + {A, !S}·{O, S, !I})^*" @*/
 {
 
    loop {
-      abort( R ) {
-	 fork {
-	    await( A );
-	 } par {
-	    await( B );
-	 };
+      abort( S ) {
+   yield;
+	 emit A;
+	 yield;
 	 emit O;
-	 halt;
+      };
+	        present( I ) {
+	 emit K;
       }
    }
 }

@@ -5,11 +5,13 @@ var hh = require( "hiphop" );
 
 module prg( in I, out O ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && I?.I?.I?.({O}.I?.I?.I?)^*" @*/
+   /*@ ensures "True && {}·(I?·I?·I?·{O})^*" @*/
 {
 
    loop {
-      await count( 3, I );
+      await I;
+      await I;
+      await I;
       emit O();
    }
 }

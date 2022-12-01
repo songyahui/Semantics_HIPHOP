@@ -2,8 +2,8 @@
 
 module M1( in A , out B) 
 
-   /*@ requires "True && emp" @*/
-   /*@ ensures "True && {A, B}.{A}  " @*/	
+   /*@ requires "True && {}^*" @*/
+   /*@ ensures "True && {A(100), B}·{A}  " @*/	
 
 {
    emit A( 100 );
@@ -15,11 +15,11 @@ module M1( in A , out B)
 module m( a, b ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {A, B}.{A}.{}  " @*/	
+   /*@ ensures "True && {}.{A(100), B}·{A}.{}  " @*/	
 
 
 {
-   run M1( a  );
+   M1( a  );
    yield;
    // run M1( a ); // adding this line will couse failure on precondition check. 
 }

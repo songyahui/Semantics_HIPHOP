@@ -5,7 +5,7 @@ var hh = require( "hiphop" );
 module prg( out A, in B, out END1, out END2 ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {A}.B?.{} // A?.{B}.{END2}" @*/	
+   /*@ ensures "True && {A}·(B?·{END1} // A?·{B}·{END2})" @*/	
 
 {
 

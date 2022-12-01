@@ -8,6 +8,7 @@ module prg( in A, in B, in C, in AA, in BB, in CC, in R, out O )
    /*@ ensures  "True && ({}·{A, C, !S}·{R, !S}) + ({}·{A, C, S}) + ({}·{A, C, !S}·{R, S}) + ({}·{!A, CC, !S}·{BB, !S}) + ({}·{!A, CC, S}) + {}·{!A, CC, !S}·{BB, S}" @*/
 {
    abort (S) {
+      yield;
       present (A){
          emit C;
       yield;

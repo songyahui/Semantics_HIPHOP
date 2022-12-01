@@ -8,7 +8,7 @@ function func() {
 
 module prg(out A, out B) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {A}.({B}.{A})^*" @*/
+   /*@ ensures "True && {}·({A}·{B})^*" @*/
 {
    loop {
       yield;

@@ -9,18 +9,19 @@ function sum( arg1, arg2 ) {
 module prg( out O ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {S, O}^* " @*/	
+   /*@ ensures "True && {}·({S, O})^*" @*/	
 
 
 {
 
    loop {
+      yield;
       signal S ;//= 1;
 
-      emit S( S.preval );
-      emit O( S.nowval );
+      emit S( );
+      emit O(  );
 
-      yield;
+      
    }
 }
 
