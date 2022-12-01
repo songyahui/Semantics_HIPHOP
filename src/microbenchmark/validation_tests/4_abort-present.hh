@@ -12,10 +12,10 @@ module prg
 
    loop {
       abort( I ) {
+    yield;
 	 emit J;
 	 yield;
 	 emit V;
-	 yield;
       };
       present( I ) {
 	 emit K;

@@ -204,7 +204,7 @@ let rec string_of_expression (expr: expression): string =
 
 let rec show_effects_list (eff_li: Sleek.effects) : string =
   match eff_li with 
-  | [] -> ""
+  | [] -> "⏊ "
   | [x] -> Sleek.show_simple_effects x 
   
   | (xp, xes) :: (yp, yes) :: xs -> 

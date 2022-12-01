@@ -3,10 +3,16 @@
 
 const hh = require( "hiphop" );
 
+module setTimeout () 
+/*@ requires "True && {}^*" @*/
+/*@ ensures "True && {}" @*/	{
+   ();
+}
+
 module prg(out O ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "t>3 && ({} # t).{O}" @*/	
+   /*@ ensures "True && {}·{}·{O}" @*/	
 
 {
    async O {

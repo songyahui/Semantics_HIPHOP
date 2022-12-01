@@ -5,22 +5,18 @@ var hh = require( "hiphop" );
 
 module prg( in I, out O )
     /*@ requires "True && emp" @*/
-    /*@ ensures "True && {O}" @*/
+    /*@ ensures "True && ({}·({O, !L})^*) + {}·({O, !L})^*·{O, L}" @*/
  {
    signal L;
-
-   fork {
-      abort( L ) {
+   abort( L ) {
 	 loop {
+       yield;
 	    emit O;
-	    yield;
+	   
 	 }
       }
-   } par {
-      await( O );
-      emit L();
-   }
+
+  
 }
 
 exports.prg = new hh.ReactiveMachine( prg, "abortpar" );
-

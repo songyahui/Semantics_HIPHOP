@@ -203,7 +203,11 @@ let rec normalize_pi : pi -> pi = function
 
 let rec normalize_es : instants -> instants = function
   (* reduction *)
-  | Instant ev -> Instant (Signals.normalize_ins ev)
+  | Instant ev -> 
+    let ins = Signals.normalize_ins ev in 
+    if Signals.controdicts_final ins then Bottom
+    else 
+    Instant (ins)
   | Union (es, Bottom) -> es
   | Union (Bottom, es) -> es
   | Union (es, es') when es = es' -> es
