@@ -5,7 +5,7 @@ var hh = require("hiphop");
 
 module prg( in A, in B, in C, in R, out O ) 
    /*@ requires "True && emp "@*/
-   /*@ ensures  "True && (A? // B? // C?).{R}" @*/
+   /*@ ensures  "True && {} . (A? // B? // C?).{R}" @*/
 {
       fork {
 	 await( A );

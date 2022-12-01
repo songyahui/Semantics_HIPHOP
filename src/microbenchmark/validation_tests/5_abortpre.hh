@@ -10,11 +10,11 @@ module prg(out O, out S )
 {
    loop {
       abort( S ) {
-	 emit S;
+   yield;
+	 emit A;
 	 yield;
 	 emit O;
       };
-      yield;
    }
 }
 

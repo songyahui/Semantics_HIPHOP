@@ -39,8 +39,8 @@ let rec derivativePar (fst:Sleek.Signals.t) (es:Sleek.instants) : Sleek.instants
   | Bottom ->  Bottom
   | Empty ->  Bottom
   | Await s -> 
-  print_string (Sleek.show_instants es ^ " in " ^ Sleek.Signals.show fst ^ " is " ^ string_of_bool (Sleek.Signals.isEventExist s fst)^"\n");
-
+  (*print_string (Sleek.show_instants es ^ " in " ^ Sleek.Signals.show fst ^ " is " ^ string_of_bool (Sleek.Signals.isEventExist s fst)^"\n");
+*)
     if Sleek.Signals.isEventExist s fst then Empty else Await s
   | Instant ins -> if Sleek.Signals.(|-) fst ins then Empty else Bottom
     
@@ -115,11 +115,61 @@ let rec normalizeES_final (trace:Sleek.instants):Sleek.instants =
   | Kleene (Union (Empty, es)) -> Kleene es
 
   | Parallel (es1, es2) ->
-      let es1' = normalizeES_final es1 in
+    let his1 = normalizeES_final es1 in
+    let his2 = normalizeES_final es2 in 
+    
+   
+    (*print_string ("\n==================\n");
+    print_string (string_of_prog_states [(normalizeES his1, k1)] ^"\n");
+    print_string (string_of_prog_states [(normalizeES his2, k2)] ^"\n");
+    *)
+    
+    (match (his1, his2) with 
+    | (Sleek.Bottom, _) | (_, Sleek.Bottom) -> Sleek.Bottom
+    | (Sleek.Empty, Sleek.Empty) -> Sleek.Empty
+    | (Sleek.Empty, _) -> his2
+    | (_, Sleek.Empty) -> his1
+    | (_, _) -> 
+      let fst1 = fstPar his1 in
+      let fst2 = fstPar his2 in 
+      (match fst1, fst2 with 
+      | [], [] -> Sleek.Parallel (his1, his2)
+      | _ , [] -> 
+      disjEffects (List.map (fun f1 -> 
+          let der2 = normalizeES_final (derivativePar f1 his2) in 
+        (*if not (der2 <> his2) then Sleek.Parallel (his1, his2)
+        else *)
+          let der1 = normalizeES_final (derivativePar f1 his1) in 
+          let states =  normalizeES_final (Parallel (der1, der2)) in 
+          Sleek.Sequence (Instant f1, states)
+        ) fst1)
+        
+      | [], _ -> disjEffects (List.map (fun f2 -> 
+        let der1 = normalizeES_final (derivativePar f2 his1) in 
+        (*if not (der1 <> his1) then Sleek.Parallel (his1, his2)
+        else *)
+          let der2 = normalizeES_final (derivativePar f2 his2) in 
+          let states =  normalizeES_final (Parallel (der1, der2)) in 
+          Sleek.Sequence (Instant f2, states)
+        ) fst2)
+      | fst1, fst2 -> 
+        let headSet = zip (fst1, fst2) in 
+        disjEffects (List.map (fun (f1, f2)-> 
+          let head =  (Sleek.Signals.merge f1 f2) in 
+          let der1 = normalizeES_final (derivativePar head his1) in 
+          let der2 = normalizeES_final (derivativePar head his2) in
+          let states =  normalizeES_final (Parallel (der1, der2))  in 
+          Sleek.Sequence (Instant head, states)
+          )
+        headSet)
+      ))
+
+
+      (*let es1' = normalizeES_final es1 in
       if es1' <> es1 then
         Parallel (es1', es2)
       else
-        Parallel (es1, normalizeES_final es2)
+        Parallel (es1, normalizeES_final es2)*)
   | Kleene es -> Kleene (normalizeES_final es)
   | Timed (es, t) -> Timed (normalizeES_final es, t)
   | es -> es
@@ -273,9 +323,10 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
     let his2 = normalizeES his2 in 
     
    
-    print_string ("\n==================\n");
+    (*print_string ("\n==================\n");
     print_string (string_of_prog_states [(normalizeES his1, k1)] ^"\n");
     print_string (string_of_prog_states [(normalizeES his2, k2)] ^"\n");
+    *)
     
     (match (his1, his2) with 
     | (Sleek.Bottom, _) | (_, Sleek.Bottom) -> []
@@ -290,8 +341,8 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
       | _ , [] -> 
         List.flatten (List.map (fun f1 -> 
         let der2 = normalizeES (derivativePar f1 his2) in 
-       (* if not (der2 <> his2) then [(Sleek.Parallel (his1, his2), 0)]
-        else *)
+        if not (der2 <> his2) then [(Sleek.Parallel (his1, his2), 0)]
+        else 
           let der1 = normalizeES (derivativePar f1 his1) in 
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
           List.map (fun (a, c) -> (Sleek.Sequence (Instant f1, a), c)) states 
@@ -299,8 +350,8 @@ let rec paralleMerge (state1:prog_states) (state2:prog_states) :prog_states =
         
       | [], _ -> List.flatten (List.map (fun f2 -> 
         let der1 = normalizeES (derivativePar f2 his1) in 
-        (*if not (der1 <> his1) then [(Sleek.Parallel (his1, his2), 0)]
-        else *)
+        if not (der1 <> his1) then [(Sleek.Parallel (his1, his2), 0)]
+        else 
           let der2 = normalizeES (derivativePar f2 his2) in 
           let states =  paralleMerge [(der1, k1)] [(der2, k2)] in 
           List.map (fun (a, c) -> (Sleek.Sequence (Instant f2, a), c)) states 
@@ -394,8 +445,6 @@ let rec insertNegation (es:Sleek.instants) (ev) : (Sleek.instants) =
   ;;
 
 
-
-(*
 let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_states = 
   let es = Sleek.fixpoint ~f: Sleek.normalize_es  es in 
   match es with 
@@ -416,14 +465,17 @@ let rec abortinterleaving (pre:Sleek.instants) (es:Sleek.instants) (ev) : prog_s
   | _ -> 
   let (str, v) = ev in 
   let fSet = fstPar es in 
-  List.flatten (List.map (fun ele -> 
-    match ele with 
-    | Sig ele' -> 
-      let thisOne = (pre, setPresent str (vOptToSigvOpt v) ele' , 0) in 
+  List.flatten (List.map (fun ele' -> 
+    match setPresent str (vOptToSigvOpt v) ele' with 
+    | None -> raise (Foo "abortinterleaving")
+    | Some a -> 
+      let thisOne = (Sleek.Sequence (pre, Instant (a)), 0) in 
       let tail =  abortinterleaving (Sleek.Sequence(pre, fstToInstance (setAbsent str (vOptToSigvOpt v) (ele')))) (derivativePar ele' es) ev  in 
       thisOne :: tail
-    | Wait ev' -> abortinterleaving (Sleek.Sequence(pre, fst4Par2Instants ele)) (derivativePar (waitToIns ev') es) ev
   )fSet)
+
+(*
+
 
 ;;
 
@@ -480,11 +532,13 @@ let rec findSpecification (prog:statement list) (mn:string) : (Sleek.effects * S
 
 
 let rec addEventToTheTail (es:Sleek.instants) ((str, v):event) : Sleek.instants = 
-  let es = (Sleek.normalize_es es) in 
+  let es = (Sleek.fixpoint ~f: Sleek.normalize_es es) in 
   match es with 
-  | Bottom | Empty -> raise (Foo "addEventToTheTail" )
+  | Bottom 
+  | Empty -> raise (Foo "addEventToTheTail" )
   | Await _ -> Sequence (es, Instant(Sleek.Signals.from (Sleek.Signals.makeSignal str (vOptToSigvOpt v))))
   | Instant ins -> 
+
     (match (setPresent str (vOptToSigvOpt v) ins) with 
     | None -> Bottom
     | Some ins' -> Instant (ins' ))
@@ -502,13 +556,13 @@ let entailmentShell preOrPost lhs rhs =
   let startTimeStamp2 = Sys.time() in
   let msg =  (*(string_of_inclusion final_effects post) ^ "\n" ^*)
   (if preOrPost then "[TRS: Verification for Pre Condition]\n" else "[TRS: Verification for Post Condition]\n" )^
-  "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ 
-  Sleek.History.show tree    ~verbose ^ "\n\n" in 
-  print_string (msg);
-  ((startTimeStamp2 -. startTimeStamp1) *.1000.0, verbose, tree)
+  "[" ^ (if verbose then "SUCCEED"  else "FAIL") ^ "]\n" ^ Sleek.History.show tree    ~verbose ^ "\n\n" in 
+  ((startTimeStamp2 -. startTimeStamp1) *.1000.0, verbose, msg)
 
 let concatenateEffects (state1:prog_states) (state2:prog_states) : prog_states = 
-  List.flatten (List.map (fun (his1, _) -> List.map (fun (his2, _) -> (Sleek.Sequence (his1, his2), 0)) state2) state1)
+  List.flatten (List.map (fun (his1, _) -> List.map (fun (his2, _) -> 
+    (Sleek.Sequence (his1, his2), 0)
+  ) state2) state1)
 
 let rec forward (env:string list) (current:prog_states) (prog:expression) (full: statement list): prog_states =
 
@@ -532,6 +586,11 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     let temp2 = forward env current p2 full in 
     paralleMerge temp1 temp2
 
+  
+  | ForkPar (p1::p2::rest) -> 
+    forward env current (ForkPar ((ForkPar ([p1; p2])) ::rest)) full
+
+
   | Seq (p1, p2) -> 
     let states1 =  (forward env current p1 full) in 
     List.flatten (
@@ -551,12 +610,76 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     | Some (pre, post) -> 
       let currentDisj = List.map (fun (his, _)  -> Sleek.normalize (True, his)) current in 
       let current' = List.map (fun (_, his) -> his ) currentDisj in 
-      let (_, res, _) = entailmentShell true ([(True, disjEffects current')]) pre in  
+      let (_, res, msg) = entailmentShell true ([(True, disjEffects current')]) pre in  
       if res then 
+
+
         concatenateEffects current (List.map (fun (_, his)-> (his, 0)) post)
-      else raise (Foo ("function call to " ^ mn ^ " is failed at precondition checking"))
+      else 
+        (print_string(msg);
+        raise (Foo ("function call to " ^ mn ^ " is failed at precondition checking")))
     )
+
+
+
+  | Loop p ->
+    let effP = forward env [(Empty, 0)] p full in  
+    let loopEff = disjEffects (List.map (fun (his, _)-> his) effP) in
+    let res  = List.map(fun ((his1, _))-> 
+      (Sleek.Sequence (( Sleek.fixpoint ~f: Sleek.normalize_es his1), Kleene ( Sleek.fixpoint ~f: Sleek.normalize_es  loopEff)), 0)
+    ) current in 
+    print_string ("Loop" ^  string_of_prog_states current ^ " and effP" ^ string_of_prog_states effP ^ " and res" ^ string_of_prog_states res ^ "\n");
+    res
+
+
+  | Abort (ev, p)  -> 
+
+
+    List.flatten (List.map (fun (his, k) ->
+      let pEff = forward env [(Empty, k)] p full in 
+
+      let allPosibleAux = List.map (fun (a, k) -> 
+        if k > 1 then [(a, k)]
+        else  
+          (*print_string (Sleek.show_instants ((Sleek.Sequence (a, fstToInstance b))) ^"\n");*)
+          (insertNegation a ev, k)  :: (abortinterleaving (Sleek.Empty) a ev)
+      ) pEff in 
+      let allPosible = List.fold_left (fun acc a -> List.append acc a) [] allPosibleAux in 
+      List.map (fun (a, c) -> (Sleek.Sequence(his, a), c)) allPosible
+    ) current)
+  
+
+
  (* 
+
+   | DoEvery (p, ev) -> 
+    let (str, _) = ev in 
+    let effP = forward env [(Sleek.Empty, 0)] (Abort (ev, p) ) full  in 
+    let combine = zip (current, effP)  in 
+    let res  = List.map(fun ((his1, _), (his2, _))-> 
+      (Sleek.Sequence (( Sleek.fixpoint ~f: Sleek.normalize_es his1),Sequence (Await (Sleek.Signals.present (Sleek.Signals.makeSignal str (None))) , Kleene ( Sleek.fixpoint ~f: Sleek.normalize_es  his2))), 0)
+    ) combine in 
+    res
+
+
+
+
+(*
+    let halt = Loop (Yield) in 
+    let helper expr cond = Abort (cond, Seq(expr, halt)) in 
+    let loopEach expr cond = Loop (helper expr cond)  in 
+    (*print_string ("DoEvery" ^ string_of_prog_states  (forward env current  (helper p ev) full) ^"\n");
+    *)
+    let _ = Seq (Await (Ev ev), loopEach p ev) in 
+    let midState = forward env [(Sleek.Empty, 0)] (loopEach p ev) full  in 
+    let combine = zip (current, midState)  in 
+
+    let res  = List.map(fun ((his1, _), (his2, _))-> 
+      (Sleek.Sequence (( Sleek.fixpoint ~f: Sleek.normalize_es his1), ( Sleek.fixpoint ~f: Sleek.normalize_es  his2)), 0)
+    ) combine in 
+    res
+
+*)
 
  match state with 
         | (his, Some (cur), _) -> (his , setPresent str (vOptToSigvOpt v) cur, 0)
@@ -595,11 +718,6 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
     
 
 
-  | ForkPar (p1::p2::rest) -> 
-  print_string ("ForkPar2: " ^ string_of_prog_states current ^"\n");
-
-    forward env current (ForkPar ((ForkPar ([p1; p2])) ::rest)) full
-
 
 
   | Loop p ->
@@ -633,26 +751,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
       )
     ) ) [] current
 
-  | Abort (ev, p)  -> 
 
-
-    let (str, v) = ev in 
-    List.flatten (List.map (fun (his, cur, k) ->
-      let pEff = forward env [(Empty, cur, k)] p full in 
-
-      let allPosibleAux = List.map (fun (a, b, k) -> 
-        if k > 1 then [(a, b, k)]
-        else  
-          let aux = match b with 
-          | None -> None 
-          | Some b' -> setAbsent str (vOptToSigvOpt v) b'
-          in 
-          (*print_string (Sleek.show_instants ((Sleek.Sequence (a, fstToInstance b))) ^"\n");*)
-          (insertNegation a ev, aux, k)  :: (abortinterleaving (Sleek.Empty) (Sleek.Sequence (a, fstToInstance b)) ev)
-      ) pEff in 
-      let allPosible = List.fold_left (fun acc a -> List.append acc a) [] allPosibleAux in 
-      List.map (fun (a, b, c) -> (Sleek.Sequence(his, a), b, c)) allPosible
-    ) current)
 
   
   | Suspend (ev, p)  ->  
@@ -672,12 +771,7 @@ let rec forward (env:string list) (current:prog_states) (prog:expression) (full:
 
 
   
-  | DoEvery (p, ev) -> 
-    let halt = Loop (Yield) in 
-    let helper expr cond = Abort (cond, Seq(expr, halt)) in 
-    let loopEach expr cond = Loop (helper expr cond)  in 
-    let _ = Seq (Await (Ev ev), loopEach p ev) in 
-    forward env current (loopEach p ev) full  
+
 
   | Present ((str, v), p1, p2) -> 
     let s1 = List.map (fun state -> 
@@ -760,25 +854,27 @@ let forward_verification (prog : statement) (whole: statement list): string =
 
     let startTimeStamp01 = Sys.time() in
 
-    let final = normalize_effs_final final in 
+    let final = if String.compare mn "main" == 0 then normalize_effs_final final  else final in 
 
-    let results = List.map (fun rhs -> entailmentShell false final rhs) posts in 
+   (* let results = List.map (fun rhs -> entailmentShell false final rhs) posts in 
 
-    let proves = List.filter (fun (_, b, _) -> b ==true ) results in 
+    let proves = List.filter (fun (_, b, _) ->  b ==true ) results in 
     let disproves = List.filter (fun (_, b, _) -> b==false ) results in 
     let totol li = List.fold_left (fun acc (a, _, _) -> acc +. a) 0.0 li in  
     let printing li = string_of_int (List.length li) ^ " cases with avg time " ^  string_of_float ((totol li)/.(float_of_int(List.length li))) ^ " ms\n" in 
-
+*)
 
     "\n========== Module: "^ mn ^" ==========\n" ^
     "[Pre  Condition] " ^ show_effects_list pre ^"\n"^
     "[Post Condition] " ^ show_effects_list_list posts ^"\n"^
     "[Final  Effects] " ^ show_effects_list ( final) ^"\n"^
-    "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms" ^"\n" ^
+    "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms" (* ^"\n" ^
 
     "[TOTAL TRS TIME] " ^ string_of_float (totol proves +. totol disproves) ^ " ms \n" ^ 
     "[Proving   Time] " ^ printing proves ^
     "[Disprove  Time] " ^ printing disproves ^"\n" 
+    ^ List.fold_left (fun acc (_, _,  msg) -> acc^ msg ) "" results
+    *)
 
     
     
