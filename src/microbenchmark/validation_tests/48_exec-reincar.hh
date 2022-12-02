@@ -14,11 +14,12 @@ module setTimeout ()
 module prg( in R, in O, in OT, in T ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "t>1 && (R?.({!R} # t).{T, !R})^* " @*/	
+   /*@ ensures "True && ({}·{O}·{!R}·{OT, T, !R}) + ({}·{O}·{OT, R}) + {} " @*/	
 
 {
 
-   do {
+   
+	yield;
       fork {
 	 abort( R ) {
 	    async T {
@@ -29,11 +30,11 @@ module prg( in R, in O, in OT, in T )
 		 }, 1000, this);
 	    };
 	 };
-	 emit OT( T.nowval);
+	 emit OT();
       } par {
 	 emit O();
       }
-   } every( R )
+   
 }
 
 var machine = new hh.ReactiveMachine( prg, "exec" );

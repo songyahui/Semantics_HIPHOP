@@ -828,6 +828,7 @@ let () =
   let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in
 (*    let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
 print_string (inputfile ^ "\n" ^ outputfile^"\n");*)
+  print_string (Sys.argv.(1)^"\n");
   let ic = open_in inputfile in
   try
       let lines =  (input_lines ic ) in

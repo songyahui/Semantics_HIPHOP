@@ -14,6 +14,7 @@ module prg( in A, in B, in C, in R, out O )
       } par {
 	 await( C );
       };
+      yield;
       emit R;
 
 }

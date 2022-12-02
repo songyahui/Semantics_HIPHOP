@@ -16,7 +16,9 @@ module prg( O, OT )
 {
 
    fork {
+      
       async OT{
+         yield;
 	 console.log( "Oi." );
 	 setTimeout( () => {
 	    console.log( "Oi timeout." );

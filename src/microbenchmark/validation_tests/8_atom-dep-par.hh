@@ -23,7 +23,8 @@ module prg(out A, out B, out C )
 	 emit C( 2 );
 	 yield;
     //  }
-   }
+   };
+   yield;
 }
 
 let machine = new hh.ReactiveMachine( prg, "error2" );
