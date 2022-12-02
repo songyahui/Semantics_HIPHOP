@@ -6,6 +6,8 @@ module prg( out A, in B )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True &&  {}·(({B, A}·{}) + {!B}·{})^* " @*/	
+      /*@ ensures "True &&  {}·(({B, A}) + {!B}·{})^* " @*/	
+
 
 {
 

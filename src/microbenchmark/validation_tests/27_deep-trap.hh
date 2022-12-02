@@ -6,6 +6,8 @@ module prg()
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}" @*/	
+      /*@ ensures "True && emp" @*/	
+
 
 {
 // currently trap has not fully implemented. 

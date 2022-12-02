@@ -6,6 +6,8 @@ module Authenticate(
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {connState}·{connected}" @*/
+      /*@ ensures "True && {connState}·{!connected}" @*/
+
 {
 
   emit connState();

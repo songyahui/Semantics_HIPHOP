@@ -6,6 +6,7 @@ module prg( out O )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·({O(5)}·{O})^* " @*/	
+   /*@ ensures "True && {}·({O(4)}·{O})^* " @*/	
 
 {
 

@@ -1,9 +1,16 @@
 open Pretty
+
 open Printf
 exception Foo of string
 
 
 let files = [
+
+
+  "0_test.hh";
+  "3_abort-par.hh";
+
+  "8_atom-dep-par.hh";
 
 
 
@@ -22,9 +29,7 @@ let files = [
   
   "9_atom-exprs.hh";
   "10_atom.hh";
-
-
-
+  
 
 
   "11_authenticate.hh";
@@ -40,6 +45,10 @@ let files = [
   (*
   "21_button-implicit-seq.hh";
   "22_button.hh";
+    "0_test.hh";
+  "3_abort-par.hh";
+
+  "8_atom-dep-par.hh";
   *)
   "23_cross-await.hh";
   "24_countfunc-countargs.hh";
@@ -81,16 +90,20 @@ let files = [
   "60_loop1.hh";
   "61_loop2.hh";
 
-  "0_test.hh";
-  "3_abort-par.hh";
 
-  "8_atom-dep-par.hh";
+
 ]
 
-
+let rec getNumber n li = 
+  if n <= 0 then []
+  else 
+  match li with 
+  | [] -> [] 
+  | x :: xs -> x :: (getNumber (n-1) xs)
 
 
 let () =
+
   try
 
     let msg = List.fold_left (fun acc fileName ->
@@ -109,15 +122,13 @@ let () =
 
      
 
-    ) "" files in 
+    ) "" (getNumber 400 (List.append files (List.append files (List.append files (List.append files (List.append files (List.append files (List.append files files)))))))) in 
 
-    let oc = open_out (Sys.getcwd () ^ "/src/microbenchmark/evaluation_tests/new_1_test.hh") in    (* 新建或修改文件,返回通道 *)
+    let oc = open_out (Sys.getcwd () ^ "/src/microbenchmark/evaluation_tests/new_16_test.hh") in    (* 新建或修改文件,返回通道 *)
     fprintf oc "%s\n" msg;   (* 写一些东西 *)
     flush stdout;                (* 现在写入默认设备 *)
 
 
   with e ->                      (* 一些不可预见的异常发生 *)
   raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
-
-  
 

@@ -64,4 +64,7 @@ dune clean
 ```
 
 
+### Generate test cases and evaluation 
 
+dune exec ./runTest.exe src/microbenchmark/validation_tests/       
+dune exec ./Hip.exe src/microbenchmark/evaluation_tests/new_1_test.hh

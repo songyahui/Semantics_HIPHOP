@@ -7,8 +7,8 @@
 
 
 (executables
- (names hip trs runTest)
- (modules parser lexer Pretty hip runTest trs Ast)
+ (names runTest Hip trs)
+ (modules parser lexer Pretty runTest Hip  trs Ast)
  (libraries sleek))
 
 

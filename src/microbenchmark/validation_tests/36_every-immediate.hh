@@ -8,6 +8,10 @@ module prg( in I, O )
    /*@ ensures "True &&  {}·I?·(({O, !I}·({!I})^*) + 
    ({O, I}) + {O, !I}·({!I})^*·{I})^* " @*/	
 
+      /*@ ensures "True &&  {}·I?·(({OI}·({!I})^*) + 
+   ({O, I}) + {O, !I}·({!I})^*·{I})^* " @*/	
+
+
 {
 
    do {

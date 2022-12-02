@@ -7,6 +7,9 @@ module prg( out J )
    /*@ requires "True && emp" @*/
    /*@ ensures "True && ({I, J} ) " @*/	
 
+      /*@ ensures "True && ({I, J}.{} ) " @*/	
+
+
 {
 
    signal I;

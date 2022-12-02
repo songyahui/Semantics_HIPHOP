@@ -7,6 +7,8 @@ module prg( out T )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {S}  " @*/	
+      /*@ ensures "True && {!S}  " @*/	
+
 
 {
 

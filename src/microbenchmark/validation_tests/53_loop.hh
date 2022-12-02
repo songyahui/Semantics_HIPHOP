@@ -7,6 +7,8 @@ module a_loop( out A, out B, out C )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {A}·({B}·{C})^*" @*/	
+      /*@ ensures "True && {A}·({B}·{C})" @*/	
+
 
 {
 

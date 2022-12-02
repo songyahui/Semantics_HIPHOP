@@ -4,7 +4,7 @@ module M1( in A , out B)
 
    /*@ requires "True && {}^*" @*/
    /*@ ensures "True && {A(100), B}·{A}  " @*/	
-
+      /*@ ensures "True && {A(100)}·{!A}  " @*/	
 {
    emit A( 100 );
    async A {
@@ -16,6 +16,7 @@ module m( a, b )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}.{A(100), B}·{A}.{}  " @*/	
+   /*@ ensures "True && {}.{A(100), B}·{A}  " @*/	
 
 
 {

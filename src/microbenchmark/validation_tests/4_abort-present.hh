@@ -8,6 +8,8 @@ module prg
      
    /*@ requires "True && emp" @*/
    /*@ ensures "True && ({}·{J, !I}·{V, !I}) + ({}·{J, I, K}) + {}·{J, !I}·{V, I, K}" @*/
+      /*@ ensures "True && ({}·{J, !I}·{V, !I}) + {}·{J, !I}·{V, I, K}" @*/
+
 {
 
     abort( I ) {

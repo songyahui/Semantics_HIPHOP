@@ -5,6 +5,8 @@ var hh = require( "hiphop" );
 module prg( in I, out O ) 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·(I?·{O}·{})^*" @*/
+      /*@ ensures "True && {}·(I?·{O})^*" @*/
+
 
 {
    loop {

@@ -563,7 +563,13 @@ let rec addEventToTheTail (status:bool) (es:Sleek.instants) ((str, v):event) : S
   (*print_string ("addEventToTheTail: " ^ Sleek.show_instants es^"\n");*)
   match es with 
   | Bottom -> Bottom
-  | Empty -> raise (Foo "addEventToTheTail" )
+  | Empty -> 
+    let newOne = (Sleek.Signals.empty) in 
+    (match (setPresent str (vOptToSigvOpt v) newOne) with 
+    | None -> Bottom
+    | Some ins' -> Instant (ins' ))
+
+  
   | Await _ -> Sequence (es, Instant(Sleek.Signals.from (Sleek.Signals.makeSignal str (vOptToSigvOpt v))))
   | Instant ins -> 
 
@@ -771,6 +777,13 @@ let normalize_effs_final effs =
   ) effs)
   
 
+let globalValid = ref 0
+let globalValidTime = ref 0.0
+
+let globalInValid = ref 0
+let globalInValidTime = ref 0.0
+
+let globalInference = ref 0.0
 
 
 let forward_verification (prog : statement) (whole: statement list): string = 
@@ -802,6 +815,14 @@ let forward_verification (prog : statement) (whole: statement list): string =
     let proves = List.filter (fun (_, b, _) ->  b ==true ) results in 
     let disproves = List.filter (fun (_, b, _) -> b==false ) results in 
     let totol li = List.fold_left (fun acc (a, _, _) -> acc +. a) 0.0 li in  
+    
+    let () = globalValid := (List.length proves) + !globalValid in 
+    let () = globalValidTime :=totol proves +. !globalValidTime in   
+    
+    let () = globalInValid := (List.length disproves) + !globalInValid in 
+    let () = globalInValidTime :=totol disproves +. !globalInValidTime in   
+    let () = globalInference := (startTimeStamp01 -. startTimeStamp) *.1000.0 +. !globalInference in 
+
     let printing li = string_of_int (List.length li) ^ " cases with avg time " ^  string_of_float ((totol li)/.(float_of_int(List.length li))) ^ " ms\n" in 
 
 
@@ -811,7 +832,7 @@ let forward_verification (prog : statement) (whole: statement list): string =
     "[Final  Effects] " ^ show_effects_list ( final) ^"\n"^
     "[Inferring Time] " ^ string_of_float ((startTimeStamp01 -. startTimeStamp) *.1000.0)^ " ms"  ^"\n"    ^
 
- "[TOTAL TRS TIME] " ^ string_of_float (totol proves +. totol disproves) ^ " ms \n" ^ 
+    "[TOTAL TRS TIME] " ^ string_of_float (totol proves +. totol disproves) ^ " ms \n" ^ 
     "[Proving   Time] " ^ printing proves ^
     "[Disprove  Time] " ^ printing disproves (*^"\n" 
     ^ List.fold_left (fun acc (_, _,  msg) -> acc^ msg ) "" results*)
@@ -823,14 +844,18 @@ let forward_verification (prog : statement) (whole: statement list): string =
   ;;
 
 
+let hip str =
+ raise (Foo str)
 
 let () =
+  
+
   let inputfile = (Sys.getcwd () ^ "/" ^ Sys.argv.(1)) in
 (*    let outputfile = (Sys.getcwd ()^ "/" ^ Sys.argv.(2)) in
 print_string (inputfile ^ "\n" ^ outputfile^"\n");*)
   print_string (Sys.argv.(1)^"\n");
   let ic = open_in inputfile in
-  try
+  let _ = try
       let lines =  (input_lines ic ) in
       let line = List.fold_right (fun x acc -> acc ^ "\n" ^ x) (List.rev lines) "" in
       let progs = Parser.program Lexer.token (Lexing.from_string line) in
@@ -843,15 +868,22 @@ print_string (inputfile ^ "\n" ^ outputfile^"\n");*)
       close_in_noerr ic;           (* 紧急关闭 *)
       raise e                      (* 以出错的形式退出: 文件已关闭,但通道没有写入东西 *)
 
+  in 
+
+
+  print_string ("===================\n");
+  print_string ("[Number Valid    ]" ^ string_of_int (!globalValid)^ "\n");
+  print_string ("[    Time Valid  ]" ^ string_of_float ((!globalValidTime )) ^ "\n");
+
+
+  print_string ("[Number InValid  ]" ^ string_of_int (!globalInValid)^ "\n");
+
+  print_string ("[    Time InValid]" ^ string_of_float ((!globalInValidTime)) ^ "\n");
+
+
+  print_string ("[Inference       ]" ^ string_of_float (!globalInference) ^ "\n")
+
+
+
+
    ;;
-
-   (*
-   statck , heap, -> op semantcis 
-
-   traces  -> instrumental semantics. 
-
-   state |= logic
-
-   then the logic. 
-
-*)

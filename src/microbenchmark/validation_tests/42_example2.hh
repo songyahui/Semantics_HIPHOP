@@ -6,6 +6,8 @@ module prg( T, V )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·({S, T}·{V})^* " @*/	
+      /*@ ensures "True && {}·({ST}·{V})^* " @*/	
+
 
 {
 

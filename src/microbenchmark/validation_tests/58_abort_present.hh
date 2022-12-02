@@ -6,6 +6,8 @@ var hh = require("hiphop");
 module prg( in A, in B, in C, in AA, in BB, in CC, in R, out O ) 
    /*@ requires "True && emp "@*/
    /*@ ensures  "True && ({}·{A, C, !S}·{R, !S}) + ({}·{A, C, S}) + ({}·{A, C, !S}·{R, S}) + ({}·{!A, CC, !S}·{BB, !S}) + ({}·{!A, CC, S}) + {}·{!A, CC, !S}·{BB, S}" @*/
+      /*@ ensures  "True && ({}·{A, C, !S}·{R, !S}) + ({}·{A}) + ({}·{A, C, S}·{R, S}) + ({}·{!A, CC, !S}·{B, !S}) + ({}·{!A, CC, S}) + {}·{!A, CC, !S}·{BB, S}" @*/
+
 {
    abort (S) {
       yield;

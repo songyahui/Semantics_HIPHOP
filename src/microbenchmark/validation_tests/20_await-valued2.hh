@@ -18,6 +18,8 @@ function foo3( evt ) {
 module prg( in I, out O ) 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·(I?·{O})^*" @*/
+      /*@ ensures "True && {}·({O})^*" @*/
+
 {
 
    loop {

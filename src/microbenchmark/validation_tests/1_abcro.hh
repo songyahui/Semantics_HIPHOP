@@ -7,6 +7,9 @@ module prg( in A, in B, in C, in R, out O )
    /*@ requires "True && emp "@*/
    /*@ ensures  "True && {}·R?·
    (({A, !R}·({!R})^*) + ({A, R}) + {A, !R}·({!R})^*·{R})^*" @*/
+      /*@ ensures  "True && 
+   (({A, !R}·({!R})^*) + ({A, R}) + {A, !R}·({!R})^*·{R})^*" @*/
+
 {
    do {
       yield;

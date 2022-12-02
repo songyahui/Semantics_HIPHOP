@@ -6,6 +6,8 @@ module prg( in A, out T, out V )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·(({}·{S, T, !A}·{V, !A}) + ({}·{S, T, A}) + {}·{S, T, !A}·{V, A})^* " @*/	
+      /*@ ensures "True && {}·(({}·{S, T, !A}·{V, !A}) + ({}·{S, T, A}) + {}·{S, T, !A}·{V, A}) " @*/	
+
 
 {
 

@@ -10,6 +10,10 @@ module prg( in A, in B, in C, in R, out O )
    ({}·{A, B}) + 
    ({}·{A, !B}·{C, B}) + 
     {}·{A, !B}·{C, !B}·{R, B}" @*/
+       /*@ ensures  "True && 
+   ({}·{A, !B}·{C, !B}·{R, !B}) + 
+   ({}·{A, B}) + 
+   ({}·{A, !B}·{C, B})" @*/
 {
    abort (B) {
       yield;

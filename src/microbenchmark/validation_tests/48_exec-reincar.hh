@@ -7,7 +7,10 @@ var glob = 5;
 
 module setTimeout () 
 /*@ requires "True && {}^*" @*/
-/*@ ensures "True && {}" @*/	{
+/*@ ensures "True && {}" @*/
+/*@ ensures "True && {!B}" @*/	
+
+{
    ();
 }
 
@@ -15,6 +18,7 @@ module prg( in R, in O, in OT, in T )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && ({}·{O}·{!R}·{OT, T, !R}) + ({}·{O}·{OT, R}) + {} " @*/	
+   /*@ ensures "True && ({}·{O}·{!R}·{OT, T, !R}) + ({}·{O}·{OT, R}) " @*/	
 
 {
 

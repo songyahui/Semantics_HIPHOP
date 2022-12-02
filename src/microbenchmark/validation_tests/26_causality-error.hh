@@ -6,6 +6,8 @@ module example( out I, in O )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·(({now(O), I, O}·{}) + {!now(O), O}·{})^*" @*/	
+      /*@ ensures "True && {}·(({now(O), I, O}·{}) + {now(O), O}·{})^*" @*/	
+
 
 {
 

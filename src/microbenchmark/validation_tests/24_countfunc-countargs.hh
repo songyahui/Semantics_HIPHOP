@@ -7,6 +7,7 @@ module prg( in X, out Y, out Z )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·X?·Z?·(({Y, !Z}·({!Z})^*) + ({Y, Z}) + {Y, !Z}·({!Z})^*·{Z})^*" @*/	
+   /*@ ensures "True && {}·X?·Z?·(({Y, !Z}·({!Z})) + ({Y, Z}) + {Y, !Z}·({!Z})^*·{Z})^*" @*/	
 
 {
 

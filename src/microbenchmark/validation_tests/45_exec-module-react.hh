@@ -4,6 +4,8 @@ module M1( in A )
 
    /*@ requires "True && {}^*" @*/
    /*@ ensures "True && {A(100)}·{A}  " @*/	
+      /*@ ensures "True && {A(50)}·{A}  " @*/	
+
 
 {
 
@@ -16,6 +18,8 @@ module M1( in A )
 module m( a, b ) 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·{A(100)}·{A}  " @*/	
+      /*@ ensures "True && {}·{A(50)}·{A}  " @*/	
+
 
 {
     M1( a);

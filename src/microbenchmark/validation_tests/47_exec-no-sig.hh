@@ -4,14 +4,19 @@ const hh = require( "hiphop" );
 
 module setTimeout () 
 /*@ requires "True && {}^*" @*/
-/*@ ensures "True && {}" @*/	{
+/*@ ensures "True && {}" @*/	
+/*@ ensures "True && {A}" @*/	
+
+{
    ();
 }
 
 module prg( O, OT ) 
 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {O}·{}·{OT}" @*/	
+   /*@ ensures "True && {O}·{}·{}·{OT}" @*/	
+      /*@ ensures "True && {O}·{}·{O,T}" @*/	
+
    
 {
 

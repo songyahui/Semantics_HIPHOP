@@ -1,10 +1,15 @@
 let tests =
   [
-    "True && {A} // A?  |-  True && {A}  : true";
-    "True && {A}   |-  True && {A} // A? : true";
+
+    "True && ({Loading}.{Loaded}) // Loaded?.{Log}  |-  True && {Loading}.{Loaded}.{Log}  : true";
+
 
 
    (* 
+       "True && {A} // A?  |-  True && {A}  : true";
+    "True && {A}   |-  True && {A} // A? : true";
+
+
    
        "True && {!A}^*.{A}  |-  True && A? : true";
     "True && A?  |-  True && {!A}^*.{A} : true";

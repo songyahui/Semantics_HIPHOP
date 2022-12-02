@@ -6,6 +6,7 @@ module example( out I, out O )
 
    /*@ requires "True && emp" @*/
    /*@ ensures "True && {}·(({O, I}·{O}) + {!O}·{O})^*" @*/	
+   /*@ ensures "True && {}·(({O, I}·{O}) + {!O}·{!O})^*" @*/	
 
 {
 

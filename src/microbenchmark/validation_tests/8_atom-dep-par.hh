@@ -5,7 +5,9 @@ const hh = require("hiphop");
 
 module prg(out A, out B, out C ) 
    /*@ requires "True && emp" @*/
-   /*@ ensures "True && {A(0), B(1), C(2)}·{}" @*/
+   /*@ ensures "True && {A(0), B(1), C(2)}·{}·{}" @*/
+      /*@ ensures "True && {A(0), B(1), C(2)}" @*/
+
 {
 
    fork {
